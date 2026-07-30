@@ -1,0 +1,27 @@
+# Normalise line endings so Windows and Linux tooling stop fighting.
+#
+# Without this file, git had no policy: files were committed with LF, Windows
+# rewrote the working copies to CRLF, and `git status` showed thousands of
+# phantom changed lines that hid the real ones. One `git add .` would have
+# committed a repo-wide line-ending flip.
+#
+# `text=auto eol=lf` = store everything as LF in the repository, regardless of
+# what the working copy looks like.
+
+* text=auto eol=lf
+
+# Arabic story sources are text
+*.qalam text eol=lf
+
+# Explicitly binary — never touch these
+*.png binary
+*.ico binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.otf binary
+*.tar.gz binary
+*.zip binary
