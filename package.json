@@ -8,6 +8,8 @@
     "packages/*"
   ],
   "scripts": {
+    "build": "npm run build -w @aqlamna/core && npm run build -w @aqlamna/runtime",
+    "export": "npm run build && node packages/runtime/scripts/cli.mjs",
     "test": "npm run test --workspaces --if-present"
   }
 }
