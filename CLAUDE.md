@@ -7,6 +7,10 @@ Started 2026-07-30.
 
 **➜ Read `ARABIC_IF_ENGINE_DESIGN.md` for the full design. Read `PHASE1_SPEC.md` for
 what "done" means and every spec decision. Those two are the authority — keep THIS file slim.**
+**➜ `IMAGES_SPEC.md` owns image generation (Phase 3.3)** — decisions are made, not open:
+reference in source + bytes in IndexedDB, 768px WebP, warn 1MB / stop 2MB, one exported file
+always, and an Arabic→English prompt bridge before the image model. **Groq cannot generate
+images** (vision input only) and `gemini-2.5-flash-image` **shuts down 2 Oct 2026**.
 **➜ `DISTRIBUTION.md` owns how this reaches users** (web / PWA / Play TWA / F-Droid).
 Short version: the editor is desktop-shaped, the reader is phone-native. PWA install already
 works. Play via TWA is worth ~1 day **but only after the mobile layout is good** — Play policy
