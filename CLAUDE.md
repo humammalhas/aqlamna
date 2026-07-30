@@ -7,6 +7,10 @@ Started 2026-07-30.
 
 **➜ Read `ARABIC_IF_ENGINE_DESIGN.md` for the full design. Read `PHASE1_SPEC.md` for
 what "done" means and every spec decision. Those two are the authority — keep THIS file slim.**
+**➜ `DISTRIBUTION.md` owns how this reaches users** (web / PWA / Play TWA / F-Droid).
+Short version: the editor is desktop-shaped, the reader is phone-native. PWA install already
+works. Play via TWA is worth ~1 day **but only after the mobile layout is good** — Play policy
+4.2 rejects webview wrappers, and early one-star reviews are permanent. F-Droid: skip.
 
 ## What it is
 
