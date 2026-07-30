@@ -2,7 +2,7 @@
 // Aqlamna .qalam recursive-descent parser
 // ---------------------------------------------------------------------------
 
-import { tokenize, TokenKind, type Token } from "./tokenizer.js";
+import { tokenize, TokenKind, stripTashkeel, type Token } from "./tokenizer.js";
 import { qalamError } from "./errors.js";
 import type {
   StoryAST, VariableDecl, ListDecl,
@@ -617,7 +617,7 @@ class ParserState {
   parseInlineCondition(condExpr: string): Condition {
     const match = condExpr.match(/^(\S+)\s+([<>=!]+)\s+(.+)$/);
     if (match) {
-      const varName = match[1]!;
+      const varName = stripTashkeel(match[1]!);
       const op = match[2]!;
       const valueStr = match[3]!;
       let value: number | string | boolean;
@@ -632,7 +632,8 @@ class ParserState {
       }
       return { var: varName, op: op as Condition["op"], value };
     }
-    return { var: condExpr };
+    // Truthiness form — also strip tashkeel from the bare variable name
+    return { var: stripTashkeel(condExpr) };
   }
 
   /**

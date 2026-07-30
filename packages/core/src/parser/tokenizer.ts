@@ -95,7 +95,7 @@ function isIdentStart(cp: number): boolean {
 function isIdentContinue(cp: number): boolean {
   return isIdentStart(cp) || isDigit(cp) || cp === 0x2e /* . */ || isTashkeel(cp) || isTatweel(cp);
 }
-function stripTashkeel(s: string): string {
+export function stripTashkeel(s: string): string {
   const out: string[] = [];
   for (const ch of s) {
     const cp = ch.codePointAt(0)!;

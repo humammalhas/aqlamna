@@ -95,3 +95,95 @@ describe("error codes (§1.9)", () => {
     });
   });
 });
+
+// ---- Tashkeel normalisation (§1.12 / §7.2) ----------------------------------
+
+describe("tashkeel normalisation", () => {
+  test("multi-branch with tashkeel in header and branch conditions compiles", () => {
+    const src = `متغير المكوّنات = 0
+
+=== أ ===
+{المكوّنات:
+  - المكوّنات < 3: قليل.
+  - غير_ذلك: كثير.
+}
+-> نهاية`;
+    const result = compile(src, "test.qalam");
+    expect(result.passages).toBeDefined();
+    const passages = result.passages as Record<string, unknown>;
+    expect(Object.keys(passages).length).toBeGreaterThanOrEqual(1);
+  });
+
+  test("multi-branch with tashkeel in branch conditions (plain header)", () => {
+    const src = `متغير المكوّنات = 0
+
+=== أ ===
+{المكونات:
+  - المكوّنات < 3: قليل.
+  - غير_ذلك: كثير.
+}
+-> نهاية`;
+    const result = compile(src, "test.qalam");
+    expect(result.passages).toBeDefined();
+  });
+
+  test("variable declared with tashkeel, referenced without in interpolation", () => {
+    const src = `متغير المكوّنات = 0
+
+=== أ ===
+عندك {المكونات} مكونات.
+-> نهاية`;
+    const result = compile(src, "test.qalam");
+    expect(result.passages).toBeDefined();
+  });
+
+  test("variable declared without tashkeel, referenced with in interpolation", () => {
+    const src = `متغير المكونات = 0
+
+=== أ ===
+عندك {المكوّنات} مكونات.
+-> نهاية`;
+    const result = compile(src, "test.qalam");
+    expect(result.passages).toBeDefined();
+  });
+
+  test("variable declared with tashkeel, referenced without in single conditional", () => {
+    const src = `متغير وجدَ = صح
+
+=== أ ===
+{وجد: موجود.}
+-> نهاية`;
+    const result = compile(src, "test.qalam");
+    expect(result.passages).toBeDefined();
+  });
+
+  test("variable declared with tashkeel, referenced without in assignment", () => {
+    const src = `متغير العَدَد = 0
+
+=== أ ===
+~ العدد = 5
+-> نهاية`;
+    const result = compile(src, "test.qalam");
+    expect(result.passages).toBeDefined();
+  });
+
+  test("variable declared with tashkeel, referenced without in choice condition", () => {
+    const src = `متغير فَتحَ = صح
+
+=== أ ===
++ {فتح} [الباب مفتوح]
+  -> نهاية`;
+    const result = compile(src, "test.qalam");
+    expect(result.passages).toBeDefined();
+  });
+
+  test("undeclared variable with tashkeel still raises E202", () => {
+    assertError(
+      "=== بداية ===\n{المكوّنات: نص.}",
+      "E202",
+      (err) => {
+        expect(err.message_ar).toContain("المكونات");
+      },
+    );
+  });
+});
