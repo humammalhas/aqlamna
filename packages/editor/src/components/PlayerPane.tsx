@@ -76,11 +76,15 @@ export default function PlayerPane() {
     // Clear previous content
     containerRef.current.innerHTML = "";
 
-    // Inject scoped theme CSS into the container
-    const styleEl = document.createElement("style");
-    styleEl.setAttribute("data-aqlamna-theme", "dark");
-    styleEl.textContent = scopeCss(DARK_THEME_CSS, ".player-pane");
-    containerRef.current.appendChild(styleEl);
+    // Inject scoped theme CSS into document.head once
+    const STYLE_ID = "aqlamna-player-theme";
+    let styleEl = document.getElementById(STYLE_ID) as HTMLStyleElement | null;
+    if (!styleEl) {
+      styleEl = document.createElement("style");
+      styleEl.id = STYLE_ID;
+      styleEl.textContent = scopeCss(DARK_THEME_CSS, ".player-pane");
+      document.head.appendChild(styleEl);
+    }
 
     // Mount the runtime player
     const unmount = mount(
@@ -91,7 +95,6 @@ export default function PlayerPane() {
 
     return () => {
       unmount();
-      // styleEl is already a child of the container, so innerHTML="" handles it
     };
   }, [storyJson]);
 
