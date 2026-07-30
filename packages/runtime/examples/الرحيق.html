@@ -151,7 +151,7 @@ body {
 <body>
 <div id="qalam-player"></div>
 <script id="qalam-story" type="application/json">
-{"qalam_version":"0.1","title":"الرحيق","author":null,"language":"ar","direction":"rtl","start":"البداية","variables":{"الرحيق":{"type":"number","initial":0},"وجد_الخريطة":{"type":"boolean","initial":false},"اسم_البطل":{"type":"string","initial":"نحلة"}},"lists":{},"passages":{"البداية":{"tags":[],"content":[{"type":"conditional","condition":{"var":"وجد_الخريطة"},"then":[{"type":"text","value":"الخريطة معك."}],"else":[]},{"type":"text","value":"جمعتِ "},{"type":"interpolation","var":"الرحيق"},{"type":"text","value":" قطرة."},{"type":"choices","items":[{"id":"choice_1","label":"اجمع الرحيق","sticky":true,"condition":null,"content":[{"type":"set","var":"الرحيق","op":"+=","value":2}],"divert":"البداية"},{"id":"choice_2","label":"تحدثي مع النحلة الحكيمة","sticky":false,"condition":null,"content":[{"type":"set","var":"وجد_الخريطة","op":"=","value":true}],"divert":"البداية"},{"id":"choice_3","label":"عودي إلى الخلية","sticky":true,"condition":{"var":"الرحيق","op":">=","value":4},"content":[],"divert":"END"}]}]}},"metadata":{"created":"2026-07-30T06:51:09.670Z","modified":"2026-07-30T06:51:09.670Z","passage_count":1,"word_count":4}}
+{"qalam_version":"0.1","title":"الرحيق","author":null,"language":"ar","direction":"rtl","start":"البداية","variables":{"الرحيق":{"type":"number","initial":0},"وجد_الخريطة":{"type":"boolean","initial":false},"اسم_البطل":{"type":"string","initial":"نحلة"}},"lists":{},"passages":{"البداية":{"tags":[],"content":[{"type":"conditional","condition":{"var":"وجد_الخريطة"},"then":[{"type":"text","value":"الخريطة معك."}],"else":[]},{"type":"text","value":"جمعتِ "},{"type":"interpolation","var":"الرحيق"},{"type":"text","value":" قطرة."},{"type":"choices","items":[{"id":"choice_1","label":"اجمع الرحيق","sticky":true,"condition":null,"content":[{"type":"set","var":"الرحيق","op":"+=","value":2}],"divert":"البداية"},{"id":"choice_2","label":"تحدثي مع النحلة الحكيمة","sticky":false,"condition":null,"content":[{"type":"set","var":"وجد_الخريطة","op":"=","value":true}],"divert":"البداية"},{"id":"choice_3","label":"عودي إلى الخلية","sticky":true,"condition":{"var":"الرحيق","op":">=","value":4},"content":[],"divert":"END"}]}]}},"metadata":{"created":"2026-07-30T06:57:56.621Z","modified":"2026-07-30T06:57:56.621Z","passage_count":1,"word_count":4}}
 </script>
 <script>
 (function () {
@@ -163,6 +163,7 @@ body {
 // Zero dependencies. Consumes compiled story JSON.
 // ---------------------------------------------------------------------------
 // ---- engine ----------------------------------------------------------------
+class Engine {
     story;
     state;
     constructor(story) {
@@ -496,6 +497,7 @@ body {
  * Renders a story scene into a container element.
  * Creates RTL-first DOM with choice buttons.
  */
+function renderScene(container, scene, title, options) {
     container.innerHTML = "";
     // Story wrapper
     const wrapper = document.createElement("div");
@@ -584,6 +586,7 @@ const STORAGE_KEY_PREFIX = "aqlamna_save_";
  * Save game state to localStorage under a story-specific key.
  * Returns the key used.
  */
+function saveToLocalStorage(storyTitle, state) {
     const key = STORAGE_KEY_PREFIX + sanitiseKey(storyTitle);
     const data = JSON.stringify(state);
     localStorage.setItem(key, data);
@@ -593,6 +596,7 @@ const STORAGE_KEY_PREFIX = "aqlamna_save_";
  * Restore game state from localStorage.
  * Returns null if no save exists for this story.
  */
+function loadFromLocalStorage(storyTitle) {
     const key = STORAGE_KEY_PREFIX + sanitiseKey(storyTitle);
     const raw = localStorage.getItem(key);
     if (!raw)
@@ -614,6 +618,7 @@ const STORAGE_KEY_PREFIX = "aqlamna_save_";
 /**
  * Download state as a JSON file.
  */
+function downloadSave(storyTitle, state) {
     const data = JSON.stringify(state, null, 2);
     const blob = new Blob([data], { type: "application/json" });
     const url = URL.createObjectURL(blob);
@@ -629,6 +634,7 @@ const STORAGE_KEY_PREFIX = "aqlamna_save_";
  * Trigger a file picker to load state from a JSON file.
  * Returns a Promise that resolves with the parsed state, or null if cancelled/invalid.
  */
+function uploadSave() {
     return new Promise((resolve) => {
         const input = document.createElement("input");
         input.type = "file";

@@ -33,13 +33,26 @@ for (const f of files) {
   // Strip source map comment
   src = src.replace(/^\/\/# sourceMappingURL=.*$/m, "");
 
-  // Strip export statements (export class, export function, export const, export {})
+  // Strip export syntax — keep declarations, drop the keyword only.
+  // "export class Engine {"  →  "class Engine {"
+  // "export function f("     →  "function f("
+  // "export { ... };"  and  "export default ...;"  →  dropped entirely
   src = src
     .split("\n")
-    .filter((line) => !/^\s*export\s/.test(line))
+    .map((line) => {
+      // Drop bare export { } and export default statements
+      if (/^\s*export\s*\{/.test(line)) return null;
+      if (/^\s*export\s+default\s/.test(line)) return null;
+      // Strip "export " keyword prefix only (keeps the declaration)
+      return line.replace(
+        /^(\s*)export\s+(?=class\s|function\s|const\s|let\s|var\s|async\s)/,
+        "$1",
+      );
+    })
+    .filter((line) => line !== null)
     .join("\n");
 
-  // Remove trailing blank lines (trim end)
+  // Remove trailing blank lines
   src = src.trimEnd();
 
   if (src.length > 0) {
