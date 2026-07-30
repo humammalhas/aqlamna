@@ -5,21 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>الرحيق</title>
 <style>
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+/* ---------------------------------------------------------------------------
+   Aqlamna dark theme — RTL-first, CSS logical properties only
+   Font stack per design §7.4 (self-hosted only, no Google Fonts link)
+   --------------------------------------------------------------------------- */
 
-html {
-  background: #1a1814;
-}
-
-body {
-  min-block-size: 100vh;
-}
+/* --- Container ------------------------------------------------------------ */
 
 .aq-story {
   direction: rtl;
@@ -40,6 +31,8 @@ body {
   padding: 2rem 1.5rem;
 }
 
+/* --- Title ---------------------------------------------------------------- */
+
 .aq-title {
   font-size: 1.75rem;
   font-weight: 700;
@@ -50,6 +43,8 @@ body {
   padding-block-end: 0.75rem;
 }
 
+/* --- Output / prose ------------------------------------------------------- */
+
 .aq-output {
   margin-block-end: 1.5rem;
 }
@@ -58,6 +53,8 @@ body {
   margin-block: 0.75rem;
   text-indent: 0;
 }
+
+/* --- Choices -------------------------------------------------------------- */
 
 .aq-choices {
   display: flex;
@@ -69,6 +66,7 @@ body {
 .aq-choice-btn {
   display: block;
   inline-size: 100%;
+  min-block-size: 44px;
   padding-block: 0.75rem;
   padding-inline: 1.25rem;
   font-family: inherit;
@@ -92,6 +90,8 @@ body {
   outline-offset: 2px;
 }
 
+/* --- End state ------------------------------------------------------------ */
+
 .aq-end {
   text-align: center;
   margin-block: 3rem;
@@ -103,6 +103,8 @@ body {
   font-weight: 600;
   margin-block-end: 1.5rem;
 }
+
+/* --- Toolbar -------------------------------------------------------------- */
 
 .aq-toolbar {
   display: flex;
@@ -136,6 +138,8 @@ body {
   outline-offset: 2px;
 }
 
+/* --- Responsive ----------------------------------------------------------- */
+
 @media (max-width: 480px) {
   .aq-story {
     padding: 1rem;
@@ -151,7 +155,7 @@ body {
 <body>
 <div id="qalam-player"></div>
 <script id="qalam-story" type="application/json">
-{"qalam_version":"0.1","title":"الرحيق","author":null,"language":"ar","direction":"rtl","start":"البداية","variables":{"الرحيق":{"type":"number","initial":0},"وجد_الخريطة":{"type":"boolean","initial":false},"اسم_البطل":{"type":"string","initial":"نحلة"}},"lists":{},"passages":{"البداية":{"tags":[],"content":[{"type":"conditional","condition":{"var":"وجد_الخريطة"},"then":[{"type":"text","value":"الخريطة معك."}],"else":[]},{"type":"text","value":"جمعتِ "},{"type":"interpolation","var":"الرحيق"},{"type":"text","value":" قطرة."},{"type":"choices","items":[{"id":"choice_1","label":"اجمع الرحيق","sticky":true,"condition":null,"content":[{"type":"set","var":"الرحيق","op":"+=","value":2}],"divert":"البداية"},{"id":"choice_2","label":"تحدثي مع النحلة الحكيمة","sticky":false,"condition":null,"content":[{"type":"set","var":"وجد_الخريطة","op":"=","value":true}],"divert":"البداية"},{"id":"choice_3","label":"عودي إلى الخلية","sticky":true,"condition":{"var":"الرحيق","op":">=","value":4},"content":[],"divert":"END"}]}]}},"metadata":{"created":"2026-07-30T11:30:55.948Z","modified":"2026-07-30T11:30:55.948Z","passage_count":1,"word_count":4}}
+{"qalam_version":"0.1","title":"الرحيق","author":null,"language":"ar","direction":"rtl","start":"البداية","variables":{"الرحيق":{"type":"number","initial":0},"وجد_الخريطة":{"type":"boolean","initial":false},"اسم_البطل":{"type":"string","initial":"نحلة"}},"lists":{},"passages":{"البداية":{"tags":[],"content":[{"type":"conditional","condition":{"var":"وجد_الخريطة"},"then":[{"type":"text","value":"الخريطة معك."}],"else":[]},{"type":"text","value":"جمعتِ "},{"type":"interpolation","var":"الرحيق"},{"type":"text","value":" قطرة."},{"type":"choices","items":[{"id":"choice_1","label":"اجمع الرحيق","sticky":true,"condition":null,"content":[{"type":"set","var":"الرحيق","op":"+=","value":2}],"divert":"البداية"},{"id":"choice_2","label":"تحدثي مع النحلة الحكيمة","sticky":false,"condition":null,"content":[{"type":"set","var":"وجد_الخريطة","op":"=","value":true}],"divert":"البداية"},{"id":"choice_3","label":"عودي إلى الخلية","sticky":true,"condition":{"var":"الرحيق","op":">=","value":4},"content":[],"divert":"END"}]}]}},"metadata":{"created":"2026-07-30T11:59:52.467Z","modified":"2026-07-30T11:59:52.467Z","passage_count":1,"word_count":4}}
 </script>
 <script>
 (function () {
