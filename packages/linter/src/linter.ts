@@ -154,12 +154,40 @@ export function lint(source: string): Diagnostic[] {
     }
   }
 
-  diagnostics.sort((a, b) => {
+  // ---- Deduplicate ---------------------------------------------------------
+  // When two rules fire at the same (line, column, length), keep the pattern
+  // rule (hand-written, more precise) and drop the pair rule. This handles
+  // overlaps like مشاكل (pair 2.2.2 + pattern 2.2-mashakil).
+
+  const groups = new Map<string, Diagnostic[]>();
+  for (const d of diagnostics) {
+    const key = `${d.line}:${d.column}:${d.length}`;
+    const group = groups.get(key);
+    if (group) {
+      group.push(d);
+    } else {
+      groups.set(key, [d]);
+    }
+  }
+
+  const deduped: Diagnostic[] = [];
+  for (const [, group] of groups) {
+    if (group.length === 1) {
+      deduped.push(group[0]!);
+    } else {
+      // Prefer pattern rule (id contains a dash like "2.2-mashakil")
+      const patternDiag = group.find((d) => d.ruleId.includes("-"));
+      deduped.push(patternDiag ?? group[0]!);
+    }
+  }
+
+  // Sort by line, then column
+  deduped.sort((a, b) => {
     if (a.line !== b.line) return a.line - b.line;
     return a.column - b.column;
   });
 
-  return diagnostics;
+  return deduped;
 }
 
 /** Return metadata about the loaded rules file. */

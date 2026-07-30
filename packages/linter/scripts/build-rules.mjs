@@ -247,12 +247,15 @@ for (const p of rawPairs) {
   const count = (sectionCounters.get(p.section) || 0) + 1;
   sectionCounters.set(p.section, count);
 
+  // §1b.5 verb-precision rules are judgment calls — downgrade to info
+  const severity = p.section === "1b.5" ? "info" : "warning";
+
   pairRules.push({
     id: `${p.section}.${count}`,
     kind: "pair",
     bad: p.bad,
     good: p.good,
-    severity: "warning",
+    severity,
     messageAr: qaedaBySection.get(p.section) || "",
     section: p.section,
   });

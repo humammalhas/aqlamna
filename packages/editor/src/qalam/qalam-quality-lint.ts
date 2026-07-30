@@ -32,27 +32,34 @@ function qualityDiagToCM(
   const from = offset + col;
   const to = from + diag.length;
 
-  return {
+  // Map linter severity to CodeMirror severity.
+  // "info" diagnostics (like §1b.5 verb-precision suggestions) render as
+  // dotted underline with no gutter marker — they are recommendations, not
+  // warnings.
+  const cmSeverity = diag.severity === "info" ? "info" : "warning";
+
+  const result: CMDiagnostic = {
     from,
     to,
-    severity: "warning",
+    severity: cmSeverity,
     message: diag.messageAr,
-    // If the rule has a suggestion, provide it as a quick-fix action
-    ...(diag.suggestion
-      ? {
-          actions: [
-            {
-              name: `استبدل بـ "${diag.suggestion}"`,
-              apply(view, fromPos, toPos) {
-                view.dispatch({
-                  changes: { from: fromPos, to: toPos, insert: diag.suggestion! },
-                });
-              },
-            },
-          ],
-        }
-      : {}),
   };
+
+  // Quick-fix: only offer for warning-level rules (not info)
+  if (diag.suggestion && cmSeverity !== "info") {
+    result.actions = [
+      {
+        name: `استبدل بـ "${diag.suggestion}"`,
+        apply(view, fromPos, toPos) {
+          view.dispatch({
+            changes: { from: fromPos, to: toPos, insert: diag.suggestion! },
+          });
+        },
+      },
+    ];
+  }
+
+  return result;
 }
 
 /**

@@ -77,6 +77,14 @@ const editorTheme = EditorView.theme(
       // Underline for lint errors
       textDecoration: "underline wavy #e06060",
     },
+    ".cm-diagnostic.cm-lintRange-info": {
+      // Info diagnostics: dotted underline, no wavy (quieter than warnings)
+      textDecoration: "underline dotted #8a8070",
+    },
+    ".cm-lintRange-info": {
+      // No gutter marker for info diagnostics
+      backgroundImage: "none",
+    },
     ".cm-diagnosticText": {
       // Tooltip for lint messages
       color: "#e0c0c0",
