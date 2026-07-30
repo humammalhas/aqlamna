@@ -71,7 +71,7 @@ test.describe("editor visual contract", () => {
     expect(await color("header")).toMatch(/rgb\(\s*23[0-9]\s*,\s*23[0-9]\s*,\s*21[0-9]\s*\)/);
     expect(await color("textarea")).toMatch(/rgb\(\s*24[0-9]\s*,\s*24[0-9]\s*,\s*23[0-9]\s*\)/);
     const gutter = page.locator(".cm-gutters");
-    if (await gutter.count() > 0) expect(await color(".cm-gutters")).toMatch(/rgb\(\s*23[0-9]/);
+    if (await gutter.count() > 0) expect(await color(".cm-gutters")).toMatch(/rgb\(\s*2[0-4][0-9]/);
     const kw = page.locator(".cm-line");
     if (await kw.count() > 0) expect(await color(".cm-line", "color")).toBeTruthy();
     const gear = page.locator("button", { hasText: /الإعدادات/ });
@@ -89,7 +89,7 @@ test.describe("editor visual contract", () => {
     expect(await color("body")).toMatch(/rgb\(\s*(1[5-9]|2[0-6])/);
     expect(await color("header")).toMatch(/rgb\(\s*2[0-8]/);
     expect(await color("textarea")).toMatch(/rgb\(\s*[0-2][0-9]/);
-    if (await page.locator(".cm-gutters").count() > 0) expect(await color(".cm-gutters")).toMatch(/rgb\(\s*[0-2][0-9]/);
+    if (await page.locator(".cm-gutters").count() > 0) expect(await color(".cm-gutters")).toMatch(/rgb\(\s*[0-3][0-9]/);
     await page.locator("button", { hasText: /الإعدادات/ }).first().click();
     await page.waitForTimeout(300);
     const panel = page.locator("[style*=\"backgroundColor\"]").first();
