@@ -19,15 +19,25 @@ import OnboardingOverlay from "./components/OnboardingOverlay.js";
 const WIDTHS_KEY = "aqlamna-pane-widths";
 const MIN_PX = 260;
 
-function loadWidths(): number[] {
+type WidthsMap = Record<string, number>;
+
+function loadWidths(): WidthsMap {
   try {
     const v = localStorage.getItem(WIDTHS_KEY);
-    if (v) return JSON.parse(v) as number[];
+    if (v) return JSON.parse(v) as WidthsMap;
   } catch { /* noop */ }
-  return [];
+  return {};
 }
-function saveWidths(w: number[]) {
+function saveWidths(w: WidthsMap) {
   try { localStorage.setItem(WIDTHS_KEY, JSON.stringify(w)); } catch { /* noop */ }
+}
+
+/** Return equal widths for the given keys, normalized to sum=1. */
+function equalWidths(keys: string[]): WidthsMap {
+  const n = keys.length;
+  const w: WidthsMap = {};
+  for (const k of keys) w[k] = 1 / n;
+  return w;
 }
 
 // ---- Drag state ----
@@ -45,15 +55,10 @@ export default function App() {
   const clearError = useStore((s) => s.clearError);
   const initialized = useRef(false);
 
-  // Pane widths as fractions (sum = 1 when all visible). Stored as pixel ratios.
-  const [widths, setWidths] = useState<number[]>(() => loadWidths());
+  // Pane widths keyed by pane type (e.g. "text", "canvas", "player").
+  const [widths, setWidths] = useState<WidthsMap>(() => loadWidths());
   const [drag, setDrag] = useState<DragTarget | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-
-  // Build the ordered list of visible panes. Order: player, text, canvas.
-  // But we show them as: [text] [canvas] [player] — left to right.
-  // Actually, user wants: player on the right. So order in DOM: text, canvas, player.
-  // The grid columns are: text? canvas? player? (with dividers between).
 
   // In RTL, the first grid column appears on the RIGHT.
   // We want: player (right), canvas, text (left).
@@ -62,17 +67,28 @@ export default function App() {
   if (paneCanvas) visible.push({ key: "canvas", label: "مخطط" });
   if (paneText) visible.push({ key: "text", label: "نص" });
 
-  // Always at least one pane visible
   const effectiveVisible = visible.length === 0
     ? [{ key: "text", label: "نص" }]
     : visible;
 
-  // Compute grid-template-columns from widths + dividers
-  const gridCols = effectiveVisible.flatMap((_, i) => {
+  // Normalise widths: use saved values for visible panes, fill gaps with equal share
+  const visibleKeys = effectiveVisible.map((p) => p.key);
+  const normWidths = (() => {
+    const total = visibleKeys.reduce((s, k) => s + (widths[k] || 0), 0);
+    if (total > 0.01) {
+      // We have saved widths — renormalise to sum=1
+      const out: WidthsMap = {};
+      for (const k of visibleKeys) out[k] = (widths[k] || 0) / total;
+      return out;
+    }
+    return equalWidths(visibleKeys);
+  })();
+
+  // Compute grid-template-columns: each pane gets its share, dividers between
+  const gridCols = visibleKeys.flatMap((k, i) => {
     const cols: string[] = [];
-    if (i > 0) cols.push("4px"); // divider
-    const w = widths[i] ?? (1 / effectiveVisible.length);
-    cols.push(`${w}fr`);
+    if (i > 0) cols.push("4px");
+    cols.push(`${normWidths[k]}fr`);
     return cols;
   }).join(" ");
 
@@ -90,19 +106,22 @@ export default function App() {
 
   // ---- Drag handlers ----
 
-  const handleDividerDown = useCallback((leftIdx: number, rightIdx: number) => (e: React.MouseEvent) => {
+  const handleDividerDown = useCallback((leftKey: string, rightKey: string) => (e: React.MouseEvent) => {
     e.preventDefault();
     setDrag({
-      leftIdx,
-      rightIdx,
+      leftIdx: 0, rightIdx: 0, // unused with key-based widths
       startX: e.clientX,
-      startLeft: widths[leftIdx] ?? 0.5,
-      startRight: widths[rightIdx] ?? 0.5,
-    });
-  }, [widths]);
+      startLeft: normWidths[leftKey] ?? 0.5,
+      startRight: normWidths[rightKey] ?? 0.5,
+      leftKey,
+      rightKey,
+    } as DragTarget & { leftKey: string; rightKey: string });
+  }, [normWidths]);
 
   useEffect(() => {
     if (!drag || !containerRef.current) return;
+    const d = drag as DragTarget & { leftKey?: string; rightKey?: string };
+    if (!d.leftKey || !d.rightKey) return;
 
     const handleMove = (e: MouseEvent) => {
       const rect = containerRef.current!.getBoundingClientRect();
@@ -113,13 +132,10 @@ export default function App() {
       const newLeft = Math.max(MIN_PX / totalPx, drag.startLeft + dFrac);
       const newRight = Math.max(MIN_PX / totalPx, drag.startRight - dFrac);
 
-      // Don't let either go below min
-      if (newLeft < MIN_PX / totalPx || newRight < MIN_PX / totalPx) return;
-
       setWidths((prev) => {
-        const next = [...prev];
-        next[drag.leftIdx] = newLeft;
-        next[drag.rightIdx] = newRight;
+        const next = { ...prev };
+        next[d.leftKey!] = newLeft;
+        next[d.rightKey!] = newRight;
         return next;
       });
     };
@@ -162,29 +178,42 @@ export default function App() {
             overflow: "hidden",
           }}
         >
-          {effectiveVisible.map((pane, i) => (
-            <div key={pane.key} style={{ minBlockSize: 0, overflow: "hidden", display: "flex", flexDirection: "column" }}>
-              {/* Divider before this pane */}
-              {i > 0 && (
+          {effectiveVisible.flatMap((pane, i) => {
+            const items = [];
+            // Divider before this pane (except first)
+            if (i > 0) {
+              items.push(
                 <div
-                  onMouseDown={handleDividerDown(i - 1, i)}
+                  key={`div-${visibleKeys[i - 1]}-${visibleKeys[i]}`}
+                  onMouseDown={handleDividerDown(visibleKeys[i - 1], visibleKeys[i])}
                   style={{
-                    gridColumn: `${i * 2}`,
+                    gridColumn: i * 2, // 2, 4, 6, ...
                     gridRow: 1,
-                    inlineSize: "4px",
+                    inlineSize: "6px",
                     cursor: "col-resize",
-                    background: drag && drag.leftIdx === i - 1 ? "var(--aq-accent)" : "var(--aq-border)",
+                    background: drag ? "var(--aq-accent)" : "var(--aq-border)",
                     zIndex: 10,
-                    flexShrink: 0,
                   }}
                 />
-              )}
-              {/* Pane content */}
-              <div style={{ flex: "1 1 0", minBlockSize: 0, overflow: "auto", position: "relative" }}>
+              );
+            }
+            // Pane
+            items.push(
+              <div
+                key={pane.key}
+                style={{
+                  gridColumn: i * 2 + 1, // 1, 3, 5, ...
+                  gridRow: 1,
+                  minBlockSize: 0,
+                  overflow: "auto",
+                  position: "relative",
+                }}
+              >
                 {renderPane(pane.key)}
               </div>
-            </div>
-          ))}
+            );
+            return items;
+          })}
         </div>
       )}
 
