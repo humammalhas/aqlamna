@@ -24,6 +24,8 @@ import {
   ALL_LOCAL,
   type ProviderConfig,
 } from "../lib/providers.js";
+import { getRulesMeta } from "@aqlamna/linter";
+import { useStore } from "../store.js";
 
 // Providers where the model field accepts any free-text ID.
 const ANY_MODEL_IDS = new Set(["openrouter", "lmstudio", "custom"]);
@@ -232,6 +234,9 @@ export default function SettingsPanel({ open, onClose }: SettingsPanelProps) {
           </>
         )}
 
+        {/* ---- Quality Linter toggle ---- */}
+        <LinterToggle />
+
         {/* ---- Storage note ---- */}
         <div style={noteStyle}>
           💡 يُخزَّن المفتاح في هذا المتصفح فقط، ولا يُرسل إلا إلى المزوّد الذي
@@ -420,6 +425,75 @@ function InfoRow({
     >
       <span style={{ color: "#6a6450" }}>{label}</span>
       <span style={{ color: "#9a8c70" }}>{children}</span>
+    </div>
+  );
+}
+
+// ---- Linter Toggle ---------------------------------------------------------
+
+function LinterToggle() {
+  const qualityLintEnabled = useStore((s) => s.qualityLintEnabled);
+  const toggleQualityLint = useStore((s) => s.toggleQualityLint);
+
+  let metaText: React.ReactNode = null;
+  try {
+    const meta = getRulesMeta();
+    const dateStr = new Date(meta.lastModified).toLocaleDateString("ar-SA", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+    metaText = /* @__PURE__ */ (
+      <span style={{ color: "#6a6450" }}>
+        {meta.totalActive} قاعدة نشطة · آخر تحديث: {dateStr}
+      </span>
+    );
+  } catch {
+    metaText = null;
+  }
+
+  return /* @__PURE__ */ (
+    <div style={infoBoxStyle}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <div>
+          <div style={{ fontSize: "0.875rem", color: "#c8c0b0" }}>
+            مدقّق الجودة العربية
+          </div>
+          <div style={{ fontSize: "0.75rem", color: "#8a8070", marginBlockStart: "0.25rem" }}>
+            يُظهر تنبيهات على الأنماط غير الفصيحة حسب قواعد ARABIC_MASTERY.md
+            {metaText && (
+              <>
+                <br />
+                {metaText}
+              </>
+            )}
+          </div>
+        </div>
+        <button
+          onClick={toggleQualityLint}
+          style={{
+            paddingBlock: "0.375rem",
+            paddingInline: "0.75rem",
+            fontSize: "0.8125rem",
+            fontFamily: "inherit",
+            fontWeight: 600,
+            color: qualityLintEnabled ? "#141210" : "#8a8070",
+            background: qualityLintEnabled ? "#d4a843" : "#2a2620",
+            border: qualityLintEnabled ? "none" : "1px solid #3a3528",
+            borderRadius: "6px",
+            cursor: "pointer",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {qualityLintEnabled ? "مُفعَّل" : "معطَّل"}
+        </button>
+      </div>
     </div>
   );
 }

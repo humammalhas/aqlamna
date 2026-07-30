@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@aqlamna/core": "*",
+    "@aqlamna/linter": "*",
     "@aqlamna/runtime": "*",
     "@codemirror/autocomplete": "^6.20.3",
     "@codemirror/commands": "^6.10.4",

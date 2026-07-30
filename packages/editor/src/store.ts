@@ -63,6 +63,12 @@ export interface EditorStore {
 
   /** Whether the initial view mode has been loaded from IndexedDB. */
   viewModeLoaded: boolean;
+
+  /** Whether the Arabic quality linter is active. Persisted to localStorage. */
+  qualityLintEnabled: boolean;
+
+  /** Toggle the quality linter on/off. */
+  toggleQualityLint: () => void;
 }
 
 export const useStore = create<EditorStore>((set, get) => ({
@@ -72,6 +78,7 @@ export const useStore = create<EditorStore>((set, get) => ({
   playerKey: 0,
   viewMode: "text",
   viewModeLoaded: false,
+  qualityLintEnabled: localStorage.getItem("aqlamna-quality-lint") !== "off",
 
   setSource: (source: string) => {
     set({ source });
@@ -124,6 +131,12 @@ export const useStore = create<EditorStore>((set, get) => ({
   setViewMode: (mode: ViewMode) => {
     set({ viewMode: mode });
     persistViewMode(mode).catch(() => {});
+  },
+
+  toggleQualityLint: () => {
+    const next = !get().qualityLintEnabled;
+    set({ qualityLintEnabled: next });
+    try { localStorage.setItem("aqlamna-quality-lint", next ? "on" : "off"); } catch { /* noop */ }
   },
 }));
 

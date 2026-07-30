@@ -14,6 +14,7 @@ import {
   qalamHighlighting,
   qalamLinter,
   qalamBidiIsolation,
+  qalamQualityLinter,
 } from "../qalam/index.js";
 
 // ---- Editor theme (matches the app's dark palette) ------------------------
@@ -126,6 +127,7 @@ export default function CodeEditorPane() {
         qalamLanguage,
         qalamHighlighting,
         qalamLinter,
+        qalamQualityLinter,
 
         // Bidi isolation for operators/symbols
         qalamBidiIsolation(),

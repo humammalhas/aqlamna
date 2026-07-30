@@ -1,0 +1,29 @@
+{
+  "name": "@aqlamna/linter",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Aqlamna Arabic quality linter — rules from ARABIC_MASTERY.md",
+  "license": "GPL-3.0-only",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "build:rules": "node scripts/build-rules.mjs",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@aqlamna/core": "*"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "vitest": "^3.1.0"
+  }
+}
