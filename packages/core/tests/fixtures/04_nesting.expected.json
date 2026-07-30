@@ -1,0 +1,89 @@
+{
+  "qalam_version": "0.1",
+  "title": "التحقق",
+  "author": null,
+  "language": "ar",
+  "direction": "rtl",
+  "start": "المنزل",
+  "variables": {
+    "الشجاعة": { "type": "number", "initial": 5 }
+  },
+  "lists": {},
+  "passages": {
+    "المنزل": {
+      "tags": [],
+      "content": [
+        { "type": "text", "value": "باب خشبي قديم." }
+      ]
+    },
+    "المنزل.المطبخ": {
+      "tags": [],
+      "content": [
+        { "type": "text", "value": "رائحة القهوة." },
+        { "type": "divert", "target": "المنزل.الحمام" }
+      ]
+    },
+    "المنزل.الحمام": {
+      "tags": [],
+      "content": [
+        { "type": "text", "value": "مرآة قديمة." },
+        { "type": "divert", "target": "END" }
+      ]
+    },
+    "البهو": {
+      "tags": [],
+      "content": [
+        {
+          "type": "conditional",
+          "condition": { "var": "الشجاعة", "op": "<", "value": 3 },
+          "then": [
+            { "type": "text", "value": "ترتجف." }
+          ],
+          "else": [
+            { "type": "text", "value": "تتقدم." }
+          ]
+        },
+        {
+          "type": "choices",
+          "items": [
+            {
+              "id": "choice_1",
+              "label": "افتح الباب",
+              "sticky": false,
+              "condition": null,
+              "content": [
+                { "type": "text", "value": "الباب مقفل." },
+                {
+                  "type": "choices",
+                  "items": [
+                    {
+                      "id": "choice_1_1",
+                      "label": "ابحث",
+                      "sticky": false,
+                      "condition": null,
+                      "content": [
+                        { "type": "text", "value": "وجدت المفتاح." }
+                      ],
+                      "divert": "البهو"
+                    },
+                    {
+                      "id": "choice_1_2",
+                      "label": "اكسر",
+                      "sticky": false,
+                      "condition": null,
+                      "content": [
+                        { "type": "text", "value": "لم ينكسر." }
+                      ],
+                      "divert": "البهو"
+                    }
+                  ]
+                }
+              ],
+              "divert": null
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
