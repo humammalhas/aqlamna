@@ -206,6 +206,7 @@ export default function CodeEditorPane() {
       ref={containerRef}
       style={{
         flex: 1,
+        minBlockSize: 0,
         overflow: "hidden",
       }}
     />

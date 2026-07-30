@@ -141,7 +141,7 @@ export default function PlayerPane() {
     <div
       ref={containerRef}
       className="player-pane"
-      style={{ flex: 1 }}
+      style={{ flex: 1, minBlockSize: 0, overflow: "auto", position: "relative" }}
     />
   );
 }

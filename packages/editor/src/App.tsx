@@ -2,6 +2,10 @@
 // App — root component. Loads saved source from IndexedDB, seeds on first run,
 // wires the store to the UI. Three view modes switch the LEFT pane; the player
 // is always visible on the right.  "الاثنان" adds a draggable divider.
+//
+// Pane layout: the editor-main-area is a flex row with min-block-size:0.
+// Every pane child gets flex:1 1 0, min-inline-size:0, overflow:auto so
+// that panes share space instead of overlapping.
 // ---------------------------------------------------------------------------
 
 import { useEffect, useRef, useState, useCallback } from "react";
@@ -31,6 +35,15 @@ function loadDivider(): number {
 function saveDivider(pct: number) {
   try { localStorage.setItem(DIVIDER_KEY, String(pct)); } catch { /* noop */ }
 }
+
+// Shared pane style — every pane in the flex row uses this.
+const PANE_STYLE: React.CSSProperties = {
+  flex: "1 1 0",
+  minInlineSize: 0,
+  blockSize: "100%",
+  overflow: "auto",
+  position: "relative",
+};
 
 export default function App() {
   const storyJson = useStore((s) => s.storyJson);
@@ -101,20 +114,31 @@ export default function App() {
 
   const isMobile = typeof window !== "undefined" && window.innerWidth <= 768;
 
+  // Left pane — uses PANE_STYLE. In split mode, flex-basis is the divider pct.
+  const leftStyle: React.CSSProperties = showDivider
+    ? { ...PANE_STYLE, flex: `0 0 ${leftPct}%` }
+    : PANE_STYLE;
+
   const leftPane = (
-    <div style={{ flex: showDivider ? `0 0 ${leftPct}%` : 1, minInlineSize: 0, display: "flex" }}>
+    <div style={leftStyle}>
       {showLeftText && <EditorPane />}
       {showLeftCanvas && <CanvasPane />}
     </div>
   );
+
+  // Player pane wrapper — uses PANE_STYLE
+  const playerWrapperStyle: React.CSSProperties = showDivider
+    ? { ...PANE_STYLE }
+    : PANE_STYLE;
 
   const mainArea = (
     <div
       className="editor-main-area"
       style={{
         display: "flex",
-        flex: 1,
+        flex: "1 1 0",
         minBlockSize: 0,
+        overflow: "hidden",
         flexDirection: isMobile ? "column" : "row",
       }}
     >
@@ -137,7 +161,7 @@ export default function App() {
 
       {/* Player pane — always visible */}
       {!isMobile && (
-        <div style={{ flex: showDivider ? `1 1 ${100 - leftPct}%` : 1, minInlineSize: 0 }}>
+        <div style={playerWrapperStyle}>
           <PlayerPane key={playerKey} />
         </div>
       )}
