@@ -1,16 +1,12 @@
 // ---------------------------------------------------------------------------
-// AIActions — the three AI co-writing buttons + preview panel.
+// AIActions — collapsible AI co-writing panel.
 //
-// Three actions:
-//   اقترح خيارات — suggest 3 choices in .qalam syntax
-//   أكمل المشهد — draft a continuation of the current passage's prose
-//   اكتب هذا المقطع — draft a divert target that has no passage yet
-//
-// Human in the loop: every suggestion shows in a preview panel with [أضف] and
-// [تجاهل]. Nothing is auto-applied. Invalid text is shown raw with the error.
+// Collapsed: ✨ اكتب معي ⌄
+// Expanded:  textarea + 3 action buttons + one hint.
+// State persisted in localStorage.
 // ---------------------------------------------------------------------------
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useStore } from "../store.js";
 import { hasApiKey } from "../lib/ai-keys.js";
 import {
@@ -21,18 +17,41 @@ import {
   type AIResponse,
 } from "../lib/ai.js";
 
+const COLLAPSED_KEY = "aqlamna-ai-collapsed";
+
+function loadCollapsed(): boolean {
+  try { return localStorage.getItem(COLLAPSED_KEY) !== "false"; } catch { return true; }
+}
+function saveCollapsed(v: boolean) {
+  try { localStorage.setItem(COLLAPSED_KEY, String(v)); } catch { /* noop */ }
+}
+
 // ---- Component -------------------------------------------------------------
 
-export default function AIActions({ onOpenSettings }: { onOpenSettings: () => void }) {
+export default function AIActions() {
   const source = useStore((s) => s.source);
   const setSource = useStore((s) => s.setSource);
 
+  const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState<AIResponse | null>(null);
   const [actionLabel, setActionLabel] = useState("");
   const [humanInstruction, setHumanInstruction] = useState("");
 
   const keyAvailable = hasApiKey();
+
+  // Hydrate collapsed state from localStorage (default: collapsed)
+  useEffect(() => {
+    setOpen(!loadCollapsed());
+  }, []);
+
+  const toggleOpen = useCallback(() => {
+    setOpen((v) => {
+      const next = !v;
+      saveCollapsed(next);
+      return next;
+    });
+  }, []);
 
   const runAction = useCallback(
     async (action: AIAction, label: string) => {
@@ -42,9 +61,6 @@ export default function AIActions({ onOpenSettings }: { onOpenSettings: () => vo
 
       const passageNames = extractPassageNames(source);
       const variableNames = extractVariableNames(source);
-
-      // For context, use the text around where the author is likely working.
-      // We use the last passage's content as context, or the full source tail.
       const contextText = getContextText(source);
 
       try {
@@ -67,85 +83,100 @@ export default function AIActions({ onOpenSettings }: { onOpenSettings: () => vo
         setLoading(false);
       }
     },
-    [source],
+    [source, humanInstruction],
   );
 
   const handleAccept = () => {
     if (!response?.valid) return;
-    // Append the valid text at the end of the current source
     const newSource = source + "\n" + response.valid;
     setSource(newSource);
     setResponse(null);
   };
 
-  const handleDismiss = () => {
-    setResponse(null);
-  };
+  const handleDismiss = () => setResponse(null);
 
-  // ---- Render ---------------------------------------------------------------
-
-  return (
-    <div style={{ direction: "rtl" }}>
-      {/* Human instruction textarea */}
-      <div style={{ marginBlockEnd: "0.5rem" }}>
-        <label
-          style={{
-            display: "block",
-            fontSize: "0.75rem",
-            color: "var(--aq-muted)",
-            marginBlockEnd: "0.25rem",
-          }}
-        >
-          اكتب ما تريد من الذكاء الاصطناعي
-        </label>
-        <textarea
-          value={humanInstruction}
-          onChange={(e) => setHumanInstruction(e.target.value)}
-          disabled={!keyAvailable}
-          placeholder="مثال: اكتب مشهدًا في سوق قديم، الراوي خائف"
-          rows={3}
-          style={{
-            inlineSize: "100%",
-            paddingBlock: "0.5rem",
-            paddingInline: "0.625rem",
-            fontSize: "0.875rem",
-            fontFamily: "inherit",
-            color: "var(--aq-text)",
-            backgroundColor: "var(--aq-input-bg)",
-            border: "1px solid var(--aq-border)",
-            borderRadius: "6px",
-            outline: "none",
-            resize: "vertical",
-            lineHeight: 1.6,
-            boxSizing: "border-box",
-          }}
-        />
-        {!keyAvailable && (
-          <div
-            style={{
-              marginBlockStart: "0.25rem",
-              fontSize: "0.75rem",
-              color: "var(--aq-muted)",
-              lineHeight: 1.6,
-            }}
-          >
-            أضف مفتاح الذكاء الاصطناعي من{" "}
-            <button onClick={onOpenSettings} style={{ fontSize: "inherit", fontFamily: "inherit", color: "var(--aq-accent)", background: "none", border: "none", textDecoration: "underline", cursor: "pointer", padding: 0 }}>
-              الإعدادات
-            </button>{" "}
-            لتفعيل هذه الأزرار
-          </div>
-        )}
-      </div>
-
-      {/* Action buttons */}
-      <div
+  // ---- Collapsed button ------------------------------------------------------
+  if (!open) {
+    return (
+      <button
+        onClick={toggleOpen}
+        title="الكتابة بمساعدة الذكاء الاصطناعي"
         style={{
-          display: "flex",
-          gap: "0.375rem",
-          flexWrap: "wrap",
+          paddingBlock: "0.25rem",
+          paddingInline: "0.625rem",
+          fontSize: "0.8125rem",
+          fontFamily: "inherit",
+          color: "var(--aq-muted)",
+          background: "transparent",
+          border: "1px solid var(--aq-border)",
+          borderRadius: "6px",
+          cursor: "pointer",
+          whiteSpace: "nowrap",
         }}
       >
+        ✨ اكتب معي ▾
+      </button>
+    );
+  }
+
+  // ---- Expanded panel --------------------------------------------------------
+  return (
+    <div style={{ direction: "rtl" }}>
+      {/* Header row: label + collapse button */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBlockEnd: "0.5rem" }}>
+        <button
+          onClick={toggleOpen}
+          style={{
+            paddingBlock: "0.25rem",
+            paddingInline: "0.625rem",
+            fontSize: "0.8125rem",
+            fontFamily: "inherit",
+            color: "var(--aq-muted)",
+            background: "transparent",
+            border: "1px solid var(--aq-border)",
+            borderRadius: "6px",
+            cursor: "pointer",
+            whiteSpace: "nowrap",
+          }}
+        >
+          ✨ اكتب معي ▴
+        </button>
+        <span style={{ fontSize: "0.75rem", color: "var(--aq-muted)" }}>الكتابة بمساعدة الذكاء الاصطناعي</span>
+      </div>
+
+      {/* Textarea */}
+      <textarea
+        value={humanInstruction}
+        onChange={(e) => setHumanInstruction(e.target.value)}
+        placeholder={keyAvailable ? "مثال: اكتب مشهدًا في سوق قديم، الراوي خائف" : ""}
+        disabled={!keyAvailable}
+        rows={2}
+        style={{
+          inlineSize: "100%",
+          paddingBlock: "0.375rem",
+          paddingInline: "0.5rem",
+          fontSize: "0.8125rem",
+          fontFamily: "inherit",
+          color: "var(--aq-text)",
+          backgroundColor: "var(--aq-input-bg)",
+          border: "1px solid var(--aq-border)",
+          borderRadius: "6px",
+          outline: "none",
+          resize: "vertical",
+          lineHeight: 1.6,
+          boxSizing: "border-box",
+        }}
+      />
+
+      {/* No-key note — quiet one line */}
+      {!keyAvailable && (
+        <div style={{ marginBlockStart: "0.25rem", fontSize: "0.75rem", color: "var(--aq-dim)" }}>
+          أضف مفتاح API من الإعدادات ⚙️ لتفعيل المساعدة
+        </div>
+      )}
+
+      {/* Action buttons */}
+      <div style={{ display: "flex", gap: "0.375rem", flexWrap: "wrap", marginBlockStart: "0.5rem" }}>
         <AIButton
           label="اقترح خيارات"
           title="اقتراح 3 خيارات بصيغة .qalam للمقطع الحالي"
@@ -169,36 +200,6 @@ export default function AIActions({ onOpenSettings }: { onOpenSettings: () => vo
         />
       </div>
 
-      {/* No-key message */}
-      {!keyAvailable && (
-        <div
-          style={{
-            marginBlockStart: "0.5rem",
-            fontSize: "0.75rem",
-            color: "var(--aq-muted)",
-            lineHeight: 1.6,
-          }}
-        >
-          أضف مفتاح الذكاء الاصطناعي من{" "}
-          <button
-            onClick={onOpenSettings}
-            style={{
-              fontSize: "inherit",
-              fontFamily: "inherit",
-              color: "var(--aq-accent)",
-              background: "none",
-              border: "none",
-              textDecoration: "underline",
-              cursor: "pointer",
-              padding: 0,
-            }}
-          >
-            الإعدادات
-          </button>{" "}
-          لتفعيل هذه الأزرار
-        </div>
-      )}
-
       {/* Preview panel */}
       {response && (
         <div
@@ -210,7 +211,6 @@ export default function AIActions({ onOpenSettings }: { onOpenSettings: () => vo
             overflow: "hidden",
           }}
         >
-          {/* Header */}
           <div
             style={{
               display: "flex",
@@ -263,8 +263,6 @@ export default function AIActions({ onOpenSettings }: { onOpenSettings: () => vo
               </button>
             </div>
           </div>
-
-          {/* Content */}
           <div
             style={{
               padding: "0.75rem",
@@ -275,7 +273,7 @@ export default function AIActions({ onOpenSettings }: { onOpenSettings: () => vo
               fontFamily: "monospace",
               maxBlockSize: "16rem",
               overflowY: "auto",
-              direction: response.valid ? "rtl" : "rtl",
+              direction: "rtl",
             }}
           >
             {response.error ? (
@@ -294,13 +292,7 @@ export default function AIActions({ onOpenSettings }: { onOpenSettings: () => vo
                 >
                   ⚠️ {response.error}
                 </div>
-                <div
-                  style={{
-                    color: "var(--aq-muted)",
-                    fontSize: "0.75rem",
-                    marginBlockEnd: "0.5rem",
-                  }}
-                >
+                <div style={{ color: "var(--aq-muted)", fontSize: "0.75rem", marginBlockEnd: "0.5rem" }}>
                   النص الخام (غير صالح للتجميع):
                 </div>
                 <div style={{ opacity: 0.7 }}>{response.raw}</div>
@@ -356,31 +348,18 @@ function AIButton({
 
 // ---- Helpers ---------------------------------------------------------------
 
-/**
- * Extract the contextual text for AI prompts — the last passage in the source
- * gives the AI the best context about what the author is working on.
- */
 function getContextText(source: string): string {
   if (!source || source.trim().length === 0) return "";
-
-  // Find the last passage and return its content
   const passageRe = /^===\s+.+?\s+===/gm;
   const matches = [...source.matchAll(passageRe)];
-
   if (matches.length === 0) {
-    // No passages yet — return the last 20 lines of source as context
     const lines = source.split("\n");
     return lines.slice(-20).join("\n");
   }
-
-  // Content of the last passage
   const lastMatch = matches[matches.length - 1]!;
   const startIdx = lastMatch.index! + lastMatch[0].length;
   const afterPassage = source.slice(startIdx);
-
-  // Content ends at the next passage header or end of file
   const nextHeader = afterPassage.search(/^===\s+.+?\s+===/m);
   const content = nextHeader === -1 ? afterPassage : afterPassage.slice(0, nextHeader);
-
   return content.trim();
 }

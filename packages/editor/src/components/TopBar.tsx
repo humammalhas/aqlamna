@@ -6,7 +6,6 @@
 import { useStore } from "../store.js";
 import { buildStandaloneHtml, downloadHtml } from "../lib/export-html.js";
 import SettingsPanel from "./SettingsPanel.js";
-import AIActions from "./AIActions.js";
 import { useState, useCallback } from "react";
 
 const HelpLink = ({ href, children }: { href: string; children: React.ReactNode }) => (
@@ -22,7 +21,6 @@ export default function TopBar() {
   const compileSource = useStore((s) => s.compileSource);
   const viewMode = useStore((s) => s.viewMode);
   const setViewMode = useStore((s) => s.setViewMode);
-  const playerTheme = useStore((s) => s.playerTheme);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
 
@@ -49,7 +47,7 @@ export default function TopBar() {
     }
     if (!json) return; // compilation failed
 
-    const html = buildStandaloneHtml(json, playerTheme);
+    const html = buildStandaloneHtml(json);
     const baseName = (json.title ?? "قصة").replace(/[<>:"/\\|?*]/g, "_");
     downloadHtml(html, `${baseName}.html`);
   };
@@ -219,16 +217,7 @@ export default function TopBar() {
           </div>
         </div>
 
-        {/* Bottom row: AI actions bar */}
-        <div
-          style={{
-            paddingBlock: "0.375rem",
-            paddingInline: "1rem",
-            borderBlockStart: "1px solid var(--aq-surface-hi)",
-          }}
-        >
-          <AIActions onOpenSettings={toggleSettings} />
-        </div>
+        {/* AI actions moved to EditorPane header */}
       </header>
 
       {/* Settings modal */}
