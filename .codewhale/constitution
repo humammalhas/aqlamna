@@ -110,6 +110,19 @@ any change to the tokenizer, parser or compiler: **hand-write a NEW short story 
 syntax from `ARABIC_IF_ENGINE_DESIGN.md`, compile it, and report what happened.** That is how
 all three silent bugs were found.
 
+**You cannot see a browser. Never claim how something looks.** Asked to fix Arabic
+symbols displaying in the wrong order, the report said "renders in correct visual order"
+based on the presence of `dir="rtl"` and `perLineTextDirection` in the config. Nothing had
+been rendered. The symbols were still reversed. **Config being present is not evidence that
+config works.** For anything visual — layout, colour, text direction, whether an element
+looks styled — state what you changed and say explicitly: "not visually verified — needs a
+browser check." The owner has the browser. You do not.
+
+**Read the function you are calling before assuming what it does.** A `<style>` element was
+appended to a container, then `mount()` was called — and `renderScene()` opens with
+`container.innerHTML = ""`, destroying it. Two files, one line apart in the call chain, never
+read together. Before relying on a function's behaviour, open it.
+
 **Never `git add .`** — add explicit paths. A blind `git add .` committed the owner's npm 2FA
 recovery codes into a repo destined to be public. The `.gitignore` was correct; the glob was
 not.
