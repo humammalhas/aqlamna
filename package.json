@@ -1,0 +1,13 @@
+{
+  "name": "aqlamna",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Aqlamna (أقلامنا) — Arabic Interactive Fiction Engine",
+  "license": "GPL-3.0-only",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "test": "npm run test --workspaces --if-present"
+  }
+}

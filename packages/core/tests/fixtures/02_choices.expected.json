@@ -1,0 +1,50 @@
+{
+  "qalam_version": "0.1",
+  "title": "الباب",
+  "author": "همام",
+  "language": "ar",
+  "direction": "rtl",
+  "start": "البداية",
+  "variables": {},
+  "lists": {},
+  "passages": {
+    "البداية": {
+      "tags": ["مشهد_أول"],
+      "content": [
+        { "type": "text", "value": "تقف أمام الباب المغلق." },
+        {
+          "type": "choices",
+          "items": [
+            {
+              "id": "choice_1",
+              "label": "افتح الباب",
+              "sticky": false,
+              "condition": null,
+              "content": [
+                { "type": "text", "value": "فتحت الباب ببطء." }
+              ],
+              "divert": "الممر"
+            },
+            {
+              "id": "choice_2",
+              "label": "انتظر",
+              "sticky": true,
+              "condition": null,
+              "content": [
+                { "type": "text", "value": "انتظرت قليلًا." }
+              ],
+              "divert": "البداية"
+            }
+          ]
+        }
+      ]
+    },
+    "الممر": {
+      "tags": [],
+      "content": [
+        { "type": "text", "value": "ممر طويل مظلم." },
+        { "type": "divert", "target": "END" }
+      ]
+    }
+  }
+}

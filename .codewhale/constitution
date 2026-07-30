@@ -1,0 +1,73 @@
+# Aqlamna (أقلامنا) — CodeWhale Constitution
+
+## What this project is
+
+Aqlamna is an Arabic-native interactive fiction engine: a scripting language (`.qalam`),
+a parser + compiler, a browser runtime, and a visual node editor. Open source, GPL-3.0.
+Domains: aqlamna.org (primary), aqlamna.com (redirect).
+
+The authoritative design document is `ARABIC_IF_ENGINE_DESIGN.md` in the repo root.
+READ IT before making architectural decisions. If a request conflicts with that
+document, say so and stop — do not silently invent a different design.
+
+`ARABIC_MASTERY.md` is the Arabic writing-quality rules corpus. It is a SOURCE OF
+TRUTH DOCUMENT, not code. Never rewrite it, reformat it, or "clean it up".
+
+## Hard rules
+
+1. **Never hardcode Arabic writing rules into TypeScript.** Rules come from
+   `ARABIC_MASTERY.md` via a build step that emits `rules.json`. If you find yourself
+   typing an Arabic before/after pair into a `.ts` file, stop — it belongs in the
+   markdown, and the build script must extract it.
+
+2. **Do not edit files under `packages/core/tests/fixtures/`.** These are the
+   acceptance tests. Expected output is written by the project owner. If a test fails,
+   fix the code, never the expected result. If you believe a fixture is genuinely
+   wrong, say so and stop.
+
+3. **RTL is the default, not a feature.** `direction: rtl` everywhere. CSS logical
+   properties only — `margin-inline-start`, never `margin-left`. No `left`/`right`.
+
+4. **The runtime has zero dependencies.** `packages/runtime/` must compile to plain
+   JavaScript that runs inside a single exported HTML file with no CDN calls, no npm
+   imports at runtime, no framework. The editor may use React; the runtime may not.
+
+5. **TypeScript strict mode on.** No `any` without a comment explaining why.
+
+6. **Do not commit secrets.** No API keys, no `.env` files. Credentials arrive as
+   environment variables set in the shell before launch.
+
+7. **Ask before deploying.** `wrangler deploy`, `npm publish`, and `git push` to main
+   require explicit confirmation each time.
+
+8. **Never delete a file without asking.**
+
+## Language and text handling
+
+- All parser error messages must exist in BOTH Arabic and English.
+- Variable names: strip tashkeel when resolving, so `كَلْب` and `كلب` are the same
+  variable. Tashkeel in prose text is preserved exactly as written.
+- Accept both Arabic-Indic (٠-٩) and Western (0-9) digits as numeric input.
+- Recognise Arabic punctuation: `،` `؟` `؛` and both `""` and `«»`.
+- `لا` is an operator ONLY inside `{ }` blocks and `*`/`+` choice conditions.
+  Everywhere else it is ordinary prose text meaning "no".
+
+## Code conventions
+
+- ES modules, never CommonJS.
+- Code comments in English. UI strings in Arabic (with English available).
+- npm workspaces monorepo. Root folder is `aqlamna/`, npm scope is `@aqlamna/*`.
+- Tests: Vitest for unit tests. Every parser or compiler change requires a test.
+- Commit messages in English, imperative mood, one logical change per commit.
+
+## Build order — do not skip ahead
+
+Phase 1 is parser → tests green → compiler → tests green → runtime → HTML export.
+Do NOT start the React editor, React Flow canvas, or CodeMirror integration until
+Phase 1 acceptance tests all pass. If asked to jump ahead, remind the owner of this
+rule and confirm before proceeding.
+
+## When you are unsure
+
+Say "I don't know" or "the design document doesn't specify this" and ask.
+Do not guess at a design decision and build on the guess.

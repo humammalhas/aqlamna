@@ -1,0 +1,19 @@
+{
+  "qalam_version": "0.1",
+  "title": "01_minimal",
+  "author": null,
+  "language": "ar",
+  "direction": "rtl",
+  "start": "البداية",
+  "variables": {},
+  "lists": {},
+  "passages": {
+    "البداية": {
+      "tags": [],
+      "content": [
+        { "type": "text", "value": "مرحبًا." },
+        { "type": "divert", "target": "END" }
+      ]
+    }
+  }
+}
