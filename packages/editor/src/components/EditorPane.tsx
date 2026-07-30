@@ -46,6 +46,29 @@ export default function EditorPane() {
             قصتك
           </span>
           <button
+            onClick={() => {
+              if (source.trim().length > 0) {
+                if (!window.confirm("سيؤدي هذا إلى مسح النص الحالي. هل تريد الاستمرار؟")) return;
+              }
+              setSource("");
+            }}
+            title="مسح النص وبدء قصة جديدة"
+            style={{
+              paddingBlock: "0.25rem",
+              paddingInline: "0.625rem",
+              fontSize: "0.8125rem",
+              fontFamily: "inherit",
+              color: "var(--aq-muted)",
+              background: "transparent",
+              border: "1px solid var(--aq-border)",
+              borderRadius: "6px",
+              cursor: "pointer",
+              whiteSpace: "nowrap",
+            }}
+          >
+            قصة جديدة
+          </button>
+          <button
             onClick={handleOpenExample}
             title="تحميل قصة العطر المفقود كمثال"
             style={{
