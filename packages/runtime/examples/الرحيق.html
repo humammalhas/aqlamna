@@ -4,7 +4,103 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>الرحيق</title>
-<style>
+<style id="aq-theme-light">
+/* ---------------------------------------------------------------------------
+   Aqlamna light theme — cream + ink blue.
+   Values match site/assets/aqlamna.css :root.
+   --------------------------------------------------------------------------- */
+
+/* --- Container ------------------------------------------------------------ */
+
+.aq-story {
+  direction: rtl;
+  text-align: start;
+  font-family:
+    "IBM Plex Sans Arabic",
+    "Noto Sans Arabic",
+    "Amiri",
+    "Tajawal",
+    system-ui,
+    sans-serif;
+  font-size: 1.125rem;
+  line-height: 1.85;
+  color: #2B2721;
+  background: #F6F1E7;
+  max-inline-size: 42rem;
+  margin-inline: auto;
+  padding: 2rem 1.5rem;
+}
+
+/* --- Title ---------------------------------------------------------------- */
+
+.aq-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1F3A5F;
+  text-align: center;
+  margin-block-end: 2rem;
+  border-block-end: 1px solid #D8CEBB;
+  padding-block-end: 0.75rem;
+}
+
+/* --- Output / prose ------------------------------------------------------- */
+
+.aq-output { margin-block-end: 1.5rem; }
+.aq-text { margin-block: 0.75rem; text-indent: 0; }
+
+/* --- Choices -------------------------------------------------------------- */
+
+.aq-choices { display: flex; flex-direction: column; gap: 0.5rem; margin-block: 2rem; }
+
+.aq-choice-btn {
+  display: block; inline-size: 100%;
+  padding-block: 0.75rem; padding-inline: 1.25rem;
+  font-family: inherit; font-size: 1.0625rem; text-align: start;
+  color: #2B2721; background: #EFE8DA;
+  border: 1px solid #D8CEBB; border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.aq-choice-btn:hover { background: #E8E0CF; border-color: #5A5346; }
+.aq-choice-btn:focus-visible { outline: 2px solid #1F3A5F; outline-offset: 2px; }
+
+/* --- End state ------------------------------------------------------------ */
+
+.aq-end { text-align: center; margin-block: 3rem; }
+.aq-end-text { font-size: 1.25rem; color: #1F3A5F; font-weight: 600; margin-block-end: 1.5rem; }
+
+/* --- Toolbar -------------------------------------------------------------- */
+
+.aq-toolbar {
+  display: flex; justify-content: center; gap: 0.5rem;
+  margin-block-start: 3rem; padding-block-start: 1.5rem;
+  border-block-start: 1px solid #D8CEBB;
+}
+
+.aq-btn {
+  padding-block: 0.5rem; padding-inline: 1rem;
+  font-family: inherit; font-size: 0.875rem;
+  color: #5A5346; background: transparent;
+  border: 1px solid #D8CEBB; border-radius: 4px;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.aq-btn:hover { color: #2B2721; border-color: #2B2721; }
+.aq-btn:focus-visible { outline: 2px solid #1F3A5F; outline-offset: 2px; }
+
+/* --- Feedback ------------------------------------------------------------- */
+.aq-feedback { font-size: 0.8125rem; color: #5A5346; margin-inline-start: 0.5rem; align-self: center; }
+
+/* --- Responsive ----------------------------------------------------------- */
+
+@media (max-width: 480px) {
+  .aq-story { padding: 1rem; font-size: 1rem; }
+  .aq-title { font-size: 1.375rem; }
+}
+</style>
+<style id="aq-theme-dark" disabled>
 /* ---------------------------------------------------------------------------
    Aqlamna dark theme — RTL-first, CSS logical properties only
    Font stack per design §7.4 (self-hosted only, no Google Fonts link)
@@ -138,6 +234,9 @@
   outline-offset: 2px;
 }
 
+/* --- Feedback ------------------------------------------------------------- */
+.aq-feedback { font-size: 0.8125rem; color: #9a8c70; margin-inline-start: 0.5rem; align-self: center; }
+
 /* --- Responsive ----------------------------------------------------------- */
 
 @media (max-width: 480px) {
@@ -151,11 +250,191 @@
   }
 }
 </style>
+<style id="aq-theme-book" disabled>
+/* ---------------------------------------------------------------------------
+   Aqlamna book theme — warm paper, serif Arabic (Amiri), generous line height.
+   Designed to feel like a printed book, not a screen.
+   RTL-first, CSS logical properties only
+   --------------------------------------------------------------------------- */
+
+/* --- Container ------------------------------------------------------------ */
+
+.aq-story {
+  direction: rtl;
+  text-align: start;
+  font-family:
+    "Amiri",
+    "Noto Naskh Arabic",
+    "Scheherazade New",
+    "Traditional Arabic",
+    "Times New Roman",
+    serif;
+  font-size: 1.25rem;
+  line-height: 2.2;
+  color: #3c2a1e;
+  background: #f5f0e8;
+  max-inline-size: 38rem;
+  margin-inline: auto;
+  padding: 3rem 2rem;
+}
+
+/* --- Title ---------------------------------------------------------------- */
+
+.aq-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #3c2a1e;
+  text-align: center;
+  margin-block-end: 2.5rem;
+  border-block-end: 2px solid #c4a97d;
+  padding-block-end: 1rem;
+}
+
+/* --- Output / prose ------------------------------------------------------- */
+
+.aq-output {
+  margin-block-end: 1.5rem;
+}
+
+.aq-text {
+  margin-block: 1rem;
+  text-indent: 2em;
+}
+
+/* --- Choices -------------------------------------------------------------- */
+
+.aq-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  margin-block: 2.5rem;
+}
+
+.aq-choice-btn {
+  display: block;
+  inline-size: 100%;
+  padding-block: 0.875rem;
+  padding-inline: 1.5rem;
+  font-family: inherit;
+  font-size: 1.125rem;
+  text-align: start;
+  color: #3c2a1e;
+  background: #faf7f2;
+  border: 1px solid #c4a97d;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.aq-choice-btn:hover {
+  background: #ede4d3;
+  border-color: #8b6f3a;
+}
+
+.aq-choice-btn:focus-visible {
+  outline: 2px solid #8b6f3a;
+  outline-offset: 2px;
+}
+
+/* --- End state ------------------------------------------------------------ */
+
+.aq-end {
+  text-align: center;
+  margin-block: 3rem;
+}
+
+.aq-end-text {
+  font-size: 1.375rem;
+  color: #5a3e28;
+  font-weight: 600;
+  margin-block-end: 2rem;
+}
+
+/* --- Toolbar -------------------------------------------------------------- */
+
+.aq-toolbar {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-block-start: 3rem;
+  padding-block-start: 1.5rem;
+  border-block-start: 1px solid #c4a97d;
+}
+
+.aq-btn {
+  padding-block: 0.5rem;
+  padding-inline: 1rem;
+  font-family: inherit;
+  font-size: 0.9375rem;
+  color: #8b6f3a;
+  background: transparent;
+  border: 1px solid #c4a97d;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.aq-btn:hover {
+  color: #3c2a1e;
+  border-color: #8b6f3a;
+}
+
+.aq-btn:focus-visible {
+  outline: 2px solid #8b6f3a;
+  outline-offset: 2px;
+}
+
+/* --- Feedback ------------------------------------------------------------- */
+.aq-feedback { font-size: 0.8125rem; color: #8b6f3a; margin-inline-start: 0.5rem; align-self: center; }
+
+/* --- Responsive ----------------------------------------------------------- */
+
+@media (max-width: 480px) {
+  .aq-story {
+    padding: 1.25rem 1rem;
+    font-size: 1.125rem;
+  }
+
+  .aq-title {
+    font-size: 1.5rem;
+  }
+}
+</style>
+<script>
+(function () {
+  var THEMES = ["light", "dark", "book"];
+  var STORY_KEY = "الرحيق";
+
+  function getTheme() {
+    try { return localStorage.getItem("aq-theme-" + STORY_KEY) || "light"; }
+    catch (e) { return "light"; }
+  }
+
+  function applyTheme(name) {
+    for (var i = 0; i < THEMES.length; i++) {
+      var el = document.getElementById("aq-theme-" + THEMES[i]);
+      if (el) el.disabled = (THEMES[i] !== name);
+    }
+    try { localStorage.setItem("aq-theme-" + STORY_KEY, name); }
+    catch (e) {}
+  }
+
+  window.__aqlamnaCycleTheme = function () {
+    var current = getTheme();
+    var idx = THEMES.indexOf(current);
+    var next = THEMES[(idx + 1) % THEMES.length];
+    applyTheme(next);
+  };
+
+  // Apply saved theme on load
+  applyTheme(getTheme());
+})();
+</script>
 </head>
 <body>
 <div id="qalam-player"></div>
 <script id="qalam-story" type="application/json">
-{"qalam_version":"0.1","title":"الرحيق","author":null,"language":"ar","direction":"rtl","start":"البداية","variables":{"الرحيق":{"type":"number","initial":0},"وجد_الخريطة":{"type":"boolean","initial":false},"اسم_البطل":{"type":"string","initial":"نحلة"}},"lists":{},"passages":{"البداية":{"tags":[],"content":[{"type":"conditional","condition":{"var":"وجد_الخريطة"},"then":[{"type":"text","value":"الخريطة معك."}],"else":[]},{"type":"text","value":"جمعتِ "},{"type":"interpolation","var":"الرحيق"},{"type":"text","value":" قطرة."},{"type":"choices","items":[{"id":"choice_1","label":"اجمع الرحيق","sticky":true,"condition":null,"content":[{"type":"set","var":"الرحيق","op":"+=","value":2}],"divert":"البداية"},{"id":"choice_2","label":"تحدثي مع النحلة الحكيمة","sticky":false,"condition":null,"content":[{"type":"set","var":"وجد_الخريطة","op":"=","value":true}],"divert":"البداية"},{"id":"choice_3","label":"عودي إلى الخلية","sticky":true,"condition":{"var":"الرحيق","op":">=","value":4},"content":[],"divert":"END"}]}]}},"metadata":{"created":"2026-07-30T12:14:47.495Z","modified":"2026-07-30T12:14:47.495Z","passage_count":1,"word_count":4}}
+{"qalam_version":"0.1","title":"الرحيق","author":null,"language":"ar","direction":"rtl","start":"البداية","variables":{"الرحيق":{"type":"number","initial":0},"وجد_الخريطة":{"type":"boolean","initial":false},"اسم_البطل":{"type":"string","initial":"نحلة"}},"lists":{},"passages":{"البداية":{"tags":[],"content":[{"type":"conditional","condition":{"var":"وجد_الخريطة"},"then":[{"type":"text","value":"الخريطة معك."}],"else":[]},{"type":"text","value":"جمعتِ "},{"type":"interpolation","var":"الرحيق"},{"type":"text","value":" قطرة."},{"type":"choices","items":[{"id":"choice_1","label":"اجمع الرحيق","sticky":true,"condition":null,"content":[{"type":"set","var":"الرحيق","op":"+=","value":2}],"divert":"البداية"},{"id":"choice_2","label":"تحدثي مع النحلة الحكيمة","sticky":false,"condition":null,"content":[{"type":"set","var":"وجد_الخريطة","op":"=","value":true}],"divert":"البداية"},{"id":"choice_3","label":"عودي إلى الخلية","sticky":true,"condition":{"var":"الرحيق","op":">=","value":4},"content":[],"divert":"END"}]}]}},"metadata":{"created":"2026-07-30T15:46:43.462Z","modified":"2026-07-30T15:46:43.462Z","passage_count":1,"word_count":4}}
 </script>
 <script>
 (function () {
@@ -623,11 +902,17 @@ function renderScene(container, scene, title, options) {
     const saveBtn = document.createElement("button");
     saveBtn.className = "aq-btn aq-save-btn";
     saveBtn.textContent = "💾 حفظ";
-    saveBtn.addEventListener("click", options.onSave);
+    saveBtn.addEventListener("click", () => {
+        const msg = options.onSave();
+        showFeedback(toolbar, msg);
+    });
     const loadBtn = document.createElement("button");
     loadBtn.className = "aq-btn aq-load-btn";
-    loadBtn.textContent = "📂 تحميل";
-    loadBtn.addEventListener("click", options.onLoad);
+    loadBtn.textContent = "📂 استعادة";
+    loadBtn.addEventListener("click", async () => {
+        const msg = await options.onLoad();
+        showFeedback(toolbar, msg);
+    });
     toolbar.appendChild(saveBtn);
     toolbar.appendChild(loadBtn);
     // Theme toggle button — only shown if callback is provided
@@ -648,6 +933,19 @@ function renderScene(container, scene, title, options) {
     }
     wrapper.appendChild(toolbar);
     container.appendChild(wrapper);
+}
+function showFeedback(toolbar, msg) {
+    const old = toolbar.querySelector(".aq-feedback");
+    if (old)
+        old.remove();
+    const span = document.createElement("span");
+    span.className = "aq-feedback";
+    span.textContent = msg;
+    toolbar.appendChild(span);
+    setTimeout(() => {
+        if (span.parentNode)
+            span.remove();
+    }, 2000);
 }
 // ---------------------------------------------------------------------------
 // Aqlamna runtime save/restore — localStorage + download/upload
@@ -780,7 +1078,10 @@ function sanitiseKey(title) {
       onSave: function () {
         try {
           saveToLocalStorage(story.title || "قصة", engine.getState());
-        } catch (_) { /* localStorage unavailable */ }
+          return "تم الحفظ";
+        } catch (e) {
+          return "تعذّر الحفظ";
+        }
       },
       onLoad: function () {
         try {
@@ -788,8 +1089,12 @@ function sanitiseKey(title) {
           if (saved) {
             engine.loadState(saved);
             render(engine.start());
+            return "تم التحميل";
           }
-        } catch (_) { /* localStorage unavailable */ }
+          return "لا يوجد حفظ محفوظ";
+        } catch (e) {
+          return "تعذّر التحميل";
+        }
       },
     });
   }

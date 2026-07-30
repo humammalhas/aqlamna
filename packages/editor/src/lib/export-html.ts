@@ -1,7 +1,8 @@
 // ---------------------------------------------------------------------------
 // Browser-compatible standalone HTML export.
-// Uses runtime bundle + theme CSS inlined at build time via copy-runtime.
-// Theme is chosen at export time — only the selected theme is inlined.
+// Uses runtime bundle + ALL THREE theme CSS files inlined at build time via
+// copy-runtime.  The exported HTML always contains every theme; the player
+// can switch at runtime and the choice persists in localStorage.
 // ---------------------------------------------------------------------------
 
 import { RUNTIME_BUNDLE, DARK_THEME_CSS, LIGHT_THEME_CSS, BOOK_THEME_CSS } from "../generated/runtime-bundle.js";
@@ -26,8 +27,55 @@ function escapeHtml(s: string): string {
   return s.replace(/[&<>"']/g, (c) => map[c] ?? c);
 }
 
-export function buildStandaloneHtml(storyJson: StoryJSON, theme: PlayerTheme = "dark"): string {
-  const css = THEME_CSS[theme] ?? DARK_THEME_CSS;
+/**
+ * Return <style> blocks for all three themes plus the theme-switching <script>.
+ * Light is enabled by default; the player can cycle and persist the choice.
+ */
+function buildThemeBlocks(storyKey: string): string {
+  const safeKey = JSON.stringify(storyKey);
+  let html = "";
+
+  for (const name of ["light", "dark", "book"]) {
+    const css = THEME_CSS[name as PlayerTheme] ?? DARK_THEME_CSS;
+    const disabled = name === "light" ? "" : " disabled";
+    html += `<style id="aq-theme-${name}"${disabled}>\n${css.trim()}\n</style>\n`;
+  }
+
+  html += `<script>
+(function () {
+  var THEMES = ["light", "dark", "book"];
+  var STORY_KEY = ${safeKey};
+
+  function getTheme() {
+    try { return localStorage.getItem("aq-theme-" + STORY_KEY) || "light"; }
+    catch (e) { return "light"; }
+  }
+
+  function applyTheme(name) {
+    for (var i = 0; i < THEMES.length; i++) {
+      var el = document.getElementById("aq-theme-" + THEMES[i]);
+      if (el) el.disabled = (THEMES[i] !== name);
+    }
+    try { localStorage.setItem("aq-theme-" + STORY_KEY, name); }
+    catch (e) {}
+  }
+
+  window.__aqlamnaCycleTheme = function () {
+    var current = getTheme();
+    var idx = THEMES.indexOf(current);
+    var next = THEMES[(idx + 1) % THEMES.length];
+    applyTheme(next);
+  };
+
+  // Apply saved theme on load
+  applyTheme(getTheme());
+})();
+</script>`;
+
+  return html;
+}
+
+export function buildStandaloneHtml(storyJson: StoryJSON): string {
   const runtimeJs = RUNTIME_BUNDLE;
 
   // Prevent "</script>" in story data from breaking out of the tag
@@ -38,6 +86,9 @@ export function buildStandaloneHtml(storyJson: StoryJSON, theme: PlayerTheme = "
   const lang = storyJson.language === "en" ? "en" : "ar";
   const dir = storyJson.direction === "ltr" ? "ltr" : "rtl";
 
+  // Inline all three themes with theme-switching JS
+  const themeHtml = buildThemeBlocks(storyJson.title ?? "قصة");
+
   return [
     "<!DOCTYPE html>",
     `<html lang="${lang}" dir="${dir}">`,
@@ -45,9 +96,7 @@ export function buildStandaloneHtml(storyJson: StoryJSON, theme: PlayerTheme = "
     '<meta charset="UTF-8">',
     '<meta name="viewport" content="width=device-width, initial-scale=1.0">',
     `<title>${title}</title>`,
-    "<style>",
-    css,
-    "</style>",
+    themeHtml,
     "</head>",
     "<body>",
     '<div id="qalam-player"></div>',

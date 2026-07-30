@@ -84,7 +84,10 @@ const bootstrap = `
       onSave: function () {
         try {
           saveToLocalStorage(story.title || "قصة", engine.getState());
-        } catch (_) { /* localStorage unavailable */ }
+          return "تم الحفظ";
+        } catch (e) {
+          return "تعذّر الحفظ";
+        }
       },
       onLoad: function () {
         try {
@@ -92,8 +95,12 @@ const bootstrap = `
           if (saved) {
             engine.loadState(saved);
             render(engine.start());
+            return "تم التحميل";
           }
-        } catch (_) { /* localStorage unavailable */ }
+          return "لا يوجد حفظ محفوظ";
+        } catch (e) {
+          return "تعذّر التحميل";
+        }
       },
     });
   }

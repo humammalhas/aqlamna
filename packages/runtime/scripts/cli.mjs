@@ -5,12 +5,14 @@
 //   npm run export -- <path-to.qalam> [-o out.html] [--theme dark|light|book]
 //
 // Compiles the .qalam source via @aqlamna/core, then inlines the compiled
-// story JSON, the runtime engine, and the theme CSS into a single .html file.
+// story JSON, the runtime engine, and ALL THREE theme CSS files into a single
+// .html file. The --theme flag selects the default (light if omitted).
 // ---------------------------------------------------------------------------
 
 import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { buildThemeBlocks } from "../../../scripts/theme-builder.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const pkgDir = join(__dirname, "..");
@@ -27,7 +29,7 @@ const VALID_THEMES = new Set(["dark", "light", "book"]);
 
 const qalamPath = resolve(args[0]);
 let outPath = qalamPath.replace(/\.qalam$/, ".html");
-let theme = "dark";
+let defaultTheme = "light";
 for (let i = 1; i < args.length; i++) {
   if (args[i] === "-o" || args[i] === "--out") {
     outPath = resolve(args[i + 1] ?? outPath);
@@ -35,7 +37,7 @@ for (let i = 1; i < args.length; i++) {
   } else if (args[i] === "--theme") {
     const t = args[i + 1];
     if (t && VALID_THEMES.has(t)) {
-      theme = t;
+      defaultTheme = t;
       i++;
     } else {
       console.error(
@@ -67,14 +69,14 @@ try {
 
 // ---- Build the HTML --------------------------------------------------------
 
-const html = buildHtml(storyJson, theme);
+const html = buildHtml(storyJson);
 writeFileSync(outPath, html, "utf-8");
 
 console.log("[export] Wrote: " + outPath + " (" + html.length + " bytes)");
 
 // ---- HTML assembly ---------------------------------------------------------
 
-function buildHtml(storyJson, theme) {
+function buildHtml(storyJson) {
   // Read the pre-built runtime bundle
   const bundlePath = join(pkgDir, "dist", "aqlamna-runtime.js");
   let runtimeJs;
@@ -88,14 +90,14 @@ function buildHtml(storyJson, theme) {
     process.exit(1);
   }
 
-  // Read the theme CSS from src/themes/{theme}.css
-  const css = getThemeCss(theme);
-
   const storyJsonText = JSON.stringify(storyJson);
   const safeJson = storyJsonText.replace(/</g, "\\u003c");
   const title = escapeHtml(storyJson.title ?? "قصة تفاعلية");
   const lang = storyJson.language === "en" ? "en" : "ar";
   const dir = storyJson.direction === "ltr" ? "ltr" : "rtl";
+
+  // Inline all three themes with theme-switching JS
+  const themeHtml = buildThemeBlocks(storyJson.title ?? "قصة");
 
   return [
     "<!DOCTYPE html>",
@@ -104,9 +106,7 @@ function buildHtml(storyJson, theme) {
     '<meta charset="UTF-8">',
     '<meta name="viewport" content="width=device-width, initial-scale=1.0">',
     `<title>${title}</title>`,
-    "<style>",
-    css.trim(),
-    "</style>",
+    themeHtml,
     "</head>",
     "<body>",
     '<div id="qalam-player"></div>',
@@ -125,18 +125,4 @@ function buildHtml(storyJson, theme) {
 function escapeHtml(s) {
   const map = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
   return s.replace(/[&<>"']/g, (c) => map[c] ?? c);
-}
-
-/** Read the theme CSS file from src/themes/. */
-function getThemeCss(theme) {
-  const cssPath = join(pkgDir, "src", "themes", theme + ".css");
-  try {
-    return readFileSync(cssPath, "utf-8");
-  } catch {
-    console.error(
-      "[export] Theme CSS not found at: " + cssPath +
-      "\n  Ensure the theme file exists in src/themes/"
-    );
-    process.exit(1);
-  }
 }

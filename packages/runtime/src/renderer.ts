@@ -128,7 +128,7 @@ export function renderScene(
 
   const loadBtn = document.createElement("button");
   loadBtn.className = "aq-btn aq-load-btn";
-  loadBtn.textContent = "📂 تحميل";
+  loadBtn.textContent = "📂 استعادة";
   loadBtn.addEventListener("click", async () => {
     const msg = await options.onLoad();
     showFeedback(toolbar, msg);

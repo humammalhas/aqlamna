@@ -131,6 +131,9 @@
   outline-offset: 2px;
 }
 
+/* --- Feedback ------------------------------------------------------------- */
+.aq-feedback { font-size: 0.8125rem; color: #8b6f3a; margin-inline-start: 0.5rem; align-self: center; }
+
 /* --- Responsive ----------------------------------------------------------- */
 
 @media (max-width: 480px) {
