@@ -42,6 +42,13 @@ TRUTH DOCUMENT, not code. Never rewrite it, reformat it, or "clean it up".
 
 8. **Never delete a file without asking.**
 
+9. **Do not edit the governing documents.** `.codewhale/constitution`, `CLAUDE.md`,
+   `PHASE1_SPEC.md`, `ARABIC_IF_ENGINE_DESIGN.md`, and `ARABIC_MASTERY.md` are owned by the
+   project owner and his reviewer, not by you. Do not update the status block, tick off
+   checkboxes, add gotchas, or "tidy" them — even when a step is finished and the update
+   looks obviously correct. If one of them is wrong or contradicts a request, say so and
+   stop. You own `packages/` and nothing else.
+
 ## Language and text handling
 
 - All parser error messages must exist in BOTH Arabic and English.

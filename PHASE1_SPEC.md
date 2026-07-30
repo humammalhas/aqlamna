@@ -72,6 +72,35 @@ The `metadata` object in design §4 carries timestamps, so it is non-determinist
 The compiler still emits it. The test harness must strip `metadata` before comparing
 to expected JSON.
 
+### 1.10 Whitespace normalisation
+
+Discovered during step 2 review — the tokenizer preserves whitespace faithfully, so the
+parser must be told exactly where to trim. Rules:
+
+- **Prose text lines** are trimmed of leading and trailing whitespace.
+- **Choice result text** (everything after the closing `]`) is trimmed. Source
+  `* [افتح] فتحت الباب.` yields the label `افتح` and result text `فتحت الباب.` — the
+  space after `]` is a separator, not content.
+- **Conditional body text** (after the `:` inside `{ }`) is trimmed the same way.
+- **Interpolation-adjacent spaces inside a prose line are PRESERVED.** In
+  `جمعتِ {الرحيق} قطرة.` the text nodes are exactly `"جمعتِ "` and `" قطرة."`.
+  This is the one place whitespace is meaningful, because removing it would join
+  the number to the surrounding words.
+
+Trim at the parser stage, not the tokenizer — the tokenizer must keep raw text so
+this rule stays in one place.
+
+### 1.11 Dotted sub-section references
+
+`-> المنزل.المطبخ` refers to sub-section `المطبخ` inside passage `المنزل`
+(design §3.2). The dot is significant and must survive tokenization — either as a
+single identifier `المنزل.المطبخ` or as `IDENTIFIER DOT IDENTIFIER`. It must never be
+silently dropped, which would make `المنزل.المطبخ` indistinguishable from two
+unrelated identifiers.
+
+In the compiled JSON, a divert to a sub-section keeps the dotted form as its
+`target` string.
+
 ### 1.9 Error codes
 
 Every parser and compiler error has a stable code and a message in both languages.

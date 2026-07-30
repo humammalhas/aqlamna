@@ -438,7 +438,7 @@ export function tokenize(source: string): Token[] {
       }
       return true;
     }
-    if (ch === ",") {
+    if (ch === "," || ch === "\u060C") {
       emit(TokenKind.COMMA, ",", startLine, startCol);
       advance();
       return true;
