@@ -87,6 +87,23 @@ way out.
 **Two consumers, one file:** the prompt prevents mistakes on the way in, the linter catches
 them on the way out. Both regenerate from `ARABIC_MASTERY.md`; neither hardcodes a rule.
 
+## Two critical bugs found by writing a real story (`1b15389`)
+
+Both were invisible to 4 fixtures and 350+ tests. Both produced valid JSON and no error.
+
+1. **Per-passage consumed choices.** Choice IDs restart at `choice_1` in every passage,
+   but the engine keyed its consumed set by ID alone — so taking a `*` choice in one
+   scene silently consumed `choice_1` in EVERY scene. Any multi-scene story dead-ended.
+   **This was a spec bug** — §1.4 defined the IDs but never said the consumed set must be
+   keyed by (passage, id). Spec now says so explicitly.
+2. **`لا` negation was dropped by the compiler.** `{س}` and `{لا س}` compiled to the
+   identical condition, so every "if not" in every story was silently inverted.
+   Now compiles to `{"not":{"var":"س"}}`.
+
+Lesson, again: fixtures test the syntax; only a hand-written story tests the experience.
+`stories/العطر_المفقود.qalam` is the demo AND the regression case — 11 passages, two
+reachable endings, verified by driving the engine down both paths.
+
 ## Brand
 
 `brand/` — `logo-transparent.png` (823², background flood-filled and feathered),
