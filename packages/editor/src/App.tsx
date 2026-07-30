@@ -42,6 +42,8 @@ const PANE_STYLE: React.CSSProperties = {
   blockSize: "100%",
   overflow: "auto",
   position: "relative",
+  display: "flex",
+  flexDirection: "column",
 };
 
 export default function App() {
@@ -108,7 +110,7 @@ export default function App() {
   // ---- What to show in the left pane ----------------------------------------
 
   const showLeftText = viewMode === "text" || viewMode === "split";
-  const showLeftCanvas = viewMode === "canvas";
+  const showLeftCanvas = viewMode === "canvas" || viewMode === "split";
 
   const isMobile = typeof window !== "undefined" && window.innerWidth <= 768;
 

@@ -38,7 +38,7 @@ export interface PassageNodeData {
 
 const PASSAGE_RE = /^===\s+(.+?)\s+===/gm;
 const SUBSECTION_RE = /^=\s+(.+?)\s*$/gm;
-const DIVERT_RE = /^->\s+(\S+)/gm;
+const DIVERT_RE = /^\s*->\s+(\S+)/gm;
 const TUNNEL_RE = /^~>\s+(\S+)/gm;
 const THREAD_RE = /^<-\s+(\S+)/gm;
 const CHOICE_RE = /^[*+]\s+/gm;

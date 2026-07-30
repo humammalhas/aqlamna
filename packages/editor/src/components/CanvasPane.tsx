@@ -268,7 +268,7 @@ function CanvasPaneInner() {
   }
 
   return (
-    <div ref={containerRef} style={{ flex: 1, direction: "ltr" }}>
+    <div ref={containerRef} style={{ blockSize: "100%", minBlockSize: 0, direction: "ltr" }}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
