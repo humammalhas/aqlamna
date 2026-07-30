@@ -1,11 +1,17 @@
 // ---------------------------------------------------------------------------
-// AI service — DeepSeek API calls for AI co-writing.
+// AI service — multi-provider co-writing via the transport layer.
 // Three actions: suggest choices, continue scene, write passage.
 // Every response is validated via @aqlamna/core BEFORE being offered.
 // ---------------------------------------------------------------------------
 
 import { compile } from "@aqlamna/core";
-import { getApiKey } from "./ai-keys.js";
+import {
+  getSelectedProvider,
+  getEffectiveBaseUrl,
+  getEffectiveModel,
+  getApiKey,
+} from "./ai-keys.js";
+import { callTransport, TransportError, type ChatMessage } from "./transport.js";
 import { MASTERY_SYSTEM_PROMPT } from "../generated/mastery-prompt.js";
 import type { QalamError } from "../store.js";
 
@@ -78,12 +84,18 @@ ${contextText}
 
 // ---- API call --------------------------------------------------------------
 
-const DEEPSEEK_API = "https://api.deepseek.com/v1/chat/completions";
-
 export async function callAI(req: AIRequest): Promise<AIResponse> {
-  const apiKey = getApiKey();
-  if (!apiKey) {
-    return { raw: "", valid: null, error: "لم يُضبط مفتاح API. افتح الإعدادات وأدخل مفتاح DeepSeek." };
+  const provider = getSelectedProvider();
+  const baseUrl = getEffectiveBaseUrl();
+  const model = getEffectiveModel();
+  const apiKey = provider.requiresKey ? getApiKey(provider.id) : undefined;
+
+  if (provider.requiresKey && (!apiKey || apiKey.length === 0)) {
+    return {
+      raw: "",
+      valid: null,
+      error: `لم يُضبط مفتاح API للمزوّد ${provider.nameAr}. افتح الإعدادات وأدخل المفتاح.`,
+    };
   }
 
   const userPrompt = ACTION_PROMPTS[req.action]({
@@ -92,8 +104,13 @@ export async function callAI(req: AIRequest): Promise<AIResponse> {
     variableNames: req.variableNames,
   });
 
+  const messages: ChatMessage[] = [
+    { role: "system", content: MASTERY_SYSTEM_PROMPT },
+    { role: "user", content: userPrompt },
+  ];
+
   // First attempt
-  const firstRaw = await sendToDeepSeek(apiKey, userPrompt);
+  const firstRaw = await sendToProvider(provider.kind, baseUrl, model, apiKey, messages);
   if (firstRaw.error) {
     return { raw: "", valid: null, error: firstRaw.error };
   }
@@ -104,12 +121,18 @@ export async function callAI(req: AIRequest): Promise<AIResponse> {
   }
 
   // Second attempt — feed the error back
-  const retryPrompt = `محاولتك السابقة فشلت في التجميع (compile). الخطأ:
+  const retryMessages: ChatMessage[] = [
+    { role: "system", content: MASTERY_SYSTEM_PROMPT },
+    {
+      role: "user",
+      content: `محاولتك السابقة فشلت في التجميع (compile). الخطأ:
 ${validation.error}
 
-أعد المحاولة. ${userPrompt}`;
+أعد المحاولة. ${userPrompt}`,
+    },
+  ];
 
-  const secondRaw = await sendToDeepSeek(apiKey, retryPrompt);
+  const secondRaw = await sendToProvider(provider.kind, baseUrl, model, apiKey, retryMessages);
   if (secondRaw.error) {
     // Both attempts failed — return raw text + original error
     return { raw: firstRaw.text, valid: null, error: validation.error };
@@ -124,49 +147,25 @@ ${validation.error}
   return { raw: firstRaw.text, valid: null, error: validation2.error ?? validation.error };
 }
 
-// ---- DeepSeek HTTP call ----------------------------------------------------
+// ---- Provider call ---------------------------------------------------------
 
-async function sendToDeepSeek(
-  apiKey: string,
-  userPrompt: string,
+async function sendToProvider(
+  kind: "openai-compatible" | "anthropic" | "gemini",
+  baseUrl: string,
+  model: string,
+  apiKey: string | undefined,
+  messages: ChatMessage[],
 ): Promise<{ text: string; error: string | null }> {
   try {
-    const res = await fetch(DEEPSEEK_API, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: "deepseek-chat",
-        messages: [
-          { role: "system", content: MASTERY_SYSTEM_PROMPT },
-          { role: "user", content: userPrompt },
-        ],
-        temperature: 0.7,
-        max_tokens: 2048,
-      }),
+    const text = await callTransport(kind, { baseUrl, model, apiKey }, messages, {
+      temperature: 0.7,
+      max_tokens: 2048,
     });
-
-    if (!res.ok) {
-      const body = await res.text().catch(() => "");
-      if (res.status === 401) {
-        return { text: "", error: "مفتاح API غير صالح. تحقق من المفتاح في الإعدادات." };
-      }
-      return { text: "", error: `خطأ في الاتصال (${res.status}): ${body.slice(0, 200)}` };
-    }
-
-    const json = (await res.json()) as {
-      choices?: Array<{ message?: { content?: string } }>;
-    };
-
-    const content = json.choices?.[0]?.message?.content;
-    if (!content || content.trim().length === 0) {
-      return { text: "", error: "لم يُرجع النموذج أي نص." };
-    }
-
-    return { text: content.trim(), error: null };
+    return { text, error: null };
   } catch (err: unknown) {
+    if (err instanceof TransportError) {
+      return { text: "", error: err.message };
+    }
     const msg = err instanceof Error ? err.message : "خطأ غير معروف";
     return { text: "", error: `فشل الاتصال: ${msg}` };
   }
