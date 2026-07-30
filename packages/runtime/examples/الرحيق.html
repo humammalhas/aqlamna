@@ -151,7 +151,7 @@ body {
 <body>
 <div id="qalam-player"></div>
 <script id="qalam-story" type="application/json">
-{"qalam_version":"0.1","title":"الرحيق","author":null,"language":"ar","direction":"rtl","start":"البداية","variables":{"الرحيق":{"type":"number","initial":0},"وجد_الخريطة":{"type":"boolean","initial":false},"اسم_البطل":{"type":"string","initial":"نحلة"}},"lists":{},"passages":{"البداية":{"tags":[],"content":[{"type":"conditional","condition":{"var":"وجد_الخريطة"},"then":[{"type":"text","value":"الخريطة معك."}],"else":[]},{"type":"text","value":"جمعتِ "},{"type":"interpolation","var":"الرحيق"},{"type":"text","value":" قطرة."},{"type":"choices","items":[{"id":"choice_1","label":"اجمع الرحيق","sticky":true,"condition":null,"content":[{"type":"set","var":"الرحيق","op":"+=","value":2}],"divert":"البداية"},{"id":"choice_2","label":"تحدثي مع النحلة الحكيمة","sticky":false,"condition":null,"content":[{"type":"set","var":"وجد_الخريطة","op":"=","value":true}],"divert":"البداية"},{"id":"choice_3","label":"عودي إلى الخلية","sticky":true,"condition":{"var":"الرحيق","op":">=","value":4},"content":[],"divert":"END"}]}]}},"metadata":{"created":"2026-07-30T08:47:31.876Z","modified":"2026-07-30T08:47:31.876Z","passage_count":1,"word_count":4}}
+{"qalam_version":"0.1","title":"الرحيق","author":null,"language":"ar","direction":"rtl","start":"البداية","variables":{"الرحيق":{"type":"number","initial":0},"وجد_الخريطة":{"type":"boolean","initial":false},"اسم_البطل":{"type":"string","initial":"نحلة"}},"lists":{},"passages":{"البداية":{"tags":[],"content":[{"type":"conditional","condition":{"var":"وجد_الخريطة"},"then":[{"type":"text","value":"الخريطة معك."}],"else":[]},{"type":"text","value":"جمعتِ "},{"type":"interpolation","var":"الرحيق"},{"type":"text","value":" قطرة."},{"type":"choices","items":[{"id":"choice_1","label":"اجمع الرحيق","sticky":true,"condition":null,"content":[{"type":"set","var":"الرحيق","op":"+=","value":2}],"divert":"البداية"},{"id":"choice_2","label":"تحدثي مع النحلة الحكيمة","sticky":false,"condition":null,"content":[{"type":"set","var":"وجد_الخريطة","op":"=","value":true}],"divert":"البداية"},{"id":"choice_3","label":"عودي إلى الخلية","sticky":true,"condition":{"var":"الرحيق","op":">=","value":4},"content":[],"divert":"END"}]}]}},"metadata":{"created":"2026-07-30T11:11:53.079Z","modified":"2026-07-30T11:11:53.079Z","passage_count":1,"word_count":4}}
 </script>
 <script>
 (function () {
@@ -585,6 +585,15 @@ function renderScene(container, scene, title, options) {
     loadBtn.addEventListener("click", options.onLoad);
     toolbar.appendChild(saveBtn);
     toolbar.appendChild(loadBtn);
+    // Theme toggle button — only shown if callback is provided
+    if (options.onThemeToggle) {
+        const themeBtn = document.createElement("button");
+        themeBtn.className = "aq-btn aq-theme-btn";
+        themeBtn.textContent = "🎨";
+        themeBtn.title = "تغيير المظهر";
+        themeBtn.addEventListener("click", options.onThemeToggle);
+        toolbar.appendChild(themeBtn);
+    }
     if (scene.choices.length > 0 || !scene.ended) {
         const restartBtn = document.createElement("button");
         restartBtn.className = "aq-btn aq-restart-btn";
