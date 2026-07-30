@@ -11,6 +11,8 @@ import {
   Controls,
   MiniMap,
   BackgroundVariant,
+  useReactFlow,
+  Panel,
   type Node,
   type Edge,
   type OnNodesChange,
@@ -202,22 +204,41 @@ export default function CanvasPane() {
 
     container.addEventListener("keydown", handleKeyDown);
     return () => container.removeEventListener("keydown", handleKeyDown);
-  }, [source, nodes, setSource]);
+  }, [nodes, source, setSource]);
 
-  // ---- Double-click empty canvas → new passage ---------------------------
-
+  // Double-click empty canvas → prompt for new passage name
   const handlePaneDoubleClick = useCallback(
     (_event: React.MouseEvent) => {
       const name = window.prompt("اسم المقطع الجديد:");
       if (!name || name.trim().length === 0) return;
-      const trimmed = name.trim();
-      const newSource = appendNewPassage(source, trimmed);
+      const newSource = appendNewPassage(source, name.trim());
       if (newSource !== source) {
         setSource(newSource);
       }
     },
     [source, setSource],
   );
+
+  // Fit view button
+  const { fitView } = useReactFlow();
+
+  const handleFitView = useCallback(() => {
+    fitView({ padding: 0.2 });
+  }, [fitView]);
+
+  // Keyboard: F for fit view
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "f" && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault();
+        fitView({ padding: 0.2 });
+      }
+    };
+    container.addEventListener("keydown", handleKey);
+    return () => container.removeEventListener("keydown", handleKey);
+  }, [fitView]);
 
   // ---- Default edge options ----------------------------------------------
 
@@ -264,30 +285,48 @@ export default function CanvasPane() {
         maxZoom={3}
         deleteKeyCode={null}
         multiSelectionKeyCode={null}
-        panOnDrag={[1, 2]}
+        panOnDrag={[0, 1, 2]}
+        panOnScroll
+        zoomOnScroll={false}
+        zoomOnPinch
+        zoomActivationKeyCode="Control"
         selectionOnDrag={false}
         style={{ background: "#0e0d0b" }}
       >
         <Background variant={BackgroundVariant.Dots} gap={24} size={1} color="#2a2620" />
         <Controls style={{ direction: "rtl" }} position="bottom-left" />
         <MiniMap
-          style={{ background: "#141210" }}
+          style={{ background: "#141210", border: "1px solid #3a3528" }}
           nodeColor={(n) => {
             const d = n.data as { colour?: string } | undefined;
-            if (!d?.colour) return "#48a";
+            if (!d?.colour) return "#5a8fc0";
             switch (d.colour) {
-              case "green":
-                return "#4a8";
-              case "red":
-                return "#c44";
-              case "orange":
-                return "#d8a";
-              default:
-                return "#48a";
+              case "green": return "#5a9";
+              case "red": return "#c55";
+              case "orange": return "#d9a";
+              default: return "#5a8fc0";
             }
           }}
           maskColor="rgba(0,0,0,0.6)"
         />
+        <Panel position="top-right">
+          <button
+            onClick={handleFitView}
+            title="لائم الشاشة (F)"
+            style={{
+              padding: "0.375rem 0.625rem",
+              fontSize: "0.75rem",
+              fontFamily: "inherit",
+              color: "#e0d6c2",
+              background: "#2a2620",
+              border: "1px solid #3a3528",
+              borderRadius: "6px",
+              cursor: "pointer",
+            }}
+          >
+            لائم الشاشة
+          </button>
+        </Panel>
       </ReactFlow>
     </div>
   );
