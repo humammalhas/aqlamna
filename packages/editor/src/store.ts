@@ -83,6 +83,12 @@ export interface EditorStore {
 
   /** Toggle the quality linter on/off. */
   toggleQualityLint: () => void;
+
+  /** Current player theme (dark | light | book). Persisted to localStorage. */
+  playerTheme: PlayerTheme;
+
+  /** Set the player theme and persist. */
+  setPlayerTheme: (t: PlayerTheme) => void;
 }
 
 export const useStore = create<EditorStore>((set, get) => ({
@@ -152,6 +158,11 @@ export const useStore = create<EditorStore>((set, get) => ({
     const next = !get().qualityLintEnabled;
     set({ qualityLintEnabled: next });
     try { localStorage.setItem("aqlamna-quality-lint", next ? "on" : "off"); } catch { /* noop */ }
+  },
+
+  setPlayerTheme: (t: PlayerTheme) => {
+    set({ playerTheme: t });
+    saveTheme(t);
   },
 }));
 

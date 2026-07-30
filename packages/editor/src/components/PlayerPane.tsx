@@ -5,7 +5,7 @@
 // ---------------------------------------------------------------------------
 
 import { useEffect, useRef } from "react";
-import { useStore } from "../store.js";
+import { useStore, type PlayerTheme } from "../store.js";
 import { mount, type StoryJSON } from "@aqlamna/runtime";
 import { DARK_THEME_CSS, LIGHT_THEME_CSS, BOOK_THEME_CSS } from "../generated/runtime-bundle.js";
 
@@ -70,6 +70,13 @@ function scopeCss(css: string, scope: string): string {
     .join("\n");
 }
 
+/** Cycle the player theme: dark → light → book → dark */
+function cycleTheme(t: PlayerTheme): PlayerTheme {
+  if (t === "dark") return "light";
+  if (t === "light") return "book";
+  return "dark";
+}
+
 // ---- Component -------------------------------------------------------------
 
 export default function PlayerPane() {
@@ -102,7 +109,7 @@ export default function PlayerPane() {
         showToolbar: true,
         onThemeToggle: () => {
           const current = useStore.getState().playerTheme;
-          setPlayerTheme(cycleTheme(current));
+          useStore.getState().setPlayerTheme(cycleTheme(current));
         },
       },
     );

@@ -229,7 +229,7 @@ test.describe("pwa installability", () => {
     // At least one 512px icon
     const icons = body.icons;
     expect(icons).toBeDefined();
-    const has512 = icons.some((i) => i.sizes === "512x512");
+    const has512 = icons.some((i: { sizes: string }) => i.sizes === "512x512");
     expect(has512).toBe(true);
   });
 
@@ -239,7 +239,7 @@ test.describe("pwa installability", () => {
     const icons = body.icons;
 
     const maskable = icons.find(
-      (i) => i.sizes === "512x512" && i.purpose === "maskable",
+      (i: { sizes: string; purpose?: string }) => i.sizes === "512x512" && i.purpose === "maskable",
     );
     expect(maskable).toBeTruthy();
   });

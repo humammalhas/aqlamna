@@ -15,6 +15,7 @@
   },
   "scripts": {
     "build": "tsc",
+    "typecheck": "tsc --noEmit",
     "build:rules": "node scripts/build-rules.mjs",
     "test": "vitest run",
     "test:watch": "vitest"

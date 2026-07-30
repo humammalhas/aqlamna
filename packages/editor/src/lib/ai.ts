@@ -88,7 +88,7 @@ export async function callAI(req: AIRequest): Promise<AIResponse> {
   const provider = getSelectedProvider();
   const baseUrl = getEffectiveBaseUrl();
   const model = getEffectiveModel();
-  const apiKey = provider.requiresKey ? getApiKey(provider.id) : undefined;
+  const apiKey = provider.requiresKey ? (getApiKey(provider.id) ?? undefined) : undefined;
 
   if (provider.requiresKey && (!apiKey || apiKey.length === 0)) {
     return {

@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "npm run build -w @aqlamna/runtime && node scripts/copy-runtime.mjs && node scripts/build-mastery-prompt.mjs && npm run build -w @aqlamna/core && vite",
     "build": "npm run build -w @aqlamna/runtime && node scripts/copy-runtime.mjs && node scripts/build-mastery-prompt.mjs && npm run build -w @aqlamna/core && vite build",
+    "typecheck": "tsc --noEmit",
     "preview": "vite preview",
     "test": "vitest run",
     "test:visual": "playwright test"
