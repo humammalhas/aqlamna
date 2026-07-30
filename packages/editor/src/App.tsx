@@ -17,7 +17,6 @@ import PlayerPane from "./components/PlayerPane.js";
 import CanvasPane from "./components/CanvasPane.js";
 import ErrorStrip from "./components/ErrorStrip.js";
 import OnboardingOverlay from "./components/OnboardingOverlay.js";
-import { SEED_STORY } from "./generated/seed-story.js";
 
 const DIVIDER_KEY = "aqlamna-layout-divider";
 
@@ -68,9 +67,8 @@ export default function App() {
     loadSource().then((saved) => {
       if (saved && saved.trim().length > 0) {
         loadSourceAction(saved);
-      } else {
-        loadSourceAction(SEED_STORY);
       }
+      // First visit: stay empty — no seed story injected.
     });
   }, [loadSourceAction]);
 

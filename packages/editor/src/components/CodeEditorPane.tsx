@@ -4,7 +4,7 @@
 // ---------------------------------------------------------------------------
 
 import { useEffect, useRef } from "react";
-import { EditorView, lineNumbers, highlightActiveLine, keymap } from "@codemirror/view";
+import { EditorView, lineNumbers, highlightActiveLine, keymap, placeholder } from "@codemirror/view";
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
 import { bracketMatching } from "@codemirror/language";
 import { closeBrackets } from "@codemirror/autocomplete";
@@ -127,6 +127,9 @@ export default function CodeEditorPane() {
         lineNumbers(),
         highlightActiveLine(),
         history(),
+
+        // Placeholder when document is empty
+        placeholder("\u0627\u0643\u062A\u0628 \u0623\u0648\u0644 \u0633\u0637\u0631 \u0645\u0646 \u0642\u0635\u062A\u0643 \u0647\u0646\u0627\u2026\n\n=== \u0627\u0644\u0628\u062F\u0627\u064A\u0629 ===\n\u0627\u0644\u0634\u0645\u0633 \u0639\u0627\u0644\u064A\u0629. \u0627\u0644\u062C\u0646\u062F\u064A\u0651 \u064A\u0645\u062F\u0651 \u064A\u062F\u0647 \u0648\u064A\u0637\u0644\u0628 \u0647\u0648\u064A\u0651\u062A\u0643.\n* [\u0623\u0639\u0637\u0647 \u0627\u0644\u0647\u0648\u064A\u0651\u0629]"),
         bracketMatching({ brackets: "{[()]}" }),
         closeBrackets(),
 

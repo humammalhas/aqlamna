@@ -9,19 +9,20 @@
 // Bump CACHE_VERSION on every deploy to replace the old cache.
 // ---------------------------------------------------------------------------
 
-const CACHE_VERSION = "aqlamna-v1";
+const CACHE_VERSION = "aqlamna-v4";
 const CACHE_NAME = `aqlamna-app-${CACHE_VERSION}`;
 
 // ---- Resources to precache on install --------------------------------------
 
+// Paths relative to the SW scope (/editor/). These are precached at install.
 const APP_SHELL = [
-  "/",
-  "/index.html",
-  "/favicon.ico",
-  "/icon-192.png",
-  "/icon-512.png",
-  "/apple-touch-icon.png",
-  "/manifest.webmanifest",
+  "/editor/",
+  "/editor/index.html",
+  "/editor/favicon.ico",
+  "/editor/icon-192.png",
+  "/editor/icon-512.png",
+  "/editor/apple-touch-icon.png",
+  "/editor/manifest.webmanifest",
 ];
 
 // ---- Install: precache the app shell ---------------------------------------
@@ -114,9 +115,21 @@ self.addEventListener("fetch", (event) => {
       caches.match(request).then((cached) => {
         if (cached) return cached;
 
-        // Not in cache — fetch from network and cache for next time
+        // Not in cache — fetch from network and cache for next time.
+        // Never cache if the response is HTML masquerading as JS/CSS
+        // (SPA fallback serves index.html for missing assets).
         return fetch(request).then((response) => {
           if (!response || response.status !== 200) return response;
+
+          const ct = response.headers.get("Content-Type") || "";
+          const path = new URL(request.url).pathname;
+          const isJS = path.endsWith(".js");
+          const isCSS = path.endsWith(".css");
+
+          // If we asked for JS/CSS but got HTML, it's a fallback — don't cache
+          if ((isJS || isCSS) && ct.includes("text/html")) {
+            return response;
+          }
 
           const clone = response.clone();
           caches.open(CACHE_NAME).then((cache) => {
