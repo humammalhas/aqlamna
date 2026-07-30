@@ -19,20 +19,18 @@ const HelpLink = ({ href, children }: { href: string; children: React.ReactNode 
 export default function TopBar() {
   const storyJson = useStore((s) => s.storyJson);
   const compileSource = useStore((s) => s.compileSource);
-  const viewMode = useStore((s) => s.viewMode);
-  const setViewMode = useStore((s) => s.setViewMode);
+  const panePlayer = useStore((s) => s.panePlayer);
+  const paneText = useStore((s) => s.paneText);
+  const paneCanvas = useStore((s) => s.paneCanvas);
+  const togglePanePlayer = useStore((s) => s.togglePanePlayer);
+  const togglePaneText = useStore((s) => s.togglePaneText);
+  const togglePaneCanvas = useStore((s) => s.togglePaneCanvas);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
 
   const toggleSettings = useCallback(() => {
     setSettingsOpen((v) => !v);
   }, []);
-
-  const viewModes = [
-    { id: "text" as const, label: "نص" },
-    { id: "canvas" as const, label: "مخطط" },
-    { id: "split" as const, label: "الاثنان" },
-  ];
 
   const handlePlay = () => {
     compileSource();
@@ -93,26 +91,30 @@ export default function TopBar() {
             </span>
           </div>
 
-          {/* View mode toggle */}
+          {/* Pane toggles */}
           <div style={{ display: "flex", gap: "0.375rem" }}>
-            {viewModes.map((vm) => (
+            {[
+              { key: "player", label: "شغّل", on: panePlayer, toggle: togglePanePlayer },
+              { key: "text", label: "نص", on: paneText, toggle: togglePaneText },
+              { key: "canvas", label: "مخطط", on: paneCanvas, toggle: togglePaneCanvas },
+            ].map((t) => (
               <button
-                key={vm.id}
-                onClick={() => setViewMode(vm.id)}
+                key={t.key}
+                onClick={t.toggle}
                 style={{
                   paddingBlock: "0.375rem",
                   paddingInline: "0.75rem",
                   fontSize: "0.8125rem",
-                  fontWeight: viewMode === vm.id ? 700 : 400,
+                  fontWeight: t.on ? 700 : 400,
                   fontFamily: "inherit",
-                  color: viewMode === vm.id ? "var(--aq-editor-bg)" : "var(--aq-muted)",
-                  background: viewMode === vm.id ? "var(--aq-accent)" : "var(--aq-surface-hi)",
-                  border: viewMode === vm.id ? "none" : "1px solid var(--aq-border)",
+                  color: t.on ? "var(--aq-editor-bg)" : "var(--aq-muted)",
+                  background: t.on ? "var(--aq-accent)" : "var(--aq-surface-hi)",
+                  border: t.on ? "none" : "1px solid var(--aq-border)",
                   borderRadius: "6px",
                   cursor: "pointer",
                 }}
               >
-                {vm.label}
+                {t.label}
               </button>
             ))}
           </div>

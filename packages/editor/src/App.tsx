@@ -1,11 +1,7 @@
 // ---------------------------------------------------------------------------
-// App — root component. Loads saved source from IndexedDB, seeds on first run,
-// wires the store to the UI. Three view modes switch the LEFT pane; the player
-// is always visible on the right.  "الاثنان" adds a draggable divider.
-//
-// Pane layout: the editor-main-area is a flex row with min-block-size:0.
-// Every pane child gets flex:1 1 0, min-inline-size:0, overflow:auto so
-// that panes share space instead of overlapping.
+// App — root component. Three independent toggleable panes in a CSS grid.
+// Player on the right, text and canvas on the left. Drag handles between
+// adjacent visible panes. No overlays, no absolute positioning.
 // ---------------------------------------------------------------------------
 
 import { useEffect, useRef, useState, useCallback } from "react";
@@ -18,174 +14,202 @@ import CanvasPane from "./components/CanvasPane.js";
 import ErrorStrip from "./components/ErrorStrip.js";
 import OnboardingOverlay from "./components/OnboardingOverlay.js";
 
-const DIVIDER_KEY = "aqlamna-layout-divider";
+// ---- Pane widths persisted in localStorage ----
 
-function loadDivider(): number {
+const WIDTHS_KEY = "aqlamna-pane-widths";
+const MIN_PX = 260;
+
+function loadWidths(): number[] {
   try {
-    const v = localStorage.getItem(DIVIDER_KEY);
-    if (v) {
-      const n = parseFloat(v);
-      if (n >= 20 && n <= 80) return n;
-    }
+    const v = localStorage.getItem(WIDTHS_KEY);
+    if (v) return JSON.parse(v) as number[];
   } catch { /* noop */ }
-  return 50;
+  return [];
+}
+function saveWidths(w: number[]) {
+  try { localStorage.setItem(WIDTHS_KEY, JSON.stringify(w)); } catch { /* noop */ }
 }
 
-function saveDivider(pct: number) {
-  try { localStorage.setItem(DIVIDER_KEY, String(pct)); } catch { /* noop */ }
-}
+// ---- Drag state ----
 
-// Shared pane style — every pane in the flex row uses this.
-const PANE_STYLE: React.CSSProperties = {
-  flex: "1 1 0",
-  minInlineSize: 0,
-  blockSize: "100%",
-  overflow: "auto",
-  position: "relative",
-  display: "flex",
-  flexDirection: "column",
-};
+type DragTarget = { leftIdx: number; rightIdx: number; startX: number; startLeft: number; startRight: number };
 
 export default function App() {
   const storyJson = useStore((s) => s.storyJson);
   const error = useStore((s) => s.error);
   const playerKey = useStore((s) => s.playerKey);
-  const viewMode = useStore((s) => s.viewMode);
+  const panePlayer = useStore((s) => s.panePlayer);
+  const paneText = useStore((s) => s.paneText);
+  const paneCanvas = useStore((s) => s.paneCanvas);
   const loadSourceAction = useStore((s) => s.loadSource);
   const clearError = useStore((s) => s.clearError);
   const initialized = useRef(false);
 
-  // Divider position: percentage of width for the LEFT pane
-  const [leftPct, setLeftPct] = useState(() => loadDivider());
-  const [dragging, setDragging] = useState(false);
+  // Pane widths as fractions (sum = 1 when all visible). Stored as pixel ratios.
+  const [widths, setWidths] = useState<number[]>(() => loadWidths());
+  const [drag, setDrag] = useState<DragTarget | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  const showDivider = viewMode === "split"; // "الاثنان" = draggable divider
+  // Build the ordered list of visible panes. Order: player, text, canvas.
+  // But we show them as: [text] [canvas] [player] — left to right.
+  // Actually, user wants: player on the right. So order in DOM: text, canvas, player.
+  // The grid columns are: text? canvas? player? (with dividers between).
 
-  // Load from IndexedDB or seed on first mount
+  // In RTL, the first grid column appears on the RIGHT.
+  // We want: player (right), canvas, text (left).
+  const visible: Array<{ key: string; label: string }> = [];
+  if (panePlayer) visible.push({ key: "player", label: "شغّل" });
+  if (paneCanvas) visible.push({ key: "canvas", label: "مخطط" });
+  if (paneText) visible.push({ key: "text", label: "نص" });
+
+  // Always at least one pane visible
+  const effectiveVisible = visible.length === 0
+    ? [{ key: "text", label: "نص" }]
+    : visible;
+
+  // Compute grid-template-columns from widths + dividers
+  const gridCols = effectiveVisible.flatMap((_, i) => {
+    const cols: string[] = [];
+    if (i > 0) cols.push("4px"); // divider
+    const w = widths[i] ?? (1 / effectiveVisible.length);
+    cols.push(`${w}fr`);
+    return cols;
+  }).join(" ");
+
+  // Load source on mount
   useEffect(() => {
     if (initialized.current) return;
     initialized.current = true;
-
     loadSource().then((saved) => {
-      if (saved && saved.trim().length > 0) {
-        loadSourceAction(saved);
-      }
-      // First visit: stay empty — no seed story injected.
+      if (saved && saved.trim().length > 0) loadSourceAction(saved);
     });
   }, [loadSourceAction]);
 
-  // ---- Divider drag ----------------------------------------------------------
+  // Save widths on change
+  useEffect(() => { saveWidths(widths); }, [widths]);
 
-  const handleDividerMouseDown = useCallback((e: React.MouseEvent) => {
+  // ---- Drag handlers ----
+
+  const handleDividerDown = useCallback((leftIdx: number, rightIdx: number) => (e: React.MouseEvent) => {
     e.preventDefault();
-    setDragging(true);
-  }, []);
+    setDrag({
+      leftIdx,
+      rightIdx,
+      startX: e.clientX,
+      startLeft: widths[leftIdx] ?? 0.5,
+      startRight: widths[rightIdx] ?? 0.5,
+    });
+  }, [widths]);
 
   useEffect(() => {
-    if (!dragging) return;
+    if (!drag || !containerRef.current) return;
+
     const handleMove = (e: MouseEvent) => {
-      const main = document.querySelector(".editor-main-area") as HTMLElement;
-      if (!main) return;
-      const rect = main.getBoundingClientRect();
-      const pct = ((e.clientX - rect.left) / rect.width) * 100;
-      setLeftPct(Math.max(20, Math.min(80, pct)));
+      const rect = containerRef.current!.getBoundingClientRect();
+      const totalPx = rect.width;
+      const dx = e.clientX - drag.startX;
+      const dFrac = dx / totalPx;
+
+      const newLeft = Math.max(MIN_PX / totalPx, drag.startLeft + dFrac);
+      const newRight = Math.max(MIN_PX / totalPx, drag.startRight - dFrac);
+
+      // Don't let either go below min
+      if (newLeft < MIN_PX / totalPx || newRight < MIN_PX / totalPx) return;
+
+      setWidths((prev) => {
+        const next = [...prev];
+        next[drag.leftIdx] = newLeft;
+        next[drag.rightIdx] = newRight;
+        return next;
+      });
     };
-    const handleUp = () => {
-      setDragging(false);
-      saveDivider(leftPct);
-    };
+
+    const handleUp = () => setDrag(null);
+
     window.addEventListener("mousemove", handleMove);
     window.addEventListener("mouseup", handleUp);
     return () => {
       window.removeEventListener("mousemove", handleMove);
       window.removeEventListener("mouseup", handleUp);
     };
-  }, [dragging, leftPct]);
+  }, [drag]);
 
-  // Save on divider release
-  useEffect(() => {
-    if (!dragging) saveDivider(leftPct);
-  }, [dragging, leftPct]);
-
-  // ---- What to show in the left pane ----------------------------------------
-
-  const showLeftText = viewMode === "text" || viewMode === "split";
-  const showLeftCanvas = viewMode === "canvas" || viewMode === "split";
+  // ---- Render ----
 
   const isMobile = typeof window !== "undefined" && window.innerWidth <= 768;
 
-  // Left pane — uses PANE_STYLE. In split mode, flex-basis is the divider pct.
-  const leftStyle: React.CSSProperties = showDivider
-    ? { ...PANE_STYLE, flex: `0 0 ${leftPct}%` }
-    : PANE_STYLE;
-
-  const leftPane = (
-    <div style={leftStyle}>
-      {showLeftText && <EditorPane />}
-      {showLeftCanvas && <CanvasPane />}
-    </div>
-  );
-
-  // Player pane wrapper — uses PANE_STYLE
-  const playerWrapperStyle: React.CSSProperties = showDivider
-    ? { ...PANE_STYLE }
-    : PANE_STYLE;
-
-  const mainArea = (
-    <div
-      className="editor-main-area"
-      style={{
-        display: "flex",
-        flex: "1 1 0",
-        minBlockSize: 0,
-        overflow: "hidden",
-        flexDirection: isMobile ? "column" : "row",
-      }}
-    >
-      {leftPane}
-
-      {/* Draggable divider — only in الاثنان mode */}
-      {!isMobile && showDivider && (
-        <div
-          onMouseDown={handleDividerMouseDown}
-          className="editor-divider"
-          style={{
-            inlineSize: "4px",
-            cursor: "col-resize",
-            background: dragging ? "var(--aq-accent)" : "var(--aq-border)",
-            flexShrink: 0,
-            transition: dragging ? "none" : "background 0.15s",
-          }}
-        />
-      )}
-
-      {/* Player pane — always visible */}
-      {!isMobile && (
-        <div style={playerWrapperStyle}>
-          <PlayerPane key={playerKey} />
-        </div>
-      )}
-
-      {/* On mobile: player shown below when story is compiled */}
-      {isMobile && storyJson && (
-        <div style={{ flex: "0 0 45%", minBlockSize: 0 }}>
-          <PlayerPane key={playerKey} />
-        </div>
-      )}
-    </div>
-  );
+  const renderPane = (key: string) => {
+    switch (key) {
+      case "text": return <EditorPane />;
+      case "canvas": return <CanvasPane />;
+      case "player": return <PlayerPane key={playerKey} />;
+      default: return null;
+    }
+  };
 
   return (
     <div className="flex flex-col" style={{ blockSize: "100vh" }}>
-      {/* Top bar */}
       <TopBar />
 
-      {mainArea}
+      {!isMobile && (
+        <div
+          ref={containerRef}
+          style={{
+            display: "grid",
+            gridTemplateColumns: gridCols,
+            flex: "1 1 0",
+            minBlockSize: 0,
+            overflow: "hidden",
+          }}
+        >
+          {effectiveVisible.map((pane, i) => (
+            <div key={pane.key} style={{ minBlockSize: 0, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+              {/* Divider before this pane */}
+              {i > 0 && (
+                <div
+                  onMouseDown={handleDividerDown(i - 1, i)}
+                  style={{
+                    gridColumn: `${i * 2}`,
+                    gridRow: 1,
+                    inlineSize: "4px",
+                    cursor: "col-resize",
+                    background: drag && drag.leftIdx === i - 1 ? "var(--aq-accent)" : "var(--aq-border)",
+                    zIndex: 10,
+                    flexShrink: 0,
+                  }}
+                />
+              )}
+              {/* Pane content */}
+              <div style={{ flex: "1 1 0", minBlockSize: 0, overflow: "auto", position: "relative" }}>
+                {renderPane(pane.key)}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
-      {/* Error strip */}
+      {/* Mobile: stacked */}
+      {isMobile && (
+        <div style={{ flex: "1 1 0", minBlockSize: 0, display: "flex", flexDirection: "column", overflow: "auto" }}>
+          {paneText && (
+            <div style={{ flex: panePlayer && storyJson ? "0 0 55%" : "1 1 0", minBlockSize: 0, overflow: "hidden" }}>
+              <EditorPane />
+            </div>
+          )}
+          {paneCanvas && (
+            <div style={{ flex: "0 0 40%", minBlockSize: 0 }}>
+              <CanvasPane />
+            </div>
+          )}
+          {panePlayer && storyJson && (
+            <div style={{ flex: "0 0 45%", minBlockSize: 0 }}>
+              <PlayerPane key={playerKey} />
+            </div>
+          )}
+        </div>
+      )}
+
       <ErrorStrip error={error} onDismiss={clearError} />
-
-      {/* Onboarding overlay — first visit only */}
       <OnboardingOverlay />
     </div>
   );

@@ -9,6 +9,14 @@ import type { StoryJSON } from "@aqlamna/runtime";
 import { saveSource } from "./lib/db.js";
 import { getViewMode, setViewMode as persistViewMode, type ViewMode } from "./lib/canvas-db.js";
 
+function loadPane(key: string, def: boolean): boolean {
+  try { const v = localStorage.getItem(key); return v === null ? def : v === "1"; }
+  catch { return def; }
+}
+function savePane(key: string, v: boolean) {
+  try { localStorage.setItem(key, v ? "1" : "0"); } catch { /* noop */ }
+}
+
 export type PlayerTheme = "dark" | "light" | "book";
 
 export type EditorTheme = "light" | "dark";
@@ -82,6 +90,13 @@ export interface EditorStore {
   loadSource: (source: string) => void;
 
   /** Current view mode: text-only, canvas-only, or split. */
+  panePlayer: boolean;
+  paneText: boolean;
+  paneCanvas: boolean;
+  togglePanePlayer: () => void;
+  togglePaneText: () => void;
+  togglePaneCanvas: () => void;
+
   viewMode: ViewMode;
 
   /** Set view mode and persist to IndexedDB. */
@@ -121,7 +136,10 @@ export const useStore = create<EditorStore>((set, get) => ({
   storyJson: null,
   error: null,
   playerKey: 0,
-  viewMode: "text",
+  panePlayer: loadPane("aqlamna-pane-player", true),
+    paneText: loadPane("aqlamna-pane-text", true),
+    paneCanvas: loadPane("aqlamna-pane-canvas", false),
+    viewMode: "text",
   viewModeLoaded: false,
   qualityLintEnabled: localStorage.getItem("aqlamna-quality-lint") !== "off",
   playerTheme: loadTheme(),
@@ -175,6 +193,9 @@ export const useStore = create<EditorStore>((set, get) => ({
     });
   },
 
+  togglePanePlayer: () => { const n = !get().panePlayer; set({ panePlayer: n }); savePane("aqlamna-pane-player", n); },
+  togglePaneText: () => { const n = !get().paneText; set({ paneText: n }); savePane("aqlamna-pane-text", n); },
+  togglePaneCanvas: () => { const n = !get().paneCanvas; set({ paneCanvas: n }); savePane("aqlamna-pane-canvas", n); },
   setViewMode: (mode: ViewMode) => {
     set({ viewMode: mode });
     persistViewMode(mode).catch(() => {});
