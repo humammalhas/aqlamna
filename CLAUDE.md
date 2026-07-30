@@ -104,6 +104,30 @@ Lesson, again: fixtures test the syntax; only a hand-written story tests the exp
 `stories/العطر_المفقود.qalam` is the demo AND the regression case — 11 passages, two
 reachable endings, verified by driving the engine down both paths.
 
+## Deployment day — 30 Jul 2026
+
+Live at **aqlamna.pages.dev** (Cloudflare Pages, direct wrangler upload — pushing to main
+does NOT redeploy). Public repo `github.com/humammalhas/aqlamna`, GPL-3.0, Issues +
+Discussions live.
+
+Shipped today: onboarding overlay, seed story from `stories/العطر_المفقود.qalam` via a build
+step, AI instruction textarea, canvas pan/scroll/fit-view, three-pane layout fixed, docs
+pages (`scripts/build-docs.mjs` renders `docs/*.md` → `site/docs/*.html`), cream + ink-blue
+palette as default with dark as the alternate, `lint:colors` gate wired into `npm test`.
+
+**Legal name is `المصير لبرامج وأنظمة الحاسوب`** — from the Companies Control Department
+license in `C:\AlMaseer\license\`. The repo previously carried `المسير` and two different
+word orders. Do not retype it from memory.
+
+**Three bugs today, all the same shape: source right, shipped artifact wrong.** The
+paragraph fix wasn't re-exported; the cream palette was defined but unused by every
+component; save/load feedback lives in a file the exported story never loads. See
+`.codewhale/constitution` → "Lessons from deployment day". The rule that came out of it:
+**grep the artifact that ships and report the count — source only proves it exists.**
+
+Also: a CodeWhale commit silently reverted six files edited in parallel by the reviewer.
+**Do not run CodeWhale and a Cowork session against `C:\aqlamna` at the same time.**
+
 ## Brand
 
 `brand/` — `logo-transparent.png` (823², background flood-filled and feathered),

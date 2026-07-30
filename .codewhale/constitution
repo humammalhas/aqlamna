@@ -127,6 +127,66 @@ read together. Before relying on a function's behaviour, open it.
 recovery codes into a repo destined to be public. The `.gitignore` was correct; the glob was
 not.
 
+## Lessons from deployment day — 30 July 2026
+
+The project shipped to a live URL for the first time. Every bug that day was the same
+shape: **the source was right and the thing being served was not.** Read this section
+before reporting anything as done.
+
+**Source proves it exists. The artifact proves it shipped.** Three times in one evening a
+change was correct in `packages/` and absent from the file on the CDN:
+
+1. The `§1.16` paragraph fix landed in `parser.ts` at 17:21. `site/العطر_المفقود.html`
+   was last written at 15:14 and was never re-exported. The live demo kept welding
+   sentences together — `...لا شيء عليها."وصفة جدّتي ضاعت،"` — for two hours after the
+   "fixed and verified" report.
+2. The cream palette defined 46 CSS variables and **zero** components used them. 189
+   hardcoded hex values remained. The page background changed; the top bar, settings
+   panel, code editor and canvas stayed dark brown.
+3. Save/load feedback was implemented in `packages/runtime/src/index.ts` and the exported
+   story never loads that file. `build-runtime.mjs` carries its own hand-written
+   `onSave`/`onLoad` that return `undefined`, so `showFeedback(toolbar, undefined)`
+   displayed nothing.
+
+Therefore: **a change is not done until you have grepped the artifact that ships and
+reported the count.** Not the source file — the built bundle, the exported HTML, the
+deployed URL. Report the number. "Verified" without a number means "I read my own code."
+
+**When a value is duplicated, a test must assert the copies are equal.** The zero-runtime-
+dependency rule (hard rule 4) forces the standalone export to inline its own copy of
+things. That is allowed. What is not allowed is two copies with nobody watching them.
+If you must duplicate, add a test that reads both and asserts they match — otherwise one
+of them is already stale and no one knows which.
+
+**Prefer deleting the duplicate to maintaining it.** Before writing a second
+implementation of anything, say so explicitly and explain why importing the first one is
+impossible. Hand-copying a handler into a build-script template string is how bug 3 above
+happened.
+
+**A green test that cannot fail on the bug is worse than no test.** A visual test asserting
+one background colour passed while every other surface in the app was the wrong theme.
+When you add a test for a change, ask: *if I reverted the change, would this test go red?*
+If not, the test is decoration. Assert on every surface the change touches, not one.
+
+**Check timestamps.** `dist/export.js` was two hours older than every sibling in the same
+folder and nobody noticed. `ls -la` on the build output is a five-second check that would
+have caught two of the three bugs above.
+
+**Never swallow an error to keep the UI quiet.** `catch (_) { /* localStorage unavailable */ }`
+turned a broken save into a silent no-op. If an operation can fail, the user must be told
+it failed. Empty catch blocks are forbidden unless the comment explains what the user sees
+instead.
+
+**Do not touch files outside the scope you were given.** A commit that was meant to add an
+AI textarea reverted six unrelated files edited by the reviewer — the company name fix, the
+help links, the landing page docs section, the build wiring and a spec section. All of it
+silently. Before committing, run `git status` and confirm every listed path is something
+you deliberately changed. If a file you did not touch appears, stop and ask.
+
+**The company's registered name is `المصير لبرامج وأنظمة الحاسوب`** — from the Companies
+Control Department license. Not `المسير`, not `لبرمجيات`, not `لأنظمة البرمجيات`. Never
+retype it from memory; copy it.
+
 ## When you are unsure
 
 Say "I don't know" or "the design document doesn't specify this" and ask.
