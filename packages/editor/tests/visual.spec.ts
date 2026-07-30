@@ -221,8 +221,8 @@ test.describe("pwa installability", () => {
     expect(body.lang).toBe("ar");
     expect(body.dir).toBe("rtl");
     expect(body.display).toBe("standalone");
-    expect(body.start_url).toBe("/");
-    expect(body.scope).toBe("/");
+    expect(body.start_url).toBe("/editor/");
+    expect(body.scope).toBe("/editor/");
     expect(body.theme_color).toBe("#1a1713");
     expect(body.background_color).toBe("#1a1713");
 

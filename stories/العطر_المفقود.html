@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>العطر المفقود</title>
+<style>
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  background: #1a1814;
+}
+
+body {
+  min-block-size: 100vh;
+}
+
+.aq-story {
+  direction: rtl;
+  text-align: start;
+  font-family:
+    "IBM Plex Sans Arabic",
+    "Noto Sans Arabic",
+    "Amiri",
+    "Tajawal",
+    system-ui,
+    sans-serif;
+  font-size: 1.125rem;
+  line-height: 1.85;
+  color: #e0d6c2;
+  background: #1a1814;
+  max-inline-size: 42rem;
+  margin-inline: auto;
+  padding: 2rem 1.5rem;
+}
+
+.aq-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #d4a843;
+  text-align: center;
+  margin-block-end: 2rem;
+  border-block-end: 1px solid #3a3528;
+  padding-block-end: 0.75rem;
+}
+
+.aq-output {
+  margin-block-end: 1.5rem;
+}
+
+.aq-text {
+  margin-block: 0.75rem;
+  text-indent: 0;
+}
+
+.aq-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-block: 2rem;
+}
+
+.aq-choice-btn {
+  display: block;
+  inline-size: 100%;
+  padding-block: 0.75rem;
+  padding-inline: 1.25rem;
+  font-family: inherit;
+  font-size: 1.0625rem;
+  text-align: start;
+  color: #e0d6c2;
+  background: #2a2620;
+  border: 1px solid #4a4030;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.aq-choice-btn:hover {
+  background: #3a3528;
+  border-color: #8a7040;
+}
+
+.aq-choice-btn:focus-visible {
+  outline: 2px solid #d4a843;
+  outline-offset: 2px;
+}
+
+.aq-end {
+  text-align: center;
+  margin-block: 3rem;
+}
+
+.aq-end-text {
+  font-size: 1.25rem;
+  color: #d4a843;
+  font-weight: 600;
+  margin-block-end: 1.5rem;
+}
+
+.aq-toolbar {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-block-start: 3rem;
+  padding-block-start: 1.5rem;
+  border-block-start: 1px solid #3a3528;
+}
+
+.aq-btn {
+  padding-block: 0.5rem;
+  padding-inline: 1rem;
+  font-family: inherit;
+  font-size: 0.875rem;
+  color: #9a8c70;
+  background: transparent;
+  border: 1px solid #3a3528;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.aq-btn:hover {
+  color: #d4a843;
+  border-color: #5a4a30;
+}
+
+.aq-btn:focus-visible {
+  outline: 2px solid #d4a843;
+  outline-offset: 2px;
+}
+
+@media (max-width: 480px) {
+  .aq-story {
+    padding: 1rem;
+    font-size: 1rem;
+  }
+
+  .aq-title {
+    font-size: 1.375rem;
+  }
+}
+</style>
+</head>
+<body>
+<div id="qalam-player"></div>
+<script id="qalam-story" type="application/json">
+{"qalam_version":"0.1","title":"العطر المفقود","author":"أقلامنا","language":"ar","direction":"rtl","start":"الدكان","variables":{"المكونات":{"type":"number","initial":0},"الثقة":{"type":"number","initial":0},"عرفت_السر":{"type":"boolean","initial":false},"حاولت_الخلط":{"type":"boolean","initial":false}},"lists":{},"passages":{"الدكان":{"tags":["مشهد_أول"],"content":[{"type":"text","value":"رفوف الخشب تصطفّ حتى السقف، وفي كلّ جرّة رائحةٌ تنتظر. المعلّم سليم يجلس وراء ميزانٍ نحاسيّ، وأمامه ورقة صفراء لا شيء عليها.\"وصفة جدّتي ضاعت،\" قال دون أن يرفع عينيه. \"أعرف أنّ فيها أربعة أشياء. أذكر ثلاثة، والرابع يهرب منّي كلّما اقتربتُ.\""},{"type":"choices","items":[{"id":"choice_1","label":"اسأليه عن الثلاثة","sticky":false,"condition":null,"content":[],"divert":"الجرار"},{"id":"choice_2","label":"تأمّلي الدكّان أولًا","sticky":false,"condition":null,"content":[{"type":"text","value":"مررتِ بأصابعكِ على حرف الرفّ فتركت الغبار خطًّا رقيقًا. في الزاوية العليا جرّةٌ وحدها، لا ورقة عليها ولا اسم."},{"type":"set","var":"الثقة","op":"+=","value":1},{"type":"text","value":"\"عينكِ حادّة،\" قال. \"لكن ابدئي من الأسفل.\""}],"divert":"الجرار"}]}]},"الجرار":{"tags":[],"content":[{"type":"text","value":"فتح ثلاث جرارٍ ووضعها في الضوء.\"زهر النارنج،\" قال، ورفع أولاها. رائحةٌ حمضيّة تلسع الأنف ثمّ تحلو.\"ماء الورد. من قطف الفجر لا من قطف الظهر.\"\"والعود. هذا لا يُشترى من السوق.\"\"اجمعيها لي،\" قال. \"ثمّ نرى ما ينقص.\""},{"type":"divert","target":"المهمة"}]},"المهمة":{"tags":[],"content":[{"type":"conditional","condition":{"var":"المكونات","op":"==","value":0},"then":[{"type":"text","value":"الورقة الصفراء أمامكِ فارغة. لا شيء بعد."}],"else":[{"type":"conditional","condition":{"var":"المكونات","op":"\u003c","value":3},"then":[{"type":"text","value":"جمعتِ"}],"else":[{"type":"text","value":"الثلاثة أمامكِ. رائحةٌ واحدة ما زالت غائبة."}]}]},{"type":"choices","items":[{"id":"choice_1","label":"إلى سوق البخاريّة — زهر النارنج","sticky":false,"condition":null,"content":[],"divert":"السوق"},{"id":"choice_2","label":"إلى بيت جدّتكِ — ماء الورد","sticky":false,"condition":null,"content":[],"divert":"البيت"},{"id":"choice_3","label":"إلى المخزن — العود","sticky":false,"condition":null,"content":[],"divert":"المخزن"},{"id":"choice_4","label":"اخلطي العطر","sticky":true,"condition":{"var":"المكونات","op":">=","value":3},"content":[],"divert":"الخلط"},{"id":"choice_5","label":"اسألي المعلّم عن الجرّة العليا","sticky":true,"condition":{"var":"حاولت_الخلط"},"content":[],"divert":"الجرة_العليا"}]}]},"السوق":{"tags":[],"content":[{"type":"text","value":"الشمس عمودية والدرج ضيّق. صاحب الدكّان يعرف المعلّم سليم منذ أربعين سنة.\"النارنج؟\" ضحك. \"خُذي من شجرة الحوش، لا من عندي. شجرتنا أطيب.\"قطفتِ الزهر بيدكِ. البتلة باردة وقصيرة العمر."},{"type":"set","var":"المكونات","op":"+=","value":1},{"type":"divert","target":"المهمة"}]},"البيت":{"tags":[],"content":[{"type":"text","value":"باب البيت القديم يصرّ. في المطبخ قدرٌ نحاسيّ مقلوب، وتحته زجاجةٌ صغيرة كُتب عليها بخطّ يدٍ مائل: \"ورد ٦٧\"."},{"type":"choices","items":[{"id":"choice_1","label":"افتحيها","sticky":false,"condition":null,"content":[{"type":"text","value":"ملأت الرائحة المطبخ دفعةً واحدة، فوقفتِ مكانكِ. ورد قديم، وشيءٌ آخر تحته لم تعرفيه."},{"type":"set","var":"المكونات","op":"+=","value":1},{"type":"set","var":"الثقة","op":"+=","value":1}],"divert":"المهمة"},{"id":"choice_2","label":"خُذيها مغلقة","sticky":false,"condition":null,"content":[{"type":"text","value":"حملتِها كما هي. للمعلّم حقّ أن يفتحها هو."},{"type":"set","var":"المكونات","op":"+=","value":1},{"type":"set","var":"الثقة","op":"+=","value":1}],"divert":"المهمة"}]}]},"المخزن":{"tags":[],"content":[{"type":"text","value":"المخزن بارد ولا نافذة فيه. صندوق العود مقفل، والمفتاح عند المعلّم."},{"type":"choices","items":[{"id":"choice_1","label":"عودي واطلبي المفتاح","sticky":false,"condition":null,"content":[{"type":"text","value":"أعطاكِ المفتاح دون سؤال. القطعة أصغر من إصبعكِ وأثقل ممّا توقّعتِ."},{"type":"set","var":"المكونات","op":"+=","value":1},{"type":"set","var":"الثقة","op":"+=","value":1}],"divert":"المهمة"},{"id":"choice_2","label":"افتحي الصندوق بمفكّ","sticky":false,"condition":null,"content":[{"type":"text","value":"انكسر اللسان المعدنيّ فانفتح الصندوق. أخذتِ القطعة، وفي يدكِ برادةٌ من نحاس."},{"type":"set","var":"المكونات","op":"+=","value":1}],"divert":"المهمة"}]}]},"الخلط":{"tags":[],"content":[{"type":"conditional","condition":{"var":"حاولت_الخلط"},"then":[{"type":"text","value":"كرّرتِ الترتيب الذي علّمكِ إيّاه، وأضفتِ ما وجدتِه في الجرّة العليا."}],"else":[]},{"type":"text","value":"قطرتان من ماء الورد. زهر النارنج مفرومًا ناعمًا. برادة العود على النار الهادئة."},{"type":"conditional","condition":{"var":"حاولت_الخلط"},"then":[{"type":"text","value":"رفع المعلّم الزجاجة إلى النور وشمّها مرّتين. ثمّ أنزلها."}],"else":[]},{"type":"conditional","condition":{"var":"عرفت_السر"},"then":[{"type":"text","value":"شمّها، فسكت طويلًا. \"هذه هي.\""}],"else":[]},{"type":"conditional","condition":{"var":"عرفت_السر"},"then":[{"type":"text","value":"\"قريب،\" قال. \"قريب جدًّا. لكنّه ليس عطر جدّتي.\""}],"else":[]},{"type":"divert","target":"الخاتمة"}]},"الجرة_العليا":{"tags":[],"content":[{"type":"text","value":"سألتِه عن الجرّة التي لا اسم عليها.نظر إليها كمن يتذكّر وجهًا. \"هذه ليست مكوّنًا. هذا خشب الرفّ نفسه — صندل قديم، كان أبوها يبيعه قبل أن يصير الدكّان دكّانًا.\"فتحها. الرائحة رائحة الدكّان في الصباح، قبل أن يفتح الباب.\"جدّتي لم تضعه في الوصفة،\" قال. \"الوصفة هي التي جلست فيه أربعين سنة.\""},{"type":"set","var":"المكونات","op":"+=","value":1},{"type":"set","var":"عرفت_السر","op":"=","value":true},{"type":"set","var":"الثقة","op":"+=","value":1},{"type":"divert","target":"المهمة"}]},"الخاتمة":{"tags":[],"content":[{"type":"conditional","condition":{"var":"الثقة","op":"\u003c","value":3},"then":[{"type":"text","value":"كتب المعلّم أسماء المكوّنات الأربعة على الورقة الصفراء، وطواها في جيبه."}],"else":[{"type":"text","value":"كتب المعلّم أسماء المكوّنات الأربعة على الورقة الصفراء، ثمّ دفعها إليكِ. \"اكتبي تحتها اسمكِ. من يعرف الرابع يعرف الوصفة.\""}]},{"type":"text","value":"جمعتِ "},{"type":"interpolation","var":"المكونات"},{"type":"text","value":" مكوّنات، ورائحة الدكّان لا تزال في كمّكِ."},{"type":"divert","target":"END"}]}},"metadata":{"created":"2026-07-30T09:55:32.463Z","modified":"2026-07-30T09:55:32.463Z","passage_count":9,"word_count":354}}
+</script>
+<script>
+(function () {
+// ---------------------------------------------------------------------------
+// Aqlamna runtime types — the story JSON shape the engine consumes
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// Aqlamna runtime engine — state machine
+// Zero dependencies. Consumes compiled story JSON.
+// ---------------------------------------------------------------------------
+// ---- engine ----------------------------------------------------------------
+class Engine {
+    story;
+    state;
+    constructor(story) {
+        this.story = story;
+        // Initialise variables from declarations
+        const variables = {};
+        for (const [name, decl] of Object.entries(story.variables)) {
+            variables[name] = decl.initial;
+        }
+        // Initialise lists from declarations
+        const lists = {};
+        for (const [name, decl] of Object.entries(story.lists)) {
+            lists[name] = decl.initial;
+        }
+        this.state = {
+            passage: story.start ?? "",
+            variables,
+            lists,
+            visited: {},
+            consumed: [],
+            ended: false,
+        };
+    }
+    // ---- public API ----------------------------------------------------------
+    /** Start the story from the current passage (or the declared start passage initially). */
+    start() {
+        if (this.state.ended) {
+            return this.makeScene([], []);
+        }
+        return this.advance(this.state.passage);
+    }
+    /**
+     * Select a choice by ID. The choice must be available at the current scene.
+     * Processes the choice's content, applies side effects, then follows its divert
+     * (or stays in the current passage if none).
+     */
+    choose(choiceId) {
+        if (this.state.ended) {
+            return this.makeScene([], []);
+        }
+        // Find the choice in the current passage content tree
+        const passage = this.story.passages[this.state.passage];
+        if (!passage) {
+            this.state.ended = true;
+            return this.makeScene([], []);
+        }
+        const item = this.findChoice(passage.content, choiceId);
+        if (!item) {
+            return this.makeScene([], []);
+        }
+        // Consume the choice (sticky choices are never consumed)
+        if (!item.sticky && !this.state.consumed.includes(choiceId)) {
+            this.state.consumed.push(choiceId);
+        }
+        // Process the choice's content
+        const choiceOutput = [];
+        const contentResult = this.processContent(item.content, choiceOutput);
+        // If choice content itself contains choices (nested choices),
+        // return immediately with the content output + those choices.
+        if (contentResult.kind === "choices") {
+            return this.makeScene(choiceOutput, contentResult.items);
+        }
+        // Determine the next passage:
+        //   1. Content contains a divert node → follow it
+        //   2. Choice has a divert field → follow it
+        //   3. Neither → stay in current passage
+        let nextPassage;
+        if (contentResult.kind === "divert") {
+            nextPassage = contentResult.target;
+        }
+        else if (item.divert !== null) {
+            nextPassage = item.divert;
+        }
+        else {
+            nextPassage = this.state.passage;
+        }
+        // Advance to the next passage, carrying choice content output as prefix
+        return this.advance(nextPassage, choiceOutput);
+    }
+    /** Return a serialisable snapshot of the current engine state. */
+    getState() {
+        return {
+            passage: this.state.passage,
+            variables: { ...this.state.variables },
+            lists: { ...this.state.lists },
+            visited: { ...this.state.visited },
+            consumed: [...this.state.consumed],
+            ended: this.state.ended,
+        };
+    }
+    /** Restore the engine from a previously saved state. */
+    loadState(state) {
+        this.state = {
+            passage: state.passage,
+            variables: { ...state.variables },
+            lists: { ...state.lists },
+            visited: { ...state.visited },
+            consumed: [...state.consumed],
+            ended: state.ended,
+        };
+    }
+    // ---- advance loop --------------------------------------------------------
+    /**
+     * Process passages starting from `fromPassage`.
+     * Follows diverts automatically. Pauses when choices are found or the story ends.
+     */
+    advance(fromPassage, prefixOutput) {
+        const output = prefixOutput ? [...prefixOutput] : [];
+        let current = fromPassage;
+        for (;;) {
+            // Terminal targets
+            if (current === "END") {
+                this.state.passage = "END";
+                this.state.ended = true;
+                return this.makeScene(output, []);
+            }
+            if (current === "DONE") {
+                this.state.passage = "DONE";
+                this.state.ended = true;
+                return this.makeScene(output, []);
+            }
+            const passage = this.story.passages[current];
+            if (!passage) {
+                this.state.passage = current;
+                this.state.ended = true;
+                return this.makeScene(output, []);
+            }
+            this.state.passage = current;
+            this.state.visited[current] = (this.state.visited[current] ?? 0) + 1;
+            const result = this.processContent(passage.content, output);
+            switch (result.kind) {
+                case "divert":
+                    current = result.target;
+                    continue;
+                case "choices":
+                    return this.makeScene(output, result.items);
+                case "done":
+                    // Passage ended naturally with no divert and no choices.
+                    // Just stay here.
+                    return this.makeScene(output, []);
+            }
+        }
+    }
+    // ---- content processing --------------------------------------------------
+    /**
+     * Process an array of content nodes sequentially.
+     * Returns:
+     *   - { kind: "divert", target } when a divert/tunnel is hit
+     *   - { kind: "choices", items } when choices are available
+     *   - { kind: "done" } when all nodes are processed with no divert/choices
+     */
+    processContent(content, output) {
+        for (const node of content) {
+            switch (node.type) {
+                case "text":
+                    output.push({ type: "text", value: node.value });
+                    break;
+                case "interpolation":
+                    output.push({
+                        type: "text",
+                        value: String(this.resolveVar(node.var)),
+                    });
+                    break;
+                case "set":
+                    this.applySet(node);
+                    break;
+                case "divert":
+                    return { kind: "divert", target: node.target };
+                case "tunnel":
+                    return { kind: "divert", target: node.target };
+                case "divert_return":
+                    // End of tunnel — signal done. The caller (advance loop)
+                    // treats this as end-of-passage.
+                    return { kind: "done" };
+                case "thread": {
+                    const tp = this.story.passages[node.target];
+                    if (tp) {
+                        const sub = this.processContent(tp.content, output);
+                        if (sub.kind !== "done")
+                            return sub;
+                    }
+                    break;
+                }
+                case "conditional": {
+                    const branch = this.evalCondition(node.condition)
+                        ? node.then
+                        : node.else;
+                    const sub = this.processContent(branch, output);
+                    if (sub.kind !== "done")
+                        return sub;
+                    break;
+                }
+                case "choices": {
+                    const available = node.items.filter((item) => this.isChoiceAvailable(item));
+                    if (available.length > 0) {
+                        return {
+                            kind: "choices",
+                            items: available.map((item) => ({
+                                id: item.id,
+                                label: item.label,
+                                sticky: item.sticky,
+                            })),
+                        };
+                    }
+                    // No available choices — continue processing
+                    break;
+                }
+            }
+        }
+        return { kind: "done" };
+    }
+    // ---- condition evaluation ------------------------------------------------
+    isChoiceAvailable(item) {
+        if (!item.sticky && this.state.consumed.includes(item.id)) {
+            return false;
+        }
+        if (item.condition !== null && !this.evalCondition(item.condition)) {
+            return false;
+        }
+        return true;
+    }
+    evalCondition(cond) {
+        if ("var" in cond) {
+            return this.evalVar(cond);
+        }
+        if ("not" in cond) {
+            return !this.evalCondition(cond.not);
+        }
+        if ("and" in cond) {
+            return cond.and.every((c) => this.evalCondition(c));
+        }
+        if ("or" in cond) {
+            return cond.or.some((c) => this.evalCondition(c));
+        }
+        return false;
+    }
+    evalVar(cond) {
+        const value = this.state.variables[cond.var];
+        if (cond.op === undefined && cond.value === undefined) {
+            return Boolean(value);
+        }
+        const op = cond.op;
+        const expected = cond.value;
+        switch (op) {
+            case "==": return value === expected;
+            case "!=": return value !== expected;
+            case "<": return value < expected;
+            case ">": return value > expected;
+            case "<=": return value <= expected;
+            case ">=": return value >= expected;
+            default: return false;
+        }
+    }
+    // ---- variable operations -------------------------------------------------
+    resolveVar(name) {
+        if (name in this.state.variables)
+            return this.state.variables[name];
+        if (name in this.state.lists)
+            return this.state.lists[name];
+        return 0;
+    }
+    applySet(node) {
+        const varName = node.var;
+        const op = node.op ?? "=";
+        const rhs = node.value;
+        // Lists
+        if (varName in this.state.lists) {
+            if (op === "=")
+                this.state.lists[varName] = String(rhs);
+            return;
+        }
+        // Ensure variable exists (auto-create if referenced without declare)
+        if (!(varName in this.state.variables)) {
+            this.state.variables[varName] = 0;
+        }
+        const current = this.state.variables[varName];
+        switch (op) {
+            case "=":
+                this.state.variables[varName] = rhs;
+                break;
+            case "+=":
+                this.state.variables[varName] = current + rhs;
+                break;
+            case "-=":
+                this.state.variables[varName] = current - rhs;
+                break;
+            case "*=":
+                this.state.variables[varName] = current * rhs;
+                break;
+            case "/=":
+                this.state.variables[varName] = Math.trunc(current / rhs);
+                break;
+        }
+    }
+    // ---- helpers -------------------------------------------------------------
+    makeScene(output, choices) {
+        return {
+            passage: this.state.passage,
+            output,
+            choices,
+            ended: this.state.ended,
+        };
+    }
+    /** Recursively find a choice by ID anywhere in the content tree. */
+    findChoice(content, choiceId) {
+        for (const node of content) {
+            if (node.type === "choices") {
+                for (const item of node.items) {
+                    if (item.id === choiceId)
+                        return item;
+                    const nested = this.findChoice(item.content, choiceId);
+                    if (nested)
+                        return nested;
+                }
+            }
+            if (node.type === "conditional") {
+                const found = this.findChoice(node.then, choiceId) ??
+                    this.findChoice(node.else, choiceId);
+                if (found)
+                    return found;
+            }
+        }
+        return null;
+    }
+}
+// ---------------------------------------------------------------------------
+// Aqlamna runtime renderer — DOM rendering, RTL-first
+// Zero dependencies. Uses CSS logical properties only.
+// ---------------------------------------------------------------------------
+/**
+ * Renders a story scene into a container element.
+ * Creates RTL-first DOM with choice buttons.
+ */
+function renderScene(container, scene, title, options) {
+    container.innerHTML = "";
+    // Story wrapper
+    const wrapper = document.createElement("div");
+    wrapper.className = "aq-story";
+    // Title
+    if (title) {
+        const titleEl = document.createElement("h1");
+        titleEl.className = "aq-title";
+        titleEl.textContent = title;
+        wrapper.appendChild(titleEl);
+    }
+    // Output area — group consecutive text and linebreak nodes into paragraphs.
+    // Text nodes arising from text + interpolation + text must render inline
+    // as a single paragraph.  Linebreaks become <br> inside the paragraph.
+    const outputEl = document.createElement("div");
+    outputEl.className = "aq-output";
+    // null sentinel means <br>; string means a text run
+    const run = [];
+    function flushRun() {
+        if (run.length === 0)
+            return;
+        const p = document.createElement("p");
+        p.className = "aq-text";
+        for (const item of run) {
+            if (item === null) {
+                p.appendChild(document.createElement("br"));
+            }
+            else {
+                p.appendChild(document.createTextNode(item));
+            }
+        }
+        outputEl.appendChild(p);
+        run.length = 0;
+    }
+    for (const node of scene.output) {
+        if (node.type === "text") {
+            run.push(node.value);
+        }
+        else if (node.type === "linebreak") {
+            run.push(null);
+        }
+    }
+    flushRun();
+    wrapper.appendChild(outputEl);
+    // Choices
+    if (scene.choices.length > 0) {
+        const choicesEl = document.createElement("div");
+        choicesEl.className = "aq-choices";
+        for (const choice of scene.choices) {
+            const btn = document.createElement("button");
+            btn.className = "aq-choice-btn";
+            btn.textContent = choice.label;
+            btn.addEventListener("click", () => {
+                options.onChoice(choice.id);
+            });
+            choicesEl.appendChild(btn);
+        }
+        wrapper.appendChild(choicesEl);
+    }
+    // End state
+    if (scene.ended && scene.choices.length === 0) {
+        const endEl = document.createElement("div");
+        endEl.className = "aq-end";
+        const endText = document.createElement("p");
+        endText.className = "aq-text aq-end-text";
+        endText.textContent = "انتهت القصة.";
+        endEl.appendChild(endText);
+        const restartBtn = document.createElement("button");
+        restartBtn.className = "aq-btn aq-restart-btn";
+        restartBtn.textContent = "⟲ أعد القصة";
+        restartBtn.addEventListener("click", options.onRestart);
+        endEl.appendChild(restartBtn);
+        wrapper.appendChild(endEl);
+    }
+    // Toolbar
+    const toolbar = document.createElement("div");
+    toolbar.className = "aq-toolbar";
+    const saveBtn = document.createElement("button");
+    saveBtn.className = "aq-btn aq-save-btn";
+    saveBtn.textContent = "💾 حفظ";
+    saveBtn.addEventListener("click", options.onSave);
+    const loadBtn = document.createElement("button");
+    loadBtn.className = "aq-btn aq-load-btn";
+    loadBtn.textContent = "📂 تحميل";
+    loadBtn.addEventListener("click", options.onLoad);
+    toolbar.appendChild(saveBtn);
+    toolbar.appendChild(loadBtn);
+    if (scene.choices.length > 0 || !scene.ended) {
+        const restartBtn = document.createElement("button");
+        restartBtn.className = "aq-btn aq-restart-btn";
+        restartBtn.textContent = "⟲ أعد";
+        restartBtn.addEventListener("click", options.onRestart);
+        toolbar.appendChild(restartBtn);
+    }
+    wrapper.appendChild(toolbar);
+    container.appendChild(wrapper);
+}
+// ---------------------------------------------------------------------------
+// Aqlamna runtime save/restore — localStorage + download/upload
+// Zero dependencies.
+// ---------------------------------------------------------------------------
+const STORAGE_KEY_PREFIX = "aqlamna_save_";
+/**
+ * Save game state to localStorage under a story-specific key.
+ * Returns the key used.
+ */
+function saveToLocalStorage(storyTitle, state) {
+    const key = STORAGE_KEY_PREFIX + sanitiseKey(storyTitle);
+    const data = JSON.stringify(state);
+    localStorage.setItem(key, data);
+    return key;
+}
+/**
+ * Restore game state from localStorage.
+ * Returns null if no save exists for this story.
+ */
+function loadFromLocalStorage(storyTitle) {
+    const key = STORAGE_KEY_PREFIX + sanitiseKey(storyTitle);
+    const raw = localStorage.getItem(key);
+    if (!raw)
+        return null;
+    try {
+        const parsed = JSON.parse(raw);
+        // Basic validation
+        if (typeof parsed.passage !== "string" ||
+            typeof parsed.variables !== "object" ||
+            !Array.isArray(parsed.consumed)) {
+            return null;
+        }
+        return parsed;
+    }
+    catch {
+        return null;
+    }
+}
+/**
+ * Download state as a JSON file.
+ */
+function downloadSave(storyTitle, state) {
+    const data = JSON.stringify(state, null, 2);
+    const blob = new Blob([data], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${sanitiseKey(storyTitle)}_save.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+/**
+ * Trigger a file picker to load state from a JSON file.
+ * Returns a Promise that resolves with the parsed state, or null if cancelled/invalid.
+ */
+function uploadSave() {
+    return new Promise((resolve) => {
+        const input = document.createElement("input");
+        input.type = "file";
+        input.accept = ".json";
+        input.addEventListener("change", () => {
+            const file = input.files?.[0];
+            if (!file) {
+                resolve(null);
+                return;
+            }
+            const reader = new FileReader();
+            reader.addEventListener("load", () => {
+                try {
+                    const parsed = JSON.parse(reader.result);
+                    if (typeof parsed.passage !== "string" ||
+                        typeof parsed.variables !== "object" ||
+                        !Array.isArray(parsed.consumed)) {
+                        resolve(null);
+                        return;
+                    }
+                    resolve(parsed);
+                }
+                catch {
+                    resolve(null);
+                }
+            });
+            reader.addEventListener("error", () => resolve(null));
+            reader.readAsText(file);
+        });
+        // Handle cancel
+        input.addEventListener("cancel", () => resolve(null));
+        input.click();
+    });
+}
+function sanitiseKey(title) {
+    // Remove unsafe characters for localStorage key
+    return title.replace(/[^a-zA-Z\u0600-\u06FF0-9_-]/g, "_").slice(0, 64);
+}
+
+
+// ---- Aqlamna standalone bootstrap -----------------------------------------
+(function () {
+  var storyEl = document.getElementById("qalam-story");
+  if (!storyEl) return;
+  var story = JSON.parse(storyEl.textContent);
+  var engine = new Engine(story);
+  var root = document.getElementById("qalam-player");
+  if (!root) return;
+
+  function render(scene) {
+    renderScene(root, scene, story.title, {
+      onChoice: function (choiceId) {
+        var next = engine.choose(choiceId);
+        render(next);
+      },
+      onRestart: function () {
+        engine = new Engine(story);
+        render(engine.start());
+      },
+      onSave: function () {
+        try {
+          saveToLocalStorage(story.title || "قصة", engine.getState());
+        } catch (_) { /* localStorage unavailable */ }
+      },
+      onLoad: function () {
+        try {
+          var saved = loadFromLocalStorage(story.title || "قصة");
+          if (saved) {
+            engine.loadState(saved);
+            render(engine.start());
+          }
+        } catch (_) { /* localStorage unavailable */ }
+      },
+    });
+  }
+
+  render(engine.start());
+})();
+
+})();
+</script>
+</body>
+</html>
