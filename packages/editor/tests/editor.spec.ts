@@ -5,6 +5,8 @@
 
 import { describe, it, expect } from "vitest";
 import { compile } from "@aqlamna/core";
+import { mount } from "@aqlamna/runtime";
+import type { StoryJSON } from "@aqlamna/runtime";
 
 describe("editor compilation", () => {
   it("compiles fixture 03 (variables story) without error", () => {
@@ -87,5 +89,39 @@ describe("editor compilation", () => {
     expect(caught!.code).toBe("E101");
     expect(caught!.message_ar).toContain("مقطع");
     expect(caught!.line).toBeGreaterThan(0);
+  });
+});
+
+describe("player mounting", () => {
+  it("renders choices as styled buttons after mounting fixture 03", () => {
+    const src = `عنوان: "اختبار"
+
+متغير س = 0
+
+=== البداية ===
+* [اختر هذا]
+  -> نهاية
+`;
+
+    const storyJson = compile(src, "test.qalam") as unknown as StoryJSON;
+    const container = document.createElement("div");
+
+    // Mount the player (no styles injected by the test — the component handles that;
+    // here we test that the runtime renders the correct DOM structure)
+    mount(storyJson, container, { showToolbar: false });
+
+    // Verify choice buttons exist
+    const buttons = container.querySelectorAll("button.aq-choice-btn");
+    expect(buttons.length).toBeGreaterThanOrEqual(1);
+
+    // Verify the first button has the expected text
+    expect(buttons[0]!.textContent).toContain("اختر هذا");
+
+    // Verify buttons are inside the choices wrapper
+    const choicesWrapper = container.querySelector(".aq-choices");
+    expect(choicesWrapper).not.toBeNull();
+    expect(choicesWrapper!.querySelectorAll("button.aq-choice-btn").length).toBe(
+      buttons.length,
+    );
   });
 });
