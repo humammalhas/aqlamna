@@ -132,6 +132,11 @@ node with a populated `else`. If there is no `غير_ذلك` branch, the innermo
 The header variable before the `:` is only a scoping hint for the reader — the compiled
 conditions come from the `-` branch lines, NOT from the header.
 
+**Therefore the header name is NOT a variable reference and must NOT be validated.** It is
+discarded. Validating it caused a false `E202` on any tashkeel'd name (`{المكوّنات:` …), because
+that path skipped the tashkeel normalisation every other path applies. If it is validated at
+all, it must be normalised identically to §7.2 — but the correct behaviour is to discard it.
+
 **This must never silently collapse into one text node.** Emitting the branch lines as
 literal prose is a bug, not a fallback.
 
