@@ -203,3 +203,74 @@ test.describe("canvas visual contract", () => {
     await expect(editor).toContainText("الرحيق");
   });
 });
+
+// ---- PWA / installability tests --------------------------------------------
+
+test.describe("pwa installability", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/");
+  });
+
+  test("/manifest.webmanifest returns 200 with valid JSON and correct fields", async ({ page }) => {
+    const res = await page.request.get("/manifest.webmanifest");
+    expect(res.status()).toBe(200);
+
+    const body = await res.json();
+    expect(body.name).toBe("أقلامنا — محرر القصص التفاعلية");
+    expect(body.short_name).toBe("أقلامنا");
+    expect(body.lang).toBe("ar");
+    expect(body.dir).toBe("rtl");
+    expect(body.display).toBe("standalone");
+    expect(body.start_url).toBe("/");
+    expect(body.scope).toBe("/");
+    expect(body.theme_color).toBe("#1a1713");
+    expect(body.background_color).toBe("#1a1713");
+
+    // At least one 512px icon
+    const icons = body.icons;
+    expect(icons).toBeDefined();
+    const has512 = icons.some((i) => i.sizes === "512x512");
+    expect(has512).toBe(true);
+  });
+
+  test("manifest.webmanifest has a maskable 512 icon", async ({ page }) => {
+    const res = await page.request.get("/manifest.webmanifest");
+    const body = await res.json();
+    const icons = body.icons;
+
+    const maskable = icons.find(
+      (i) => i.sizes === "512x512" && i.purpose === "maskable",
+    );
+    expect(maskable).toBeTruthy();
+  });
+
+  test("/favicon.ico returns 200", async ({ page }) => {
+    const res = await page.request.get("/favicon.ico");
+    expect(res.status()).toBe(200);
+  });
+
+  test("index.html contains manifest link", async ({ page }) => {
+    const href = await page.locator('link[rel="manifest"]').getAttribute("href");
+    expect(href).toBe("/manifest.webmanifest");
+  });
+
+  test("index.html contains all icon links", async ({ page }) => {
+    const favicon = page.locator('link[rel="icon"][href="/favicon.ico"]');
+    await expect(favicon).toHaveCount(1);
+    expect(await favicon.getAttribute("sizes")).toBe("any");
+
+    const png192 = page.locator('link[rel="icon"][type="image/png"][sizes="192x192"]');
+    await expect(png192).toHaveCount(1);
+    expect(await png192.getAttribute("href")).toBe("/icon-192.png");
+
+    const apple = page.locator('link[rel="apple-touch-icon"]');
+    await expect(apple).toHaveCount(1);
+    expect(await apple.getAttribute("href")).toBe("/apple-touch-icon.png");
+  });
+
+  test("html lang and dir are correct", async ({ page }) => {
+    const html = page.locator("html");
+    await expect(html).toHaveAttribute("lang", "ar");
+    await expect(html).toHaveAttribute("dir", "rtl");
+  });
+});
