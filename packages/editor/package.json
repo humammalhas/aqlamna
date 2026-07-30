@@ -9,7 +9,8 @@
     "dev": "npm run build -w @aqlamna/runtime && node scripts/copy-runtime.mjs && npm run build -w @aqlamna/core && vite",
     "build": "npm run build -w @aqlamna/runtime && node scripts/copy-runtime.mjs && npm run build -w @aqlamna/core && vite build",
     "preview": "vite preview",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:visual": "playwright test"
   },
   "dependencies": {
     "@aqlamna/core": "*",
@@ -28,6 +29,7 @@
     "zustand": "^5.0.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.0",
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.0",
