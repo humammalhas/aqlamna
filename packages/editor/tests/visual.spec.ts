@@ -61,6 +61,11 @@ test.describe("editor visual contract", () => {
     await page.waitForSelector(".cm-line", { timeout: 15000 });
   });
 
+  test("editor theme defaults to light cream palette", async ({ page }) => {
+    const bg = await page.locator("body").evaluate((el) => getComputedStyle(el).backgroundColor);
+    expect(bg).toMatch(/rgb\(\s*24[0-9]\s*,\s*24[0-9]\s*,\s*23[0-9]\s*\)/);
+  });
+
   test("player theme CSS is actually applied to choice buttons", async ({ page }) => {
     await page.getByRole("button", { name: /شغّل/ }).click();
     await page.waitForSelector(".aq-choice-btn", { timeout: 10000 });
