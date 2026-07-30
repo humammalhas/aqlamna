@@ -1,10 +1,10 @@
 // ---------------------------------------------------------------------------
-// App — root component. Loads saved source from IndexedDB, seeds fixture 03
-// on first run, wires the store to the UI. Supports three view modes:
-// text-only, canvas-only, split.
+// App — root component. Loads saved source from IndexedDB, seeds on first run,
+// wires the store to the UI. Three view modes switch the LEFT pane; the player
+// is always visible on the right.  "الاثنان" adds a draggable divider.
 // ---------------------------------------------------------------------------
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useStore } from "./store.js";
 import { loadSource } from "./lib/db.js";
 import TopBar from "./components/TopBar.js";
@@ -15,6 +15,23 @@ import ErrorStrip from "./components/ErrorStrip.js";
 import OnboardingOverlay from "./components/OnboardingOverlay.js";
 import { SEED_STORY } from "./generated/seed-story.js";
 
+const DIVIDER_KEY = "aqlamna-layout-divider";
+
+function loadDivider(): number {
+  try {
+    const v = localStorage.getItem(DIVIDER_KEY);
+    if (v) {
+      const n = parseFloat(v);
+      if (n >= 20 && n <= 80) return n;
+    }
+  } catch { /* noop */ }
+  return 50;
+}
+
+function saveDivider(pct: number) {
+  try { localStorage.setItem(DIVIDER_KEY, String(pct)); } catch { /* noop */ }
+}
+
 export default function App() {
   const storyJson = useStore((s) => s.storyJson);
   const error = useStore((s) => s.error);
@@ -24,7 +41,13 @@ export default function App() {
   const clearError = useStore((s) => s.clearError);
   const initialized = useRef(false);
 
-  // Load from IndexedDB or seed fixture 03 on first mount
+  // Divider position: percentage of width for the LEFT pane
+  const [leftPct, setLeftPct] = useState(() => loadDivider());
+  const [dragging, setDragging] = useState(false);
+
+  const showDivider = viewMode === "split"; // "الاثنان" = draggable divider
+
+  // Load from IndexedDB or seed on first mount
   useEffect(() => {
     if (initialized.current) return;
     initialized.current = true;
@@ -38,14 +61,52 @@ export default function App() {
     });
   }, [loadSourceAction]);
 
-  const showText = viewMode === "text" || viewMode === "split";
-  const showCanvas = viewMode === "canvas" || viewMode === "split";
+  // ---- Divider drag ----------------------------------------------------------
 
-  // ---- Main area -----------------------------------------------------------
+  const handleDividerMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    setDragging(true);
+  }, []);
 
-  // On mobile (≤768px), stack vertically and show only one pane at a time.
-  // The view toggle [نص] [مخطط] switches between the text editor and canvas.
+  useEffect(() => {
+    if (!dragging) return;
+    const handleMove = (e: MouseEvent) => {
+      const main = document.querySelector(".editor-main-area") as HTMLElement;
+      if (!main) return;
+      const rect = main.getBoundingClientRect();
+      const pct = ((e.clientX - rect.left) / rect.width) * 100;
+      setLeftPct(Math.max(20, Math.min(80, pct)));
+    };
+    const handleUp = () => {
+      setDragging(false);
+      saveDivider(leftPct);
+    };
+    window.addEventListener("mousemove", handleMove);
+    window.addEventListener("mouseup", handleUp);
+    return () => {
+      window.removeEventListener("mousemove", handleMove);
+      window.removeEventListener("mouseup", handleUp);
+    };
+  }, [dragging, leftPct]);
+
+  // Save on divider release
+  useEffect(() => {
+    if (!dragging) saveDivider(leftPct);
+  }, [dragging, leftPct]);
+
+  // ---- What to show in the left pane ----------------------------------------
+
+  const showLeftText = viewMode === "text" || viewMode === "split";
+  const showLeftCanvas = viewMode === "canvas";
+
   const isMobile = typeof window !== "undefined" && window.innerWidth <= 768;
+
+  const leftPane = (
+    <div style={{ flex: showDivider ? `0 0 ${leftPct}%` : 1, minInlineSize: 0, display: "flex" }}>
+      {showLeftText && <EditorPane />}
+      {showLeftCanvas && <CanvasPane />}
+    </div>
+  );
 
   const mainArea = (
     <div
@@ -57,41 +118,35 @@ export default function App() {
         flexDirection: isMobile ? "column" : "row",
       }}
     >
-      {/* Text editor (left/top in split) */}
-      {showText && (
-        <EditorPane />
-      )}
+      {leftPane}
 
-      {/* Divider between text and canvas */}
-      {viewMode === "split" && showText && showCanvas && (
+      {/* Draggable divider — only in الاثنان mode */}
+      {!isMobile && showDivider && (
         <div
+          onMouseDown={handleDividerMouseDown}
           className="editor-divider"
           style={{
-            inlineSize: "1px",
-            background: "#3a3528",
+            inlineSize: "4px",
+            cursor: "col-resize",
+            background: dragging ? "#d4a843" : "#3a3528",
+            flexShrink: 0,
+            transition: dragging ? "none" : "background 0.15s",
           }}
         />
       )}
 
-      {/* Canvas (right/bottom in split) */}
-      {showCanvas && (
-        <CanvasPane />
+      {/* Player pane — always visible */}
+      {!isMobile && (
+        <div style={{ flex: showDivider ? `1 1 ${100 - leftPct}%` : 1, minInlineSize: 0 }}>
+          <PlayerPane key={playerKey} />
+        </div>
       )}
 
-      {/* Divider between editor area and player */}
-      {showText && (
-        <div
-          className="editor-divider"
-          style={{
-            inlineSize: "1px",
-            background: "#3a3528",
-          }}
-        />
-      )}
-
-      {/* Player pane — only in text and split modes */}
-      {showText && (
-        <PlayerPane key={playerKey} />
+      {/* On mobile: player shown below when story is compiled */}
+      {isMobile && storyJson && (
+        <div style={{ flex: "0 0 45%", minBlockSize: 0 }}>
+          <PlayerPane key={playerKey} />
+        </div>
       )}
     </div>
   );
