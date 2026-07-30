@@ -6,7 +6,7 @@ import type {
   ChoicesNode, ConditionalNode, InterpolationNode, SetNode,
 } from "../src/types/ast.js";
 
-const FIX = (name: string) => `tests/fixtures/${name}.qalam`;
+const FIX = (name: string) => `packages/core/tests/fixtures/${name}.qalam`;
 
 /** Parse a fixture file by name and return the AST. */
 function parseFixture(name: string): StoryAST {
@@ -129,7 +129,7 @@ describe("parser", () => {
     test("simple divert", () => {
       const ast = parse("=== أ ===\n-> ب", "test.qalam");
       const content = ast.passages[0]!.content;
-      expect(content).toEqual([{ type: "divert", target: "ب" }]);
+      expect(content[0]).toMatchObject({ type: "divert", target: "ب" });
     });
 
     test("divert to END", () => {
@@ -278,6 +278,37 @@ describe("parser", () => {
       const node = ast.passages[0]!.content[0] as ConditionalNode;
       expect(node.condition).toEqual({ var: "شجاعة", op: ">", value: 5 });
     });
+
+    test("single-line conditional with normal prose", () => {
+      const ast = parse("=== بداية ===\n{مفتاح: ثم صمت.}", "test.qalam");
+      const node = ast.passages[0]!.content[0] as ConditionalNode;
+      expect(node.type).toBe("conditional");
+      expect(node.condition).toEqual({ var: "مفتاح" });
+      expect(node.then).toEqual([{ type: "text", value: "ثم صمت." }]);
+      expect(node.else).toEqual([]);
+    });
+
+    test("single-line conditional with dash-leading prose is NOT multi-branch", () => {
+      const ast = parse("=== بداية ===\n{مفتاح: - ثم صمت.}", "test.qalam");
+      const node = ast.passages[0]!.content[0] as ConditionalNode;
+      expect(node.type).toBe("conditional");
+      expect(node.condition).toEqual({ var: "مفتاح" });
+      expect(node.then).toEqual([{ type: "text", value: "- ثم صمت." }]);
+      expect(node.else).toEqual([]);
+    });
+
+    test("multi-branch conditional compiles to nested chain", () => {
+      const src = "=== بداية ===\n{شجاعة:\n  - شجاعة < 3: ترتجف.\n  - غير_ذلك: تتقدم.\n}";
+      const ast = parse(src, "test.qalam");
+      const outer = ast.passages[0]!.content[0] as ConditionalNode;
+      expect(outer.type).toBe("conditional");
+      expect(outer.condition).toEqual({ var: "شجاعة", op: "<", value: 3 });
+      expect(outer.then).toEqual([{ type: "text", value: "ترتجف." }]);
+      // The else branch is nested as a text node
+      expect(outer.else).toEqual([
+        { type: "text", value: "تتقدم." },
+      ]);
+    });
   });
 
   // ---- interpolation ------------------------------------------------------
@@ -292,21 +323,17 @@ describe("parser", () => {
     test("interpolation in prose preserves adjacent spaces (§1.10)", () => {
       const ast = parse("=== بداية ===\nجمعتِ {رحيق} قطرة.", "test.qalam");
       const content = ast.passages[0]!.content;
-      expect(content).toEqual([
-        { type: "text", value: "جمعتِ " },
-        { type: "interpolation", var: "رحيق" },
-        { type: "text", value: " قطرة." },
-      ]);
+      expect(content[0]).toMatchObject({ type: "text", value: "جمعتِ " });
+      expect(content[1]).toMatchObject({ type: "interpolation", var: "رحيق" });
+      expect(content[2]).toMatchObject({ type: "text", value: " قطرة." });
     });
 
     test("mixed interpolation and text", () => {
       const ast = parse("=== بداية ===\nلديك {عدد} قطع.", "test.qalam");
       const content = ast.passages[0]!.content;
-      expect(content).toEqual([
-        { type: "text", value: "لديك " },
-        { type: "interpolation", var: "عدد" },
-        { type: "text", value: " قطع." },
-      ]);
+      expect(content[0]).toMatchObject({ type: "text", value: "لديك " });
+      expect(content[1]).toMatchObject({ type: "interpolation", var: "عدد" });
+      expect(content[2]).toMatchObject({ type: "text", value: " قطع." });
     });
   });
 
@@ -324,10 +351,8 @@ describe("parser", () => {
 
     test("passage content", () => {
       const content = ast.passages[0]!.content;
-      expect(content).toEqual([
-        { type: "text", value: "مرحبًا." },
-        { type: "divert", target: "نهاية" },
-      ]);
+      expect(content[0]).toMatchObject({ type: "text", value: "مرحبًا." });
+      expect(content[1]).toMatchObject({ type: "divert", target: "نهاية" });
     });
   });
 

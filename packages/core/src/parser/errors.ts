@@ -100,12 +100,6 @@ function typeNameAr(type: string): string {
   }
 }
 
-function valueTypeName(value: number | string | boolean): string {
-  if (typeof value === "number")  return "رقم";
-  if (typeof value === "boolean") return "صح/خطأ";
-  return "نصّ";
-}
-
 // ---- AST validation --------------------------------------------------------
 
 interface ValidationCtx {
@@ -178,25 +172,25 @@ function validateContent(
           node.target !== "\u062A\u0627\u0628\u0639" &&       // تابع
           !ctx.passageNames.has(node.target)
         ) {
-          errors.push(qalamError("E101", 0, 0, { name: node.target }));
+          errors.push(qalamError("E101", node.line, node.column, { name: node.target }));
         }
         break;
 
       case "conditional":
-        errors.push(...validateConditionRefs(node.condition, ctx));
+        errors.push(...validateConditionRefs(node.condition, ctx, node.line, node.column));
         errors.push(...validateContent(node.then, ctx));
         errors.push(...validateContent(node.else, ctx));
         break;
 
       case "interpolation":
         if (!ctx.variables.has(node.var)) {
-          errors.push(qalamError("E202", 0, 0, { name: node.var }));
+          errors.push(qalamError("E202", node.line, node.column, { name: node.var }));
         }
         break;
 
       case "set":
         if (!ctx.variables.has(node.var)) {
-          errors.push(qalamError("E202", 0, 0, { name: node.var }));
+          errors.push(qalamError("E202", node.line, node.column, { name: node.var }));
         } else {
           // Type check (E203)
           const varType = ctx.variables.get(node.var)!;
@@ -208,38 +202,14 @@ function validateContent(
             if (gotType === "string" && entries && entries.has(val as string)) {
               // valid list value assignment
             } else {
-              errors.push(
-                qalamError("E203", 0, 0, {
-                  name: node.var,
-                  expected: typeNameAr("list"),
-                  got: valueTypeName(val),
-                }),
-              );
+              errors.push(makeE203(node, "list", val));
             }
           } else if (varType === "number" && gotType !== "number") {
-            errors.push(
-              qalamError("E203", 0, 0, {
-                name: node.var,
-                expected: typeNameAr("number"),
-                got: valueTypeName(val),
-              }),
-            );
+            errors.push(makeE203(node, "number", val));
           } else if (varType === "string" && gotType !== "string") {
-            errors.push(
-              qalamError("E203", 0, 0, {
-                name: node.var,
-                expected: typeNameAr("string"),
-                got: valueTypeName(val),
-              }),
-            );
+            errors.push(makeE203(node, "string", val));
           } else if (varType === "boolean" && gotType !== "boolean") {
-            errors.push(
-              qalamError("E203", 0, 0, {
-                name: node.var,
-                expected: typeNameAr("boolean"),
-                got: valueTypeName(val),
-              }),
-            );
+            errors.push(makeE203(node, "boolean", val));
           }
         }
         break;
@@ -247,7 +217,7 @@ function validateContent(
       case "choices":
         for (const item of node.items) {
           if (item.condition) {
-            errors.push(...validateConditionRefs(item.condition, ctx));
+            errors.push(...validateConditionRefs(item.condition, ctx, item.line, item.column));
           }
           errors.push(...validateContent(item.content, ctx));
           if (item.divert) {
@@ -259,7 +229,7 @@ function validateContent(
               item.divert !== "\u062A\u0627\u0628\u0639" &&       // تابع
               !ctx.passageNames.has(item.divert)
             ) {
-              errors.push(qalamError("E101", 0, 0, { name: item.divert }));
+              errors.push(qalamError("E101", item.line, item.column, { name: item.divert }));
             }
           }
         }
@@ -282,10 +252,42 @@ function validateContent(
 function validateConditionRefs(
   cond: { var: string; op?: string; value?: number | string | boolean },
   ctx: ValidationCtx,
+  line: number,
+  column: number,
 ): QalamError[] {
   const errors: QalamError[] = [];
   if (!ctx.variables.has(cond.var)) {
-    errors.push(qalamError("E202", 0, 0, { name: cond.var }));
+    errors.push(qalamError("E202", line, column, { name: cond.var }));
   }
   return errors;
+}
+
+// ---- E203 helper (localised type names) ------------------------------------
+
+/** Build an E203 error with language-appropriate type names. */
+function makeE203(
+  node: { var: string; line: number; column: number; value: number | string | boolean },
+  expectedType: string,
+  val: number | string | boolean,
+): QalamError {
+  const expectedAr = typeNameAr(expectedType);
+  const expectedEn = expectedType;
+  let gotAr: string;
+  let gotEn: string;
+  if (typeof val === "number") {
+    gotAr = "رقم";
+    gotEn = "number";
+  } else if (typeof val === "boolean") {
+    gotAr = "صح/خطأ";
+    gotEn = "boolean";
+  } else {
+    gotAr = "نصّ";
+    gotEn = "string";
+  }
+  // Build messages directly to localise type names per language
+  const message_ar =
+    `نوع غير متطابق: المتغير ${node.var} نوعه ${expectedAr}، والقيمة المسندة ${gotAr}.`;
+  const message_en =
+    `Type mismatch: ${node.var} is ${expectedEn}, assigned value is ${gotEn}.`;
+  return { code: "E203", message_ar, message_en, line: node.line, column: node.column };
 }

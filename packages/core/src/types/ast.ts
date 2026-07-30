@@ -62,11 +62,15 @@ export interface TextNode {
 export interface DivertNode {
   type: "divert";
   target: string;
+  line: number;
+  column: number;
 }
 
 export interface DivertTunnelNode {
   type: "divert_tunnel";
   target: string;
+  line: number;
+  column: number;
 }
 
 export interface DivertReturnNode {
@@ -76,6 +80,8 @@ export interface DivertReturnNode {
 export interface ThreadNode {
   type: "thread";
   target: string;
+  line: number;
+  column: number;
 }
 
 export interface ChoicesNode {
@@ -87,6 +93,8 @@ export interface ChoiceItem {
   label: string;
   sticky: boolean;
   condition: Condition | null;
+  line: number;
+  column: number;
   content: ContentNode[];
   divert: string | null;
 }
@@ -94,6 +102,8 @@ export interface ChoiceItem {
 export interface ConditionalNode {
   type: "conditional";
   condition: Condition;
+  line: number;
+  column: number;
   then: ContentNode[];
   else: ContentNode[];
 }
@@ -101,12 +111,16 @@ export interface ConditionalNode {
 export interface InterpolationNode {
   type: "interpolation";
   var: string;
+  line: number;
+  column: number;
 }
 
 export interface SetNode {
   type: "set";
   var: string;
   op: "=" | "+=" | "-=" | "*=" | "/=" | "%=";
+  line: number;
+  column: number;
   value: number | string | boolean;
 }
 

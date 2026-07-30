@@ -218,7 +218,7 @@ class ParserState {
       } else if (t.kind === K.THREAD) {
         this.advance();
         const tgt = this.expectTokenKind([K.IDENTIFIER, K.KEYWORD_END, K.KEYWORD_DONE]);
-        content.push({ type: "thread", target: tgt.value } as ThreadNode);
+        content.push({ type: "thread", target: tgt.value, line: tgt.line, column: tgt.column } as ThreadNode);
       } else if (t.kind === K.ASSIGN) {
         content.push(this.parseAssignment());
       } else {
@@ -313,7 +313,7 @@ class ParserState {
         this.advance();
       }
 
-      items.push({ label, sticky, condition, content: body, divert });
+      items.push({ label, sticky, condition, line: head.line, column: head.column, content: body, divert });
     }
 
     return { type: "choices", items };
@@ -334,10 +334,10 @@ class ParserState {
     const tgt = this.expectTokenKind([K.IDENTIFIER, K.KEYWORD_END, K.KEYWORD_DONE]);
     if (this.is(K.DIVERT)) {
       this.advance();
-      return [{ type: "divert_tunnel", target: tgt.value } as DivertTunnelNode];
+      return [{ type: "divert_tunnel", target: tgt.value, line: tgt.line, column: tgt.column } as DivertTunnelNode];
     }
 
-    return [{ type: "divert", target: tgt.value } as DivertNode];
+    return [{ type: "divert", target: tgt.value, line: tgt.line, column: tgt.column } as DivertNode];
   }
 
   // ---- assignment ---------------------------------------------------------
@@ -353,7 +353,7 @@ class ParserState {
       if (this.is(K.OPERATOR) && ["+", "-", "*", "/", "%"].includes(this.cur().value)) {
         const opTok = this.advance();
         const val = this.parseLiteral();
-        return { type: "set", var: varName.value, op: (opTok.value + "=") as SetNode["op"], value: val.value };
+        return { type: "set", var: varName.value, op: (opTok.value + "=") as SetNode["op"], line: varName.line, column: varName.column, value: val.value };
       }
       // Same-name ident without valid operator — fall through to E201 below
     }
@@ -365,7 +365,7 @@ class ParserState {
       const list = this.lists[varName.value];
       if (list && list.entries.includes(peeked.value)) {
         this.advance(); // consume the list value identifier
-        return { type: "set", var: varName.value, op: "=", value: peeked.value };
+        return { type: "set", var: varName.value, op: "=", line: varName.line, column: varName.column, value: peeked.value };
       }
       // Not a valid list value — E201
       const expr = this.collectExpr(peeked);
@@ -377,7 +377,7 @@ class ParserState {
     if (rhsToken.kind === K.NUMBER || rhsToken.kind === K.KEYWORD_TRUE ||
         rhsToken.kind === K.KEYWORD_FALSE || rhsToken.kind === K.STRING) {
       const val = this.parseLiteral();
-      return { type: "set", var: varName.value, op: "=", value: val.value };
+      return { type: "set", var: varName.value, op: "=", line: varName.line, column: varName.column, value: val.value };
     }
 
     // E201: unsupported expression
@@ -497,6 +497,13 @@ class ParserState {
         if (hasColon) {
           // Conditional: { cond: text } or multi-branch (§1.12)
           ti++; // skip {
+          // Capture position of the variable in the condition
+          let condVarTok = buf[ti]!;
+          if (condVarTok.kind === K.KEYWORD_NOT && ti + 1 < buf.length) {
+            condVarTok = buf[ti + 1]!;
+          }
+          const condLine = condVarTok.line;
+          const condCol = condVarTok.column;
           const cond = this.parseConditionFromSlice(buf, ti);
           while (ti < buf.length && buf[ti]!.kind !== K.COLON) ti++;
           const colonLine = buf[ti]!.line; // save COLON line for multi-branch check
@@ -520,7 +527,7 @@ class ParserState {
             bodyTexts.every(t => t.trimStart().startsWith("- "));
 
           if (allBranches) {
-            result.push(...this.compileMultiBranch(bodyTexts));
+            result.push(...this.compileMultiBranch(bodyTexts, condLine, condCol));
           } else {
             // Single-branch conditional (original behaviour)
             const bodyText = bodyTexts.join("");
@@ -531,6 +538,8 @@ class ParserState {
             result.push({
               type: "conditional",
               condition: cond,
+              line: condLine,
+              column: condCol,
               then: thenContent,
               else: [],
             } as ConditionalNode);
@@ -541,7 +550,7 @@ class ParserState {
           const varTok = buf[ti]!;
           ti++; // IDENTIFIER
           ti++; // skip }
-          result.push({ type: "interpolation", var: varTok.value } as InterpolationNode);
+          result.push({ type: "interpolation", var: varTok.value, line: varTok.line, column: varTok.column } as InterpolationNode);
         }
         continue;
       }
@@ -631,7 +640,7 @@ class ParserState {
    * ConditionalNodes. Each branch text is a line like `- cond: body`.
    * The last branch may be `- غير_ذلك: body` (the else).
    */
-  compileMultiBranch(bodyTexts: string[]): ContentNode[] {
+  compileMultiBranch(bodyTexts: string[], condLine: number, condCol: number): ContentNode[] {
     // Parse each branch: strip "- ", split at first ":", trim both sides
     const branches = bodyTexts.map((t) => {
       const trimmed = t.trimStart().substring(2); // strip "- "
@@ -660,7 +669,7 @@ class ParserState {
       } else {
         const cond = this.parseInlineCondition(br.condPart);
         elseContent = [
-          { type: "conditional", condition: cond, then: thenContent, else: elseContent } as ConditionalNode,
+          { type: "conditional", condition: cond, line: condLine, column: condCol, then: thenContent, else: elseContent } as ConditionalNode,
         ];
       }
     }

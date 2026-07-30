@@ -27,6 +27,8 @@ describe("error codes (§1.9)", () => {
     assertError("=== بداية ===\n-> غير_موجود", "E101", (err) => {
       expect(err.message_ar).toContain("غير_موجود");
       expect(err.message_en).toContain("غير_موجود");
+      expect(err.line).toBeGreaterThan(0);
+      expect(err.column).toBeGreaterThan(0);
     });
   });
 
@@ -66,6 +68,8 @@ describe("error codes (§1.9)", () => {
     assertError("=== بداية ===\n{غير_معرف}", "E202", (err) => {
       expect(err.message_ar).toContain("غير_معرف");
       expect(err.message_en).toContain("غير_معرف");
+      expect(err.line).toBeGreaterThan(0);
+      expect(err.column).toBeGreaterThan(0);
     });
   });
 
@@ -77,6 +81,10 @@ describe("error codes (§1.9)", () => {
         expect(err.message_ar).toContain("س");
         expect(err.message_ar).toContain("رقم");
         expect(err.message_en).toContain("س");
+        expect(err.line).toBeGreaterThan(0);
+        expect(err.column).toBeGreaterThan(0);
+        // English message must NOT contain Arabic type names
+        expect(err.message_en).not.toMatch(/رقم|نصّ|صح\/خطأ|قائمة/);
       },
     );
   });
