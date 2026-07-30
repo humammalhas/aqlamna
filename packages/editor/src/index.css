@@ -4,7 +4,7 @@
 
 /* ---------------------------------------------------------------------------
    Aqlamna editor — RTL-first, CSS logical properties only.
-   No physical margin-left/right anywhere.
+   Colours come from aqlamna-theme.css custom properties.
    --------------------------------------------------------------------------- */
 
 html, body, #root {
@@ -16,6 +16,8 @@ html, body, #root {
 body {
   font-family: "IBM Plex Sans Arabic", "Noto Sans Arabic", Amiri, Tajawal,
     system-ui, sans-serif;
+  background: var(--aq-bg);
+  color: var(--aq-text);
 }
 
 /* Editor textarea — monospace Arabic font */
@@ -27,8 +29,8 @@ body {
   text-align: start;
   resize: none;
   outline: none;
-  color: #e0d6c2;
-  background: #141210;
+  color: var(--aq-input-text);
+  background: var(--aq-editor-bg);
   border: none;
   padding: 1rem;
   inline-size: 100%;
@@ -36,7 +38,7 @@ body {
 }
 
 .editor-textarea::placeholder {
-  color: #5a5040;
+  color: var(--aq-muted);
 }
 
 /* Player pane — the runtime renders into this */
@@ -51,6 +53,8 @@ body {
   max-inline-size: none;
   margin-inline: 0;
   padding: 1.5rem;
+  background: var(--aq-bg);
+  color: var(--aq-text);
 }
 
 /* Error strip */
@@ -60,22 +64,21 @@ body {
   line-height: 1.5;
   padding-block: 0.5rem;
   padding-inline: 1rem;
+  background: var(--aq-error-bg);
+  color: var(--aq-error-text);
 }
 
 /* ---- Mobile responsive --------------------------------------------------- */
 
 @media (max-width: 768px) {
-  /* Stack panes vertically */
   .editor-main-area {
     flex-direction: column !important;
   }
 
-  /* Hide dividers on mobile */
   .editor-divider {
     display: none;
   }
 
-  /* Prevent horizontal overflow on mobile */
   html, body {
     overflow-x: hidden;
   }

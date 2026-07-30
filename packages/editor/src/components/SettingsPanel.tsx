@@ -234,6 +234,9 @@ export default function SettingsPanel({ open, onClose }: SettingsPanelProps) {
           </>
         )}
 
+        {/* ---- Editor theme ---- */}
+        <EditorThemeToggle />
+
         {/* ---- Quality Linter toggle ---- */}
         <LinterToggle />
 
@@ -536,6 +539,22 @@ function LinterToggle() {
           }}
         >
           {qualityLintEnabled ? "مُفعَّل" : "معطَّل"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function EditorThemeToggle() {
+  const editorTheme = useStore((s) => s.editorTheme);
+  const toggleEditorTheme = useStore((s) => s.toggleEditorTheme);
+
+  return (
+    <div style={infoBoxStyle}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <span style={{ fontSize: "0.875rem", color: "#c0b090" }}>🎨 مظهر المحرر</span>
+        <button onClick={toggleEditorTheme} style={{ padding: "0.375rem 0.75rem", fontSize: "0.8125rem", fontFamily: "inherit", fontWeight: 600, color: editorTheme === "light" ? "#141210" : "#8a8070", background: editorTheme === "light" ? "#d4a843" : "#2a2620", border: editorTheme === "light" ? "none" : "1px solid #3a3528", borderRadius: "6px", cursor: "pointer" }}>
+          {editorTheme === "light" ? "فاتح" : "غامق"}
         </button>
       </div>
     </div>

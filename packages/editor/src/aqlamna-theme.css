@@ -1,0 +1,65 @@
+/* ---------------------------------------------------------------------------
+   Aqlamna editor palette — CSS custom properties only.
+   Every colour in the editor comes from here. No hardcoded hex elsewhere.
+
+   Light theme (default, no data-theme):
+     --aq-bg:        #F6F1E7   paper
+     --aq-surface:   #EFE8DA   panes, cards
+     --aq-border:    #D8CEBB
+     --aq-text:      #2B2721
+     --aq-muted:     #5A5346
+     --aq-accent:    #1F3A5F   ink blue
+     --aq-accent-hi: #2E5687   hover
+     --aq-on-accent: #F6F1E7
+
+   Dark theme ([data-theme="dark"]):
+     brown/gold palette — current styling, preserved.
+   --------------------------------------------------------------------------- */
+
+:root {
+  /* ---- Light theme (default) ---- */
+  --aq-bg:          #F6F1E7;
+  --aq-surface:     #EFE8DA;
+  --aq-border:      #D8CEBB;
+  --aq-text:        #2B2721;
+  --aq-muted:       #5A5346;
+  --aq-accent:      #1F3A5F;
+  --aq-accent-hi:   #2E5687;
+  --aq-on-accent:   #F6F1E7;
+
+  /* Editor-specific */
+  --aq-editor-bg:   #efe8da;
+  --aq-toolbar-bg:  #e8ddd0;
+  --aq-toolbar-border: #d8cebb;
+  --aq-btn-text:    #2b2721;
+  --aq-btn-bg:      #ddd3c4;
+  --aq-btn-border:  #d8cebb;
+  --aq-input-bg:    #f6f1e7;
+  --aq-input-border:#d8cebb;
+  --aq-input-text:  #2b2721;
+  --aq-error-bg:    #fdf2f2;
+  --aq-error-text:  #8b2030;
+}
+
+[data-theme="dark"] {
+  --aq-bg:          #1a1713;
+  --aq-surface:     #1c1917;
+  --aq-border:      #3a3528;
+  --aq-text:        #e0d6c2;
+  --aq-muted:       #8a7d66;
+  --aq-accent:      #d4a843;
+  --aq-accent-hi:   #c49a38;
+  --aq-on-accent:   #1a1713;
+
+  --aq-editor-bg:   #141210;
+  --aq-toolbar-bg:  #1c1917;
+  --aq-toolbar-border: #3a3528;
+  --aq-btn-text:    #9a8c70;
+  --aq-btn-bg:      #2a2620;
+  --aq-btn-border:  #3a3528;
+  --aq-input-bg:    #0e0d0b;
+  --aq-input-border:#3a3528;
+  --aq-input-text:  #e0d6c2;
+  --aq-error-bg:    #3a2020;
+  --aq-error-text:  #e8a0a0;
+}

@@ -11,6 +11,18 @@ import { getViewMode, setViewMode as persistViewMode, type ViewMode } from "./li
 
 export type PlayerTheme = "dark" | "light" | "book";
 
+export type EditorTheme = "light" | "dark";
+
+function loadEditorTheme(): EditorTheme {
+  try {
+    const t = localStorage.getItem("aqlamna-editor-theme");
+    if (t === "dark") return "dark";
+  } catch { /* noop */ }
+  return "light";
+}
+
+function saveEditorTheme(t: EditorTheme) { try { localStorage.setItem("aqlamna-editor-theme", t); } catch { /* noop */ } }
+
 function loadTheme(): PlayerTheme {
   try {
     const t = localStorage.getItem("aqlamna-player-theme");
@@ -90,6 +102,10 @@ export interface EditorStore {
   /** Set the player theme and persist. */
   setPlayerTheme: (t: PlayerTheme) => void;
 
+  /** Current editor colour theme. */
+  editorTheme: EditorTheme;
+  toggleEditorTheme: () => void;
+
   /** Cursor jump request from canvas → CodeMirror. */
   cursorJump: { name: string; nonce: number } | null;
 
@@ -109,6 +125,7 @@ export const useStore = create<EditorStore>((set, get) => ({
   viewModeLoaded: false,
   qualityLintEnabled: localStorage.getItem("aqlamna-quality-lint") !== "off",
   playerTheme: loadTheme(),
+  editorTheme: loadEditorTheme(),
 
   setSource: (source: string) => {
     set({ source });
@@ -172,6 +189,13 @@ export const useStore = create<EditorStore>((set, get) => ({
   setPlayerTheme: (t: PlayerTheme) => {
     set({ playerTheme: t });
     saveTheme(t);
+  },
+
+  toggleEditorTheme: () => {
+    const next = get().editorTheme === "dark" ? "light" : "dark";
+    set({ editorTheme: next });
+    saveEditorTheme(next);
+    document.documentElement.setAttribute("data-theme", next);
   },
 
   cursorJump: null,
