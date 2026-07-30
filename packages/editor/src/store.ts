@@ -17,7 +17,7 @@ export interface QalamError {
   column: number;
 }
 
-function isQalamError(err: unknown): err is QalamError {
+export function isQalamError(err: unknown): err is QalamError {
   return (
     typeof err === "object" &&
     err !== null &&
