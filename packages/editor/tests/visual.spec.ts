@@ -119,3 +119,87 @@ test.describe("editor visual contract", () => {
     await expect(page.locator(".player-pane")).toContainText("جمعتِ 4 قطرة.");
   });
 });
+
+// ---- Canvas visual tests — added for step 2.3 ------------------------------
+
+test.describe("canvas visual contract", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/");
+    // Wait for text editor to load (seed fixture is displayed)
+    await page.waitForSelector(".cm-line", { timeout: 15000 });
+  });
+
+  test("node count equals passage count for the seeded fixture", async ({ page }) => {
+    // Switch to canvas view
+    await page.getByRole("button", { name: "مخطط" }).click();
+    // Wait for React Flow nodes to render
+    await page.waitForSelector(".react-flow__node-passage", { timeout: 10000 });
+    const nodeCount = await page.locator(".react-flow__node-passage").count();
+    expect(nodeCount).toBeGreaterThanOrEqual(1);
+  });
+
+  test("an edge exists between two distinct passages", async ({ page }) => {
+    // Add a second passage with a divert from البداية to it
+    const editor = page.locator(".cm-content");
+    await editor.click();
+    await page.keyboard.down("Control");
+    await page.keyboard.press("End");
+    await page.keyboard.up("Control");
+    await page.keyboard.press("Enter");
+    await page.keyboard.press("Enter");
+    await page.keyboard.type("-> مقطع_ثان");
+    await page.keyboard.press("Enter");
+    await page.keyboard.press("Enter");
+    await page.keyboard.type("=== مقطع_ثان ===");
+    await page.keyboard.press("Enter");
+    await page.keyboard.type("نص المقطع الثاني.");
+    await page.waitForTimeout(300);
+
+    await page.getByRole("button", { name: "مخطط" }).click();
+    await page.waitForSelector(".react-flow__node-passage", { timeout: 10000 });
+    // React Flow edges are .react-flow__edge elements
+    const edgeElements = await page.locator(".react-flow__edge").count();
+    expect(edgeElements).toBeGreaterThan(0);
+  });
+
+  test("a divert to non-existent passage renders a ghost node", async ({ page }) => {
+    // Edit the source to add a divert to a non-existent passage
+    const editor = page.locator(".cm-content");
+    await editor.click();
+    // Go to end of document
+    await page.keyboard.down("Control");
+    await page.keyboard.press("End");
+    await page.keyboard.up("Control");
+    await page.keyboard.press("Enter");
+    await page.keyboard.type("-> مقطع_غير_موجود");
+    await page.waitForTimeout(300);
+
+    // Switch to canvas view
+    await page.getByRole("button", { name: "مخطط" }).click();
+    await page.waitForSelector(".react-flow__node-passage", { timeout: 10000 });
+
+    // Ghost node with the missing passage name
+    const ghost = page.locator(".react-flow__node-passage", {
+      hasText: "مقطع_غير_موجود",
+    });
+    await expect(ghost).toHaveCount(1);
+    await expect(ghost).toContainText("مقطع غير موجود");
+  });
+
+  test("switching back to text mode keeps the editor content", async ({ page }) => {
+    const editor = page.locator(".cm-content");
+    await expect(editor).toBeVisible();
+
+    // Switch to canvas
+    await page.getByRole("button", { name: "مخطط" }).click();
+    await page.waitForSelector(".react-flow__node-passage", { timeout: 10000 });
+
+    // Switch back to text
+    await page.getByRole("button", { name: "نص" }).click();
+    await page.waitForSelector(".cm-line", { timeout: 10000 });
+
+    // Content preserved
+    await expect(editor).toContainText("البداية");
+    await expect(editor).toContainText("الرحيق");
+  });
+});

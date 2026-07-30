@@ -3,17 +3,20 @@
 // ---------------------------------------------------------------------------
 
 const DB_NAME = "aqlamna-editor";
-const DB_VERSION = 1;
+const DB_VERSION = 2; // v1 had "projects", v2 adds "canvas"
 const STORE_NAME = "projects";
 
 function openDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     const req = indexedDB.open(DB_NAME, DB_VERSION);
-    req.onupgradeneeded = () => {
-      if (!req.result.objectStoreNames.contains(STORE_NAME)) {
-        req.result.createObjectStore(STORE_NAME);
-      }
-    };
+  req.onupgradeneeded = () => {
+    if (!req.result.objectStoreNames.contains(STORE_NAME)) {
+      req.result.createObjectStore(STORE_NAME);
+    }
+    if (!req.result.objectStoreNames.contains("canvas")) {
+      req.result.createObjectStore("canvas");
+    }
+  };
     req.onsuccess = () => resolve(req.result);
     req.onerror = () => reject(req.error);
   });

@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------
-// TopBar — project title, [▶ شغّل] play button, [⬇ تصدير] export button,
-// [⚙️] settings, and [🤖] AI actions.
+// TopBar — project title, view toggle [نص] [مخطط] [الاثنان],
+// [▶ شغّل] play, [⬇ تصدير] export, [⚙️] settings, [🤖] AI actions.
 // ---------------------------------------------------------------------------
 
 import { useStore } from "../store.js";
@@ -12,11 +12,19 @@ import { useState, useCallback } from "react";
 export default function TopBar() {
   const storyJson = useStore((s) => s.storyJson);
   const compileSource = useStore((s) => s.compileSource);
+  const viewMode = useStore((s) => s.viewMode);
+  const setViewMode = useStore((s) => s.setViewMode);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   const toggleSettings = useCallback(() => {
     setSettingsOpen((v) => !v);
   }, []);
+
+  const viewModes = [
+    { id: "text" as const, label: "نص" },
+    { id: "canvas" as const, label: "مخطط" },
+    { id: "split" as const, label: "الاثنان" },
+  ];
 
   const handlePlay = () => {
     compileSource();
@@ -47,7 +55,7 @@ export default function TopBar() {
           flexShrink: 0,
         }}
       >
-        {/* Top row: title + play & export buttons */}
+        {/* Top row: title + view toggle + action buttons */}
         <div
           style={{
             display: "flex",
@@ -75,6 +83,30 @@ export default function TopBar() {
             >
               المحرر
             </span>
+          </div>
+
+          {/* View mode toggle */}
+          <div style={{ display: "flex", gap: "0.375rem" }}>
+            {viewModes.map((vm) => (
+              <button
+                key={vm.id}
+                onClick={() => setViewMode(vm.id)}
+                style={{
+                  paddingBlock: "0.375rem",
+                  paddingInline: "0.75rem",
+                  fontSize: "0.8125rem",
+                  fontWeight: viewMode === vm.id ? 700 : 400,
+                  fontFamily: "inherit",
+                  color: viewMode === vm.id ? "#141210" : "#9a8c70",
+                  background: viewMode === vm.id ? "#d4a843" : "#2a2620",
+                  border: viewMode === vm.id ? "none" : "1px solid #3a3528",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                }}
+              >
+                {vm.label}
+              </button>
+            ))}
           </div>
 
           <div style={{ display: "flex", gap: "0.5rem" }}>
