@@ -68,6 +68,25 @@ every AI request carries the new rule.** Rules are never hardcoded in TypeScript
 Phase 3's linter reads the same file: prompt prevents on the way in, linter detects on the
 way out.
 
+## Phase 3 — polish (in progress)
+
+- ✅ **3.1 the Arabic quality linter** (`1d67edc`, `9d1cd45`) — `packages/linter`, zero deps.
+  `scripts/build-rules.mjs` reads `ARABIC_MASTERY.md` → `rules.json`:
+  **63 pair rules extracted from the ❌/✅ tables, 5 hand-written pattern rules
+  (`rules-extra.json`), 8 advisory rules that are never linted.**
+  **126 tests are GENERATED from the tables** — add a before/after row to the markdown and
+  you get a rule plus two tests for free. That is the whole design.
+  Lints **prose only** — reads TEXT tokens from the tokenizer, so it can never flag
+  `===`, variable names or diverts. Verified: a syntax-only source yields 0 diagnostics.
+  Pair rules can over-match (a table row is an example, not a regex) so §1b.5 verb-precision
+  rules are `info`, not `warning`. The linter suggests; it never blocks.
+  Known gap: `وقام بزيارة` is missed — the §2.4 lookbehind rejects the `و` prefix.
+- ⬜ 3.2 themes, mobile, Arabic tutorial and docs
+- ⬜ `CANVAS_TODO.md` — canvas interactions deferred from 2.3
+
+**Two consumers, one file:** the prompt prevents mistakes on the way in, the linter catches
+them on the way out. Both regenerate from `ARABIC_MASTERY.md`; neither hardcodes a rule.
+
 ## Brand
 
 `brand/` — `logo-transparent.png` (823², background flood-filled and feathered),
