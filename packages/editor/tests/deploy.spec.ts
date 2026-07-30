@@ -108,3 +108,34 @@ test.describe("Exported story", () => {
     expect(html).toContain('id="aq-theme-book"');
   });
 });
+
+
+// ---------------------------------------------------------------------------
+// First-run experience — onboarding + focus
+// ---------------------------------------------------------------------------
+
+test.describe("First-run focus", () => {
+  test("dismissing onboarding focuses CodeMirror", async ({ page }) => {
+    await page.goto("https://aqlamna.org/editor/");
+    await page.evaluate(() => {
+      localStorage.clear();
+      indexedDB.deleteDatabase("aqlamna-editor");
+    });
+    await page.reload({ waitUntil: "networkidle" });
+    await page.waitForTimeout(1500);
+
+    const dialog = page.locator('[role="dialog"]');
+    await expect(dialog).toBeVisible({ timeout: 5000 });
+
+    await page.locator("button", { hasText: "ابدأ" }).click();
+    await page.waitForTimeout(500);
+
+    await expect(dialog).not.toBeVisible({ timeout: 3000 });
+
+    const focusInCM = await page.evaluate(() => {
+      const ae = document.activeElement;
+      return ae ? ae.closest(".cm-editor") !== null : false;
+    });
+    expect(focusInCM).toBe(true);
+  });
+});

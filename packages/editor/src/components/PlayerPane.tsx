@@ -130,6 +130,7 @@ export default function PlayerPane() {
           justifyContent: "center",
           color: "var(--aq-dim)",
           fontSize: "0.9375rem",
+          position: "relative",
         }}
       >
         <p>اضغط ▶ شغّل لتشغيل القصة</p>

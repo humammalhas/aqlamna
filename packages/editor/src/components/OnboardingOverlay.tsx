@@ -29,6 +29,11 @@ export default function OnboardingOverlay() {
   const dismiss = () => {
     try { localStorage.setItem(STORAGE_KEY, "1"); } catch { /* noop */ }
     setVisible(false);
+    // Focus the editor after the overlay is gone
+    setTimeout(() => {
+      const cm = document.querySelector(".cm-content");
+      if (cm instanceof HTMLElement) cm.focus();
+    }, 100);
   };
 
   if (!visible) return null;
