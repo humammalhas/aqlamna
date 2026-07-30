@@ -306,6 +306,14 @@ export default function SettingsPanel({ open, onClose }: SettingsPanelProps) {
             اقترح فكرة
           </a>
           <a
+            href="https://github.com/humammalhas/aqlamna/discussions"
+            target="_blank"
+            rel="noopener"
+            style={{ fontSize: "0.8125rem", color: "#8a8070", textDecoration: "none" }}
+          >
+            ناقش
+          </a>
+          <a
             href="mailto:admin@almaseer.co"
             style={{ fontSize: "0.8125rem", color: "#8a8070", textDecoration: "none" }}
           >

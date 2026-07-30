@@ -23,6 +23,7 @@ packages/editor/src/generated/
 # site build artifacts
 site/editor/
 site/assets/
+site/العطر_المفقود.html
 
 # playwright artifacts
 test-results/

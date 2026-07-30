@@ -79,6 +79,14 @@ test.describe("Footer feedback links", () => {
     await expect(ideaLink).toHaveAttribute("target", "_blank");
     await expect(ideaLink).toHaveAttribute("rel", /noopener/);
 
+    const discussLink = page.locator("footer a", { hasText: "ناقش" });
+    await expect(discussLink).toHaveAttribute(
+      "href",
+      "https://github.com/humammalhas/aqlamna/discussions"
+    );
+    await expect(discussLink).toHaveAttribute("target", "_blank");
+    await expect(discussLink).toHaveAttribute("rel", /noopener/);
+
     const mailLink = page.locator("footer a", { hasText: "راسلنا" });
     await expect(mailLink).toHaveAttribute("href", "mailto:admin@almaseer.co");
   });
