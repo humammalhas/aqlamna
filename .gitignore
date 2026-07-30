@@ -15,3 +15,6 @@ npm_recovery_codes.txt
 
 # codewhale local state
 .codewhale/state/
+
+# editor generated assets
+packages/editor/src/generated/

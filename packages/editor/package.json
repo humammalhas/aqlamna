@@ -1,0 +1,33 @@
+{
+  "name": "@aqlamna/editor",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Aqlamna visual editor — Vite + React app",
+  "license": "GPL-3.0-only",
+  "type": "module",
+  "scripts": {
+    "dev": "npm run build -w @aqlamna/runtime && node scripts/copy-runtime.mjs && npm run build -w @aqlamna/core && vite",
+    "build": "npm run build -w @aqlamna/runtime && node scripts/copy-runtime.mjs && npm run build -w @aqlamna/core && vite build",
+    "preview": "vite preview",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@aqlamna/core": "*",
+    "@aqlamna/runtime": "*",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "zustand": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.0",
+    "autoprefixer": "^10.4.20",
+    "jsdom": "^25.0.0",
+    "postcss": "^8.4.47",
+    "tailwindcss": "^3.4.14",
+    "typescript": "^5.7.0",
+    "vite": "^6.0.0",
+    "vitest": "^3.1.0"
+  }
+}

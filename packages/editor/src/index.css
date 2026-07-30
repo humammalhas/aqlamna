@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ---------------------------------------------------------------------------
+   Aqlamna editor — RTL-first, CSS logical properties only.
+   No physical margin-left/right anywhere.
+   --------------------------------------------------------------------------- */
+
+html, body, #root {
+  block-size: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "IBM Plex Sans Arabic", "Noto Sans Arabic", Amiri, Tajawal,
+    system-ui, sans-serif;
+}
+
+/* Editor textarea — monospace Arabic font */
+.editor-textarea {
+  font-family: "Cascadia Code", "Fira Code", Consolas, monospace;
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  direction: rtl;
+  text-align: start;
+  resize: none;
+  outline: none;
+  color: #e0d6c2;
+  background: #141210;
+  border: none;
+  padding: 1rem;
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+.editor-textarea::placeholder {
+  color: #5a5040;
+}
+
+/* Player pane — the runtime renders into this */
+.player-pane {
+  direction: rtl;
+  overflow-y: auto;
+  block-size: 100%;
+}
+
+/* Make the runtime player fill the pane */
+.player-pane .aq-story {
+  max-inline-size: none;
+  margin-inline: 0;
+  padding: 1.5rem;
+}
+
+/* Error strip */
+.error-strip {
+  direction: rtl;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  padding-block: 0.5rem;
+  padding-inline: 1rem;
+}
