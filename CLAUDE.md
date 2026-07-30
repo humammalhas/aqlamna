@@ -44,7 +44,38 @@ the whole point.
 
 **🎉 PHASE 1 COMPLETE — 135 tests (111 core + 24 runtime).**
 
-Open items before Phase 2:
+## Phase 2 — the editor (in progress)
+
+- ✅ 2.1 app shell — Vite + React + Zustand, RTL, IndexedDB, play + export (`58de886`)
+- ✅ 2.2 CodeMirror with `.qalam` highlighting, live Arabic errors, **bidi operator
+  isolation** so `>=` no longer renders as `=<` (`4c2c98a`, `b816d15`)
+- ✅ **Playwright visual tests** (`3344039`) — 5 browser tests measuring computed styles
+  and glyph x-positions. Added because appearance cannot be verified by reading code;
+  CodeWhale twice reported visual fixes it had never rendered. Run:
+  `npm run test:visual -w @aqlamna/editor`
+- ✅ 2.4 AI co-writing (`140a59d`) — **bring-your-own-key** (DeepSeek, localStorage only,
+  Maskan model). Three actions: اقترح خيارات · أكمل المشهد · اكتب هذا المقطع.
+  Every response is compiled by `@aqlamna/core` before the author sees it; on failure it
+  retries once with the error fed back, then shows the raw text — **never inserts
+  anything that does not compile.** Human accepts with [أضف] or discards with [تجاهل].
+- ⬜ 2.3 visual canvas (React Flow) — deferred, the editor works without it
+
+**ARABIC_MASTERY → the AI, the loop that matters:**
+`packages/editor/scripts/build-mastery-prompt.mjs` reads `ARABIC_MASTERY.md` and emits
+`src/generated/mastery-prompt.ts` — 23 rules verbatim, 25 ❌→✅ pairs, the §6 checklist,
+~5,400 chars. Sent as the system prompt on every AI call. **Edit the markdown → rebuild →
+every AI request carries the new rule.** Rules are never hardcoded in TypeScript.
+Phase 3's linter reads the same file: prompt prevents on the way in, linter detects on the
+way out.
+
+## Brand
+
+`brand/` — `logo-transparent.png` (823², background flood-filled and feathered),
+`icon-{512,192,180,32,16}.png`, multi-res `favicon.ico`. Rim reads **aqlamna.org**.
+⚠️ The medallion is illegible below ~192px — a simplified crossed-quills mark is still
+needed for the favicon.
+
+Open items:
 - **Fonts:** the standalone export falls back to system Arabic fonts. Embedding
   IBM Plex Sans Arabic as base64 would blow the <100KB budget. Decide in Phase 3
   whether the export offers an optional font-embedding flag.
