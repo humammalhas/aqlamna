@@ -277,6 +277,42 @@ export default function SettingsPanel({ open, onClose }: SettingsPanelProps) {
         </div>
 
         {/* ---- Buttons ---- */}
+        {/* ---- Feedback links ---- */}
+        <div
+          style={{
+            marginBlockStart: "1.5rem",
+            paddingBlockStart: "1rem",
+            borderBlockStart: "1px solid #2a2620",
+            display: "flex",
+            flexWrap: "wrap",
+            gap: "1rem",
+            justifyContent: "center",
+          }}
+        >
+          <a
+            href="https://github.com/humammalhas/aqlamna/issues/new?template=bug.yml"
+            target="_blank"
+            rel="noopener"
+            style={{ fontSize: "0.8125rem", color: "#8a8070", textDecoration: "none" }}
+          >
+            أبلغ عن خطأ
+          </a>
+          <a
+            href="https://github.com/humammalhas/aqlamna/issues/new?template=idea.yml"
+            target="_blank"
+            rel="noopener"
+            style={{ fontSize: "0.8125rem", color: "#8a8070", textDecoration: "none" }}
+          >
+            اقترح فكرة
+          </a>
+          <a
+            href="mailto:admin@almaseer.co"
+            style={{ fontSize: "0.8125rem", color: "#8a8070", textDecoration: "none" }}
+          >
+            راسلنا
+          </a>
+        </div>
+
         <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end", marginBlockStart: "1rem" }}>
           {saved && (
             <span

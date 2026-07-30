@@ -20,6 +20,10 @@ npm_recovery_codes.txt
 # editor generated assets
 packages/editor/src/generated/
 
+# site build artifacts
+site/editor/
+site/assets/
+
 # playwright artifacts
 test-results/
 playwright-report/

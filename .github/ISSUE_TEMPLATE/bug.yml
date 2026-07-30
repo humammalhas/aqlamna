@@ -1,0 +1,49 @@
+name: أبلغ عن خطأ
+description: أبلغ عن خطأ في أقلامنا
+title: "[خطأ] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        شكرًا لتبليغك! قبل أن تكتب، تأكّد من الآتي:
+
+        - 🔑 **لا تنسخ مفتاح API أبدًا في هذا التبليغ** — التبليغات عامة ومنشورة على GitHub، وأيّ شخص يرى المفتاح يستطيع استخدامه على نفقتك.
+        - 📖 **لا تنسخ نصّ قصّتك** إلا إن كنت مستعدًا لنشره علنًا. اكتب وصف الخطأ بكلماتك.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: ما حدث؟
+      description: صف الخطأ الذي ظهر لك.
+    validations:
+      required: true
+  - type: textarea
+    id: what-expected
+    attributes:
+      label: ما توقّعت أن يحدث؟
+      description: صف ما توقّعت حدوثه بدلًا من ذلك.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: خطوات إعادة الحدث
+      description: |
+        اكتب الخطوات واحدة واحدة:
+        1. 
+        2. 
+        3. 
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: المتصفّح ونظام التشغيل
+      description: مثلًا "Chrome 132 على Windows 11" أو "Firefox 135 على macOS"
+      placeholder: Chrome 132 على Windows 11
+  - type: textarea
+    id: error-message
+    attributes:
+      label: رسالة الخطأ إن ظهرت
+      description: انسخ نصّ رسالة الخطأ كاملًا إن ظهرت لك رسالة.
+      render: text

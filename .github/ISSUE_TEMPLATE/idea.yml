@@ -1,0 +1,19 @@
+name: اقترح فكرة
+description: اقترح فكرة جديدة لأقلامنا
+title: "[فكرة] "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: ما الفكرة؟
+      description: صف فكرتك بأكبر قدر من التفاصيل.
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: ما المشكلة التي تحلّها؟
+      description: اشرح كيف تساعد هذه الفكرة الكتّاب.
+    validations:
+      required: true

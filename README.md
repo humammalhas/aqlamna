@@ -6,6 +6,8 @@
 
 **الترخيص:** GPL-3.0
 
+وجدت خطأ؟ عندك فكرة؟ [أبلغ عن خطأ](https://github.com/humammalhas/aqlamna/issues/new?template=bug.yml) أو [اقترح فكرة](https://github.com/humammalhas/aqlamna/issues/new?template=idea.yml) على GitHub. لا تستخدم GitHub؟ راسلنا على admin@almaseer.co. تذكّر: التبليغات عامة — لا تنسخ مفتاح API أبدًا.
+
 ---
 
 The first interactive fiction engine built for Arabic from the ground up — not a

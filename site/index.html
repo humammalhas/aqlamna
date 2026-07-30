@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#1a1713">
+  <meta name="description" content="أقلامنا — أول محرك قصص تفاعلية مبني للعربية من الأساس. اكتب، شغّل، وصدّر قصصك في ملف واحد يعمل دون اتصال.">
+  <meta property="og:title" content="أقلامنا — محرك القصص التفاعلية بالعربية">
+  <meta property="og:description" content="أول محرك قصص تفاعلية مبني للعربية من الأساس. اكتب، شغّل، وصدّر قصصك في ملف واحد يعمل دون اتصال.">
+  <meta property="og:image" content="/assets/icon-512.png">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="/assets/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="512x512" href="/assets/icon-512.png">
+  <title>أقلامنا — محرك القصص التفاعلية بالعربية</title>
+  <style>
+    /* -------------------------------------------------------------------------
+       أقلامنا landing page — RTL-first, CSS logical properties only
+       Dark palette matching the editor and runtime.
+       TODO: self-host IBM Plex Sans Arabic + Noto Sans Arabic for production.
+       ------------------------------------------------------------------------- */
+
+    /* --- Reset --------------------------------------------------------------- */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* --- Base ---------------------------------------------------------------- */
+    html {
+      font-family:
+        "IBM Plex Sans Arabic",
+        "Noto Sans Arabic",
+        "Amiri",
+        "Tajawal",
+        system-ui,
+        sans-serif;
+      font-size: 1.125rem;
+      line-height: 1.85;
+      color: #e0d6c2;
+      background: #1a1713;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      direction: rtl;
+      min-block-size: 100dvb;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* --- Layout -------------------------------------------------------------- */
+    .page {
+      inline-size: 100%;
+      max-inline-size: 48rem;
+      padding-inline: 1.5rem;
+      padding-block: 2rem;
+    }
+
+    /* --- Hero ---------------------------------------------------------------- */
+    .hero {
+      text-align: center;
+      padding-block: 3rem 1.5rem;
+    }
+
+    .hero-logo {
+      display: block;
+      max-inline-size: 180px;
+      margin-inline: auto;
+      margin-block-end: 1.5rem;
+    }
+
+    .hero-title {
+      font-size: 2.25rem;
+      font-weight: 700;
+      color: #d4a843;
+      margin-block-end: 0.75rem;
+    }
+
+    .hero-subtitle {
+      font-size: 1.125rem;
+      color: #b8a88a;
+      max-inline-size: 32rem;
+      margin-inline: auto;
+    }
+
+    /* --- Demo ---------------------------------------------------------------- */
+    .demo-section {
+      margin-block: 2rem;
+    }
+
+    .demo-label {
+      font-size: 0.875rem;
+      color: #8a7d66;
+      margin-block-end: 0.75rem;
+      text-align: center;
+    }
+
+    .demo-frame {
+      inline-size: 100%;
+      block-size: 520px;
+      border: 1px solid #3a3528;
+      border-radius: 8px;
+      background: #1a1814;
+      overflow: hidden;
+    }
+
+    /* Tighten on phones */
+    @media (max-inline-size: 480px) {
+      .demo-frame {
+        block-size: 480px;
+      }
+    }
+
+    /* --- CTA ----------------------------------------------------------------- */
+    .cta-wrap {
+      text-align: center;
+      margin-block: 2rem;
+    }
+
+    .cta-button {
+      display: inline-block;
+      background: #d4a843;
+      color: #1a1713;
+      font-size: 1.125rem;
+      font-weight: 700;
+      padding-inline: 2.5rem;
+      padding-block: 0.875rem;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: background 0.2s;
+    }
+
+    .cta-button:hover {
+      background: #c49a38;
+    }
+
+    /* --- Feature sections ---------------------------------------------------- */
+    .features {
+      margin-block: 3rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+      gap: 2rem;
+    }
+
+    .feature h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #d4a843;
+      margin-block-end: 0.5rem;
+    }
+
+    .feature p {
+      color: #b8a88a;
+      font-size: 1rem;
+      line-height: 1.75;
+    }
+
+    /* --- Privacy line -------------------------------------------------------- */
+    .privacy-line {
+      margin-block: 3rem 2rem;
+      padding: 1.5rem;
+      background: #211e18;
+      border-radius: 8px;
+      border: 1px solid #3a3528;
+      text-align: center;
+    }
+
+    .privacy-line p {
+      color: #8a7d66;
+      font-size: 0.9375rem;
+      line-height: 1.75;
+    }
+
+    .privacy-line strong {
+      color: #b8a88a;
+    }
+
+    /* --- Footer -------------------------------------------------------------- */
+    .site-footer {
+      margin-block-start: auto;
+      padding-block: 2rem;
+      text-align: center;
+      font-size: 0.8125rem;
+      color: #6b604e;
+    }
+
+    .site-footer nav {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1.5rem;
+      margin-block-end: 1rem;
+    }
+
+    .site-footer a {
+      color: #8a7d66;
+      text-decoration: none;
+    }
+
+    .site-footer a:hover {
+      color: #d4a843;
+    }
+
+    .site-footer .company {
+      margin-block-start: 0.5rem;
+      color: #5a5040;
+    }
+
+    /* --- Reading page (privacy / terms) ------------------------------------- */
+    .reading-page .hero {
+      padding-block: 2rem 1rem;
+    }
+
+    .reading-page .hero-logo {
+      max-inline-size: 100px;
+    }
+
+    .reading-page h1 {
+      font-size: 1.5rem;
+      color: #d4a843;
+      margin-block-end: 0.5rem;
+    }
+
+    .reading-page .version {
+      font-size: 0.875rem;
+      color: #6b604e;
+      margin-block-end: 2rem;
+    }
+
+    .prose {
+      max-inline-size: 40rem;
+      margin-inline: auto;
+    }
+
+    .prose h2 {
+      font-size: 1.125rem;
+      font-weight: 700;
+      color: #d4a843;
+      margin-block: 2rem 0.5rem;
+      padding-block-end: 0.375rem;
+      border-block-end: 1px solid #3a3528;
+    }
+
+    .prose p {
+      margin-block: 0.75rem;
+      line-height: 1.85;
+    }
+
+    .prose ul {
+      margin-block: 0.75rem;
+      padding-inline-start: 1.5rem;
+    }
+
+    .prose li {
+      margin-block: 0.375rem;
+    }
+
+    .prose strong {
+      color: #e0d6c2;
+    }
+
+    .prose a {
+      color: #d4a843;
+      text-decoration: underline;
+    }
+
+    .prose blockquote {
+      margin-block: 2rem;
+      padding: 1rem 1.25rem;
+      background: #211e18;
+      border-inline-start: 3px solid #d4a843;
+      border-radius: 0 6px 6px 0;
+      color: #8a7d66;
+      font-size: 0.9375rem;
+    }
+
+    .prose hr {
+      border: none;
+      border-block-start: 1px solid #3a3528;
+      margin-block: 2rem;
+    }
+
+    .back-link {
+      text-align: center;
+      margin-block: 3rem 2rem;
+    }
+
+    .back-link a {
+      color: #8a7d66;
+      text-decoration: none;
+      font-size: 0.9375rem;
+    }
+
+    .back-link a:hover {
+      color: #d4a843;
+    }
+
+    .english-link {
+      text-align: center;
+      margin-block-start: 3rem;
+      font-size: 0.8125rem;
+      color: #6b604e;
+    }
+
+    .english-link a {
+      color: #8a7d66;
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <!-- Hero -->
+    <header class="hero">
+      <img
+        class="hero-logo"
+        src="/assets/logo-transparent.png"
+        alt="شعار أقلامنا"
+        width="180"
+        height="180"
+      >
+      <h1 class="hero-title">أقلامنا</h1>
+      <p class="hero-subtitle">
+        أول محرك قصص تفاعلية مبني للعربية من الأساس — لغة برمجة نصية، محرر بصري،
+        وتصدير في ملف واحد يعمل دون اتصال.
+      </p>
+    </header>
+
+    <!-- Demo -->
+    <section class="demo-section">
+      <p class="demo-label">جرّب القصة الآن ←</p>
+      <iframe
+        class="demo-frame"
+        src="/العطر_المفقود.html"
+        title="العطر المفقود — قصة تفاعلية تجريبية"
+        loading="lazy"
+      ></iframe>
+    </section>
+
+    <!-- CTA -->
+    <div class="cta-wrap">
+      <a class="cta-button" href="/editor">افتح المحرر</a>
+    </div>
+
+    <!-- Features -->
+    <section class="features">
+      <div class="feature">
+        <h2>اكتب</h2>
+        <p>
+          اكتب قصتك بلغة أقلامنا النصية، أو ارسمها كخريطة مشاهد في المحرر البصري.
+          الكلمات المفتاحية والرموز كلها بالعربية.
+        </p>
+      </div>
+      <div class="feature">
+        <h2>شغّل</h2>
+        <p>
+          جرّب قصتك وأنت تكتبها — المتغيّرات، الخيارات، والتفريعات كلها تعمل مباشرة
+          داخل المحرر قبل أن تصدّر شيئًا.
+        </p>
+      </div>
+      <div class="feature">
+        <h2>شارك</h2>
+        <p>
+          صدّر قصتك في ملف HTML واحد يعمل دون اتصال وبلا خادم وبلا تسجيل.
+          أرسله لأصدقائك أو انشره على أي موقع.
+        </p>
+      </div>
+    </section>
+
+    <!-- Privacy line -->
+    <aside class="privacy-line">
+      <p>
+        <strong>لا حسابات. لا تتبّع. لا خادم.</strong>
+        قصصك لا تغادر جهازك. وإذا استخدمت الذكاء الاصطناعي فأنت تحضر مفتاحك
+        بنفسك — لا نرسل شيئًا لنا.
+      </p>
+    </aside>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+      <nav>
+        <a href="https://github.com/humammalhas/aqlamna/issues/new?template=bug.yml" target="_blank" rel="noopener">أبلغ عن خطأ</a>
+        <a href="https://github.com/humammalhas/aqlamna/issues/new?template=idea.yml" target="_blank" rel="noopener">اقترح فكرة</a>
+        <a href="mailto:admin@almaseer.co">راسلنا</a>
+        <a href="https://github.com/humammalhas/aqlamna">GPL-3.0</a>
+        <a href="/privacy">الخصوصية</a>
+        <a href="/terms">الشروط</a>
+      </nav>
+      <p class="company">المسير لبرمجيات وأنظمة الحاسوب</p>
+    </footer>
+  </main>
+</body>
+</html>
