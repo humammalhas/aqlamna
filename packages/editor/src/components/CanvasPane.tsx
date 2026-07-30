@@ -12,6 +12,7 @@ import {
   MiniMap,
   BackgroundVariant,
   useReactFlow,
+  ReactFlowProvider,
   Panel,
   type Node,
   type Edge,
@@ -42,7 +43,7 @@ const nodeTypes = {
 
 // ---- Component -------------------------------------------------------------
 
-export default function CanvasPane() {
+function CanvasPaneInner() {
   const source = useStore((s) => s.source);
   const setSource = useStore((s) => s.setSource);
   const requestCursorJump = useStore((s) => s.requestCursorJump);
@@ -329,5 +330,18 @@ export default function CanvasPane() {
         </Panel>
       </ReactFlow>
     </div>
+  );
+}
+
+// useReactFlow() only works INSIDE a ReactFlowProvider. Being the parent of
+// <ReactFlow> is not enough — the hook reads a context that <ReactFlow> itself
+// provides to its children, not to its parent. Without this wrapper the hook
+// throws during render, React unmounts the tree, and the whole editor renders
+// as a blank page. That is exactly what shipped on 30 Jul 2026.
+export default function CanvasPane() {
+  return (
+    <ReactFlowProvider>
+      <CanvasPaneInner />
+    </ReactFlowProvider>
   );
 }
