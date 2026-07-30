@@ -89,6 +89,15 @@ export interface EditorStore {
 
   /** Set the player theme and persist. */
   setPlayerTheme: (t: PlayerTheme) => void;
+
+  /** Cursor jump request from canvas → CodeMirror. */
+  cursorJump: { name: string; nonce: number } | null;
+
+  /** Request to move the text cursor to a passage header. */
+  requestCursorJump: (name: string) => void;
+
+  /** Clear the cursor jump after CodeEditorPane handles it. */
+  clearCursorJump: () => void;
 }
 
 export const useStore = create<EditorStore>((set, get) => ({
@@ -164,6 +173,14 @@ export const useStore = create<EditorStore>((set, get) => ({
     set({ playerTheme: t });
     saveTheme(t);
   },
+
+  cursorJump: null,
+
+  requestCursorJump: (name: string) => {
+    set({ cursorJump: { name, nonce: Date.now() } });
+  },
+
+  clearCursorJump: () => set({ cursorJump: null }),
 }));
 
 // ---- Init view mode on first load (non-React side-effect) -------------------

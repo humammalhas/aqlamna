@@ -40,6 +40,7 @@ const PASSAGE_RE = /^===\s+(.+?)\s+===/gm;
 const SUBSECTION_RE = /^=\s+(.+?)\s*$/gm;
 const DIVERT_RE = /^->\s+(\S+)/gm;
 const TUNNEL_RE = /^~>\s+(\S+)/gm;
+const THREAD_RE = /^<-\s+(\S+)/gm;
 const CHOICE_RE = /^[*+]\s+/gm;
 const CONDITIONAL_RE = /\{\S+[:}]/g;
 const END_RE = /->\s+(?:نهاية|END)\b/g;
@@ -114,6 +115,33 @@ export function parseCanvas(source: string): ParsedCanvas {
       } satisfies PassageNodeData,
     });
 
+    // --- Subsection nodes for this passage ---
+    for (const sm of sectionMatches) {
+      const sName = sm[1]!.trim();
+      const fullPath = `${name}.${sName}`;
+      nodes.push({
+        id: fullPath,
+        type: "passage",
+        position: { x: 0, y: 0 },
+        data: {
+          title: fullPath,
+          subsectionOf: name,
+          preview: "(مقطع فرعي)",
+          choiceCount: 0,
+          isStart: false,
+          hasEndDivert: false,
+          hasConditions: false,
+          colour: "blue",
+        } satisfies PassageNodeData,
+      });
+      edges.push({
+        id: `${name}->${fullPath}-subsection`,
+        source: name,
+        target: fullPath,
+        type: "smoothstep",
+      });
+    }
+
     // --- Diverts from this passage ---
     const divertRe = new RegExp(DIVERT_RE.source, "gm");
     const tunnelRe = new RegExp(TUNNEL_RE.source, "gm");
@@ -142,6 +170,23 @@ export function parseCanvas(source: string): ParsedCanvas {
         type: "smoothstep",
         label: "نفق",
         style: { strokeDasharray: "5 5" },
+      });
+      if (!passageNames.has(target)) {
+        passageNames.add(target);
+      }
+    }
+
+    // --- Thread pulls from this passage (-> pulled content) ---
+    const threadRe = new RegExp(THREAD_RE.source, "gm");
+    for (const thm of body.matchAll(threadRe)) {
+      const target = thm[1]!.trim();
+      // Thread edge goes FROM the thread source TO this passage
+      edges.push({
+        id: `${target}<-${name}-${edges.length}`,
+        source: target,
+        target: name,
+        type: "smoothstep",
+        style: { strokeDasharray: "3 3" },
       });
       if (!passageNames.has(target)) {
         passageNames.add(target);
@@ -247,6 +292,7 @@ function extractPreview(body: string): string {
     .replace(/^[*+]\s+.*$/gm, "")
     .replace(/^->\s+.*$/gm, "")
     .replace(/^~>\s+.*$/gm, "")
+    .replace(/^<-\s+.*$/gm, "")
     .replace(/^~\s+.*$/gm, "")
     .replace(/^[ \t]*$/gm, "")
     .replace(/[\{\}]/g, "")

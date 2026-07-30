@@ -2,11 +2,14 @@
 // PassageNode — custom React Flow node for a .qalam passage card.
 // RTL: source handle on LEFT (inline-end), target handle on RIGHT (inline-start),
 // mirrored from React Flow's LTR default per design §7.1.
+// Double-click the title to rename the passage (updates header + all references).
 // ---------------------------------------------------------------------------
 
-import { memo } from "react";
+import { memo, useCallback, useRef, useState } from "react";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 import type { PassageNodeData } from "../lib/canvas-parser.js";
+import { renamePassage } from "../lib/canvas-edit.js";
+import { useStore } from "../store.js";
 
 // Colour map for borders
 const COLOUR_MAP: Record<string, string> = {
@@ -31,6 +34,52 @@ function PassageNode({ data, selected }: NodeProps) {
   const isGhost = d.preview === "⚠️ مقطع غير موجود";
   const borderColor = isGhost ? GHOST_BORDER : COLOUR_MAP[d.colour] ?? COLOUR_MAP.blue;
   const bgColor = isGhost ? "#1a1414" : COLOUR_BG[d.colour] ?? COLOUR_BG.blue;
+
+  // Inline rename state
+  const [editing, setEditing] = useState(false);
+  const [editValue, setEditValue] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Store access for rename
+  const source = useStore((s) => s.source);
+  const setSource = useStore((s) => s.setSource);
+
+  // Double-click title → enter rename mode
+  const handleTitleDoubleClick = useCallback(
+    (e: React.MouseEvent) => {
+      if (isGhost) return;
+      e.stopPropagation();
+      setEditValue(d.title);
+      setEditing(true);
+      // Focus the input after render
+      setTimeout(() => inputRef.current?.select(), 0);
+    },
+    [isGhost, d.title],
+  );
+
+  // Commit rename
+  const commitRename = useCallback(() => {
+    setEditing(false);
+    const newName = editValue.trim();
+    if (!newName || newName === d.title) return;
+    const newSource = renamePassage(source, d.title, newName);
+    if (newSource !== source) {
+      setSource(newSource);
+    }
+  }, [editValue, d.title, source, setSource]);
+
+  // Key handling for rename input
+  const handleRenameKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        commitRename();
+      } else if (e.key === "Escape") {
+        setEditing(false);
+      }
+    },
+    [commitRename],
+  );
 
   return (
     <div
@@ -79,21 +128,51 @@ function PassageNode({ data, selected }: NodeProps) {
         }}
       />
 
-      {/* Title */}
-      <div
-        style={{
-          fontWeight: 700,
-          fontSize: "0.9375rem",
-          color: isGhost ? "#c06050" : "#d4a843",
-          marginBlockEnd: "0.25rem",
-          whiteSpace: "nowrap",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-        }}
-      >
-        {d.isStart ? "▶ " : ""}
-        {d.title}
-      </div>
+      {/* Title — double-click to rename */}
+      {editing ? (
+        <input
+          ref={inputRef}
+          value={editValue}
+          onChange={(e) => setEditValue(e.target.value)}
+          onBlur={commitRename}
+          onKeyDown={handleRenameKeyDown}
+          style={{
+            fontWeight: 700,
+            fontSize: "0.9375rem",
+            color: "#d4a843",
+            backgroundColor: "#0e0d0b",
+            border: `1px solid ${borderColor}`,
+            borderRadius: "4px",
+            padding: "2px 6px",
+            width: "100%",
+            boxSizing: "border-box",
+            marginBlockEnd: "0.25rem",
+            fontFamily: "inherit",
+            direction: "rtl",
+            textAlign: "right",
+          }}
+          autoFocus
+        />
+      ) : (
+        <div
+          onDoubleClick={handleTitleDoubleClick}
+          style={{
+            fontWeight: 700,
+            fontSize: "0.9375rem",
+            color: isGhost ? "#c06050" : "#d4a843",
+            marginBlockEnd: "0.25rem",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            cursor: isGhost ? "default" : "text",
+            userSelect: "none",
+          }}
+          title={isGhost ? undefined : "انقر نقراً مزدوجاً لإعادة التسمية"}
+        >
+          {d.isStart ? "▶ " : ""}
+          {d.title}
+        </div>
+      )}
 
       {/* Preview */}
       <div

@@ -106,6 +106,8 @@ const editorTheme = EditorView.theme(
 export default function CodeEditorPane() {
   const source = useStore((s) => s.source);
   const setSource = useStore((s) => s.setSource);
+  const cursorJump = useStore((s) => s.cursorJump);
+  const clearCursorJump = useStore((s) => s.clearCursorJump);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
@@ -176,6 +178,28 @@ export default function CodeEditorPane() {
       });
     }
   }, [source]);
+
+  // Respond to cursor jump requests from the canvas
+  useEffect(() => {
+    if (!cursorJump) return;
+    const view = viewRef.current;
+    if (!view) return;
+
+    const doc = view.state.doc.toString();
+    const escaped = cursorJump.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const headerRe = new RegExp(`^===\\s+${escaped}\\s+===`, "gm");
+    const match = headerRe.exec(doc);
+    if (match) {
+      // Position cursor at the start of the passage content (after the header)
+      const pos = match.index + match[0].length;
+      view.dispatch({
+        selection: { anchor: pos },
+        scrollIntoView: true,
+      });
+      view.focus();
+    }
+    clearCursorJump();
+  }, [cursorJump, clearCursorJump]);
 
   return (
     <div

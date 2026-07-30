@@ -1,6 +1,7 @@
 // ---------------------------------------------------------------------------
 // CanvasPane — React Flow canvas displaying the .qalam story as a node graph.
-// Read-only view: the .qalam text is the source of truth.
+// The .qalam text is the SINGLE SOURCE OF TRUTH. Every canvas edit is a
+// surgical text edit that calls setSource(), never a regeneration.
 // ---------------------------------------------------------------------------
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -14,6 +15,8 @@ import {
   type Edge,
   type OnNodesChange,
   type OnEdgesChange,
+  type Connection,
+  type NodeSelectionChange,
   applyNodeChanges,
   applyEdgeChanges,
 } from "@xyflow/react";
@@ -22,6 +25,11 @@ import "@xyflow/react/dist/style.css";
 import { useStore } from "../store.js";
 import { parseCanvas, autoLayout } from "../lib/canvas-parser.js";
 import { getNodePositions, saveAllPositions } from "../lib/canvas-db.js";
+import {
+  appendDivert,
+  appendNewPassage,
+  deletePassage,
+} from "../lib/canvas-edit.js";
 import PassageNode from "./PassageNode.js";
 
 // ---- Node type registration ------------------------------------------------
@@ -34,10 +42,17 @@ const nodeTypes = {
 
 export default function CanvasPane() {
   const source = useStore((s) => s.source);
+  const setSource = useStore((s) => s.setSource);
+  const requestCursorJump = useStore((s) => s.requestCursorJump);
+
   const [nodes, setNodes] = useState<Node[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
   const [ready, setReady] = useState(false);
   const prevSourceRef = useRef<string>("");
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Track which nodes are selected (for delete confirmation)
+  const selectedNodeIdsRef = useRef<Set<string>>(new Set());
 
   // Parse source into graph whenever source changes
   useEffect(() => {
@@ -79,8 +94,23 @@ export default function CanvasPane() {
       });
   }, [source, ready]);
 
+  // ---- Node interaction handlers ------------------------------------------
+
   const onNodesChange: OnNodesChange = useCallback(
-    (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
+    (changes) => {
+      // Track selection changes
+      for (const ch of changes) {
+        if (ch.type === "select") {
+          const sel = ch as NodeSelectionChange;
+          if (sel.selected) {
+            selectedNodeIdsRef.current.add(sel.id);
+          } else {
+            selectedNodeIdsRef.current.delete(sel.id);
+          }
+        }
+      }
+      setNodes((nds) => applyNodeChanges(changes, nds));
+    },
     [],
   );
 
@@ -89,13 +119,39 @@ export default function CanvasPane() {
     [],
   );
 
+  // Click a node → jump to its passage in the text editor
+  const handleNodeClick = useCallback(
+    (_event: React.MouseEvent, node: Node) => {
+      // Don't jump for ghost nodes (missing passages)
+      const data = node.data as { preview?: string } | undefined;
+      if (data?.preview === "⚠️ مقطع غير موجود") return;
+      requestCursorJump(node.id);
+    },
+    [requestCursorJump],
+  );
+
+  // Drag from handle → append a divert line in the source passage
+  const handleConnect = useCallback(
+    (connection: Connection) => {
+      if (!connection.source || !connection.target) return;
+      // Don't connect a node to itself
+      if (connection.source === connection.target) return;
+      // Don't connect ghost nodes
+      const sourceNode = nodes.find((n) => n.id === connection.source);
+      const sourceData = sourceNode?.data as { preview?: string } | undefined;
+      if (sourceData?.preview === "⚠️ مقطع غير موجود") return;
+
+      const newSource = appendDivert(source, connection.source, connection.target);
+      if (newSource !== source) {
+        setSource(newSource);
+      }
+    },
+    [source, nodes, setSource],
+  );
+
   // Save positions on node drag stop
   const handleNodeDragStop = useCallback(
     (_event: unknown, _node: Node) => {
-      // Snapshot current positions
-      const positions: Record<string, { x: number; y: number }> = {};
-      // We need to read the latest nodes — use the ref pattern or get from DOM
-      // For simplicity, use a small timeout to ensure positions are settled
       setTimeout(() => {
         setNodes((currentNodes) => {
           const pos: Record<string, { x: number; y: number }> = {};
@@ -110,7 +166,61 @@ export default function CanvasPane() {
     [],
   );
 
-  // Default edge options
+  // ---- Delete handler (keyboard) -----------------------------------------
+
+  // Listen for Delete/Backspace on the canvas container
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== "Delete" && e.key !== "Backspace") return;
+      if (selectedNodeIdsRef.current.size === 0) return;
+
+      // Get the first selected passage node (not a ghost)
+      const selectedIds = [...selectedNodeIdsRef.current];
+      const nodeToDelete = nodes.find(
+        (n) =>
+          selectedIds.includes(n.id) &&
+          (n.data as { preview?: string })?.preview !== "⚠️ مقطع غير موجود",
+      );
+
+      if (!nodeToDelete) return;
+
+      const confirmed = window.confirm(
+        `هل أنت متأكد من حذف مقطع "${nodeToDelete.id}"؟ لا يمكن التراجع عن هذا الإجراء من خلال المخطط.`,
+      );
+
+      if (!confirmed) return;
+
+      const newSource = deletePassage(source, nodeToDelete.id);
+      if (newSource !== source) {
+        selectedNodeIdsRef.current.delete(nodeToDelete.id);
+        setSource(newSource);
+      }
+    };
+
+    container.addEventListener("keydown", handleKeyDown);
+    return () => container.removeEventListener("keydown", handleKeyDown);
+  }, [source, nodes, setSource]);
+
+  // ---- Double-click empty canvas → new passage ---------------------------
+
+  const handlePaneDoubleClick = useCallback(
+    (_event: React.MouseEvent) => {
+      const name = window.prompt("اسم المقطع الجديد:");
+      if (!name || name.trim().length === 0) return;
+      const trimmed = name.trim();
+      const newSource = appendNewPassage(source, trimmed);
+      if (newSource !== source) {
+        setSource(newSource);
+      }
+    },
+    [source, setSource],
+  );
+
+  // ---- Default edge options ----------------------------------------------
+
   const defaultEdgeOptions = useMemo(
     () => ({
       style: { stroke: "#4a4030", strokeWidth: 1.5 },
@@ -136,13 +246,16 @@ export default function CanvasPane() {
   }
 
   return (
-    <div style={{ flex: 1, direction: "ltr" }}>
+    <div ref={containerRef} style={{ flex: 1, direction: "ltr" }}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
+        onNodeClick={handleNodeClick}
+        onConnect={handleConnect}
         onNodeDragStop={handleNodeDragStop}
+        onDoubleClick={handlePaneDoubleClick}
         nodeTypes={nodeTypes}
         defaultEdgeOptions={defaultEdgeOptions}
         fitView

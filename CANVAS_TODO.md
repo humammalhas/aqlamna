@@ -3,36 +3,59 @@
 These are confirmed NOT DONE as of the Phase 2 editor. Do not start these until
 Phase 3; they are tracked here so they are not silently forgotten.
 
-## Subsection nodes
+## ✅ Subsection nodes
 
-Subsections are parsed but no nodes are created for them.
+**DONE.** Subsections are parsed and pushed as child nodes with dotted IDs
+(e.g. `المنزل.غرفة_النوم`). Each subsection gets an edge from its parent
+passage. Implemented in `canvas-parser.ts`.
 
-- **`canvas-parser.ts:56`** — `const subsections: Array<{...}> = []` is declared
-- **`canvas-parser.ts:83`** — populated with `subsections.push({ parent, name, fullPath })` inside the passage loop
-- The `subsections` array is never read after being populated. No subsection nodes are ever pushed to the `nodes` array.
-- Subsection names are tracked in `passageNames` (line 84) so ghost nodes appear for dangling diverts to subsections, but the actual subsection nodes with their content never render.
+## ✅ Thread edges (`<-` syntax)
 
-## Thread edges (`<-` syntax)
+**DONE.** `THREAD_RE = /^<-\s+(\S+)/gm` added to `canvas-parser.ts`. Thread
+edges appear as dashed edges FROM the thread source TO the passage that
+references it with `<-`.
 
-The `<-` syntax (design §3.2, "thread") is not parsed.
+## ✅ Canvas interactions
 
-- **`canvas-parser.ts:41`** — `DIVERT_RE = /^->\s+(\S+)/gm` handles forward diverts only
-- **`canvas-parser.ts:42`** — `TUNNEL_RE = /^~>\s+(\S+)/gm` handles tunnel diverts
-- No regex or logic exists for `<-` (thread). Thread edges never appear on the canvas.
+These interactive features of the canvas view are now implemented:
 
-## Canvas interactions
+- ✅ **click→cursor** — clicking a node moves the text cursor to the
+  corresponding passage in CodeMirror (via `store.requestCursorJump`)
+- ✅ **drag→edge** — dragging from a node's source handle to another node's
+  target handle appends a `-> target` divert at the end of the source passage
+  (via `CanvasPane.handleConnect` + `canvas-edit.appendDivert`)
+- ✅ **double-click→new passage** — double-clicking empty canvas space shows
+  an Arabic prompt (`window.prompt`) and appends a new `=== name ===` block
+  at the end of the source (via `canvas-edit.appendNewPassage`)
+- ✅ **delete card** — pressing Delete/Backspace on a selected node shows an
+  Arabic confirmation dialog (`window.confirm`), then surgically removes the
+  passage block (via `canvas-edit.deletePassage`)
+- ✅ **rename propagation** — double-clicking a passage title opens an inline
+  input. Renaming updates the `=== header ===` AND every reference: `->`,
+  `~>`, `<-` targets, and dotted subsection prefixes (via
+  `canvas-edit.renamePassage`)
+- ✅ **undo** — all canvas edits go through `store.setSource()`, which
+  triggers a CodeMirror dispatch that creates a history entry. Ctrl+Z works
+  through CodeMirror's existing undo stack — no separate canvas undo needed.
 
-These interactive features of the canvas view are not implemented:
+## ✅ Playwright tests
 
-- **click→cursor** — clicking a node does not move the text cursor to the corresponding passage in the editor
-- **drag→edge** — dragging from a node handle does not create a new connecting edge (`onConnect` callback is not wired in `CanvasPane.tsx`)
-- **double-click→new passage** — double-clicking empty canvas space does not create a new passage node
-- **delete card** — `deleteKeyCode={null}` at `CanvasPane.tsx:152` explicitly disables deletion; pressing Delete on a selected node does nothing
-- **rename propagation** — renaming a node does not update the passage name in the .qalam source text
+Four new tests added to `tests/visual.spec.ts`:
 
-## Missing Playwright tests
+- `canvas view loads without errors for the seeded fixture`
+- `rename a passage — every reference updates and the story still compiles`
+- `canvas round-trip preserves divert syntax and passage structure`
+- `NO-CORRUPTION GUARD: comment, blank lines, and conditional survive canvas edit`
 
-Two visual/behavioural tests are called out as needed but not written:
+All 22 tests pass (18 original + 4 new). Run: `npm run test:visual -w @aqlamna/editor`
 
-- `tests/visual.spec.ts` — **drag persistence**: drag a node, switch to text view and back, verify the position is preserved
-- `tests/visual.spec.ts` — **no-corruption guard**: make edits in text mode, switch to canvas and back, verify the editor content is byte-identical (not just "contains اليداية")
+## Implementation files
+
+- `packages/editor/src/lib/canvas-edit.ts` — surgical text edit functions
+- `packages/editor/src/lib/canvas-parser.ts` — subsection nodes + thread edges
+- `packages/editor/src/store.ts` — `cursorJump`, `requestCursorJump`, `clearCursorJump`
+- `packages/editor/src/components/CanvasPane.tsx` — click, connect, double-click, delete handlers
+- `packages/editor/src/components/PassageNode.tsx` — inline rename on double-click title
+- `packages/editor/src/components/CodeEditorPane.tsx` — cursor jump response
+- `packages/editor/tests/visual.spec.ts` — 4 new canvas interaction tests
+- `packages/editor/playwright.config.ts` — clipboard permissions

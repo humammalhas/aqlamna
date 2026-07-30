@@ -5,6 +5,7 @@ export default defineConfig({
   testMatch: "visual.spec.ts",
   use: {
     baseURL: "http://localhost:5173",
+    permissions: ["clipboard-read", "clipboard-write"],
   },
   webServer: {
     command: "npx vite",
