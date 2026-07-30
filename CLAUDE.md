@@ -34,8 +34,22 @@ the whole point.
   (`8a1655e`, `500aa96`, `24db95b`). Message strings are FIXED in `PHASE1_SPEC.md` §1.15 —
   nobody paraphrases them. Verified: all 8 reachable, both languages non-empty,
   positions non-zero, type names localised per language.
-- ⏳ Step 6 — runtime player (state machine + RTL renderer, zero dependencies)
-- ⬜ Step 7 — standalone HTML export (<100KB, offline, no CDN)
+- ✅ Step 6 — runtime player: engine, RTL renderer, save/restore, dark theme (`0259d5e`).
+  Zero runtime dependencies — `packages/runtime/package.json` has no `dependencies` block.
+- ✅ Step 7 — **standalone HTML export** (`905d900`, `1d2c25e`).
+  `packages/runtime/examples/الرحيق.html` — 24,482 bytes, plays from `file://`, zero
+  network requests. Verified independently: `node --check` passes, `class Engine` present,
+  and the exported script drives a DOM stub through the story (0 → 4 قطرة, conditional
+  choice appears).
+
+**🎉 PHASE 1 COMPLETE — 135 tests (111 core + 24 runtime).**
+
+Open items before Phase 2:
+- **Fonts:** the standalone export falls back to system Arabic fonts. Embedding
+  IBM Plex Sans Arabic as base64 would blow the <100KB budget. Decide in Phase 3
+  whether the export offers an optional font-embedding flag.
+- Website: aqlamna.org, with `الرحيق.html` embedded as the live demo.
+  **aqlamna.com must redirect to .org, and `www` must work on both.**
 
 **4 fixtures** (01_minimal, 02_choices, 03_variables, 04_nesting). Fixture 04 was added
 during review after a fourth hand-written story exposed three silent-corruption bugs:
