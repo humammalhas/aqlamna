@@ -150,6 +150,16 @@ test.describe("editor visual contract", () => {
     // Story should have advanced past الدكّان
     await expect(page.locator(".player-pane")).not.toContainText("وصفة جدّتي ضاعت");
   });
+
+  test("AI textarea exists, is visible, and is wide enough", async ({ page }) => {
+    const textarea = page.locator("textarea");
+    await expect(textarea.first()).toBeVisible();
+    const paneBox = await page.locator(".player-pane").first().boundingBox();
+    const taBox = await textarea.first().boundingBox();
+    expect(taBox).not.toBeNull();
+    expect(paneBox).not.toBeNull();
+    expect(taBox!.width).toBeGreaterThan(paneBox!.width * 0.5);
+  });
 });
 
 // ---- Canvas visual tests — added for step 2.3 ------------------------------

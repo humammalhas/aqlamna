@@ -29,6 +29,8 @@ export interface AIRequest {
   passageNames: string[];
   /** Names of all variables in the story (so AI doesn't invent references). */
   variableNames: string[];
+  /** Optional human-written instruction prepended to the action prompt. */
+  humanInstruction?: string;
 }
 
 export interface AIResponse {
@@ -98,11 +100,15 @@ export async function callAI(req: AIRequest): Promise<AIResponse> {
     };
   }
 
-  const userPrompt = ACTION_PROMPTS[req.action]({
+  let userPrompt = ACTION_PROMPTS[req.action]({
     contextText: req.contextText,
     passageNames: req.passageNames,
     variableNames: req.variableNames,
   });
+
+  if (req.humanInstruction && req.humanInstruction.trim().length > 0) {
+    userPrompt = `تعليمات الكاتب: ${req.humanInstruction.trim()}\n\n${userPrompt}`;
+  }
 
   const messages: ChatMessage[] = [
     { role: "system", content: MASTERY_SYSTEM_PROMPT },

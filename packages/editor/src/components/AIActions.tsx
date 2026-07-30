@@ -30,6 +30,7 @@ export default function AIActions({ onOpenSettings }: { onOpenSettings: () => vo
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState<AIResponse | null>(null);
   const [actionLabel, setActionLabel] = useState("");
+  const [humanInstruction, setHumanInstruction] = useState("");
 
   const keyAvailable = hasApiKey();
 
@@ -51,6 +52,7 @@ export default function AIActions({ onOpenSettings }: { onOpenSettings: () => vo
           action,
           fullSource: source,
           contextText,
+          humanInstruction,
           passageNames,
           variableNames,
         });
@@ -84,6 +86,58 @@ export default function AIActions({ onOpenSettings }: { onOpenSettings: () => vo
 
   return (
     <div style={{ direction: "rtl" }}>
+      {/* Human instruction textarea */}
+      <div style={{ marginBlockEnd: "0.5rem" }}>
+        <label
+          style={{
+            display: "block",
+            fontSize: "0.75rem",
+            color: "#9a8c70",
+            marginBlockEnd: "0.25rem",
+          }}
+        >
+          اكتب ما تريد من الذكاء الاصطناعي
+        </label>
+        <textarea
+          value={humanInstruction}
+          onChange={(e) => setHumanInstruction(e.target.value)}
+          disabled={!keyAvailable}
+          placeholder="مثال: اكتب مشهدًا في سوق قديم، الراوي خائف"
+          rows={3}
+          style={{
+            inlineSize: "100%",
+            paddingBlock: "0.5rem",
+            paddingInline: "0.625rem",
+            fontSize: "0.875rem",
+            fontFamily: "inherit",
+            color: "#e0d6c2",
+            backgroundColor: "#0e0d0b",
+            border: "1px solid #3a3528",
+            borderRadius: "6px",
+            outline: "none",
+            resize: "vertical",
+            lineHeight: 1.6,
+            boxSizing: "border-box",
+          }}
+        />
+        {!keyAvailable && (
+          <div
+            style={{
+              marginBlockStart: "0.25rem",
+              fontSize: "0.75rem",
+              color: "#8a7060",
+              lineHeight: 1.6,
+            }}
+          >
+            أضف مفتاح الذكاء الاصطناعي من{" "}
+            <button onClick={onOpenSettings} style={{ fontSize: "inherit", fontFamily: "inherit", color: "#d4a843", background: "none", border: "none", textDecoration: "underline", cursor: "pointer", padding: 0 }}>
+              الإعدادات
+            </button>{" "}
+            لتفعيل هذه الأزرار
+          </div>
+        )}
+      </div>
+
       {/* Action buttons */}
       <div
         style={{
