@@ -16,8 +16,8 @@ export default function ErrorStrip({ error, onDismiss }: ErrorStripProps) {
     <div
       className="error-strip"
       style={{
-        background: "#3b1a1a",
-        borderBlockStart: "1px solid #6b2a2a",
+        background: "var(--aq-error-bg)",
+        borderBlockStart: "1px solid var(--aq-error-text)",
         flexShrink: 0,
       }}
     >
@@ -30,13 +30,13 @@ export default function ErrorStrip({ error, onDismiss }: ErrorStripProps) {
         }}
       >
         <div style={{ minInlineSize: 0 }}>
-          <span style={{ fontWeight: 700, color: "#e08080" }}>
+          <span style={{ fontWeight: 700, color: "var(--aq-error-text)" }}>
             {error.code}
           </span>
-          <span style={{ color: "#9a8c70", marginInlineStart: "0.75rem" }}>
+          <span style={{ color: "var(--aq-muted)", marginInlineStart: "0.75rem" }}>
             سطر {error.line}:{error.column}
           </span>
-          <p style={{ color: "#e0c0c0", marginBlockStart: "0.25rem" }}>
+          <p style={{ color: "var(--aq-btn-danger-border)", marginBlockStart: "0.25rem" }}>
             {error.message_ar}
           </p>
         </div>
@@ -45,7 +45,7 @@ export default function ErrorStrip({ error, onDismiss }: ErrorStripProps) {
           style={{
             background: "none",
             border: "none",
-            color: "#9a6a6a",
+            color: "var(--aq-error-text)",
             fontSize: "1.25rem",
             cursor: "pointer",
             lineHeight: 1,

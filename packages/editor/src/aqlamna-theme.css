@@ -2,64 +2,186 @@
    Aqlamna editor palette — CSS custom properties only.
    Every colour in the editor comes from here. No hardcoded hex elsewhere.
 
-   Light theme (default, no data-theme):
-     --aq-bg:        #F6F1E7   paper
-     --aq-surface:   #EFE8DA   panes, cards
-     --aq-border:    #D8CEBB
-     --aq-text:      #2B2721
-     --aq-muted:     #5A5346
-     --aq-accent:    #1F3A5F   ink blue
-     --aq-accent-hi: #2E5687   hover
-     --aq-on-accent: #F6F1E7
-
-   Dark theme ([data-theme="dark"]):
-     brown/gold palette — current styling, preserved.
+   Light theme (default, no data-theme): cream + ink blue
+   Dark theme ([data-theme="dark"]): brown + gold
    --------------------------------------------------------------------------- */
 
 :root {
-  /* ---- Light theme (default) ---- */
+  /* ---- Base ---- */
   --aq-bg:          #F6F1E7;
+  --aq-bg-deep:     #EDE6D9;
   --aq-surface:     #EFE8DA;
+  --aq-surface-hi:  #F0EBE0;
   --aq-border:      #D8CEBB;
+  --aq-border-hi:   #C8BDA5;
   --aq-text:        #2B2721;
   --aq-muted:       #5A5346;
+  --aq-dim:         #8A7D6B;
+  --aq-faint:       #A0988C;
   --aq-accent:      #1F3A5F;
   --aq-accent-hi:   #2E5687;
-  --aq-on-accent:   #F6F1E7;
+  --aq-accent-text: #F6F1E7;
+  --aq-accent-muted:#8A9CB0;
 
-  /* Editor-specific */
-  --aq-editor-bg:   #efe8da;
-  --aq-toolbar-bg:  #e8ddd0;
-  --aq-toolbar-border: #d8cebb;
-  --aq-btn-text:    #2b2721;
-  --aq-btn-bg:      #ddd3c4;
-  --aq-btn-border:  #d8cebb;
-  --aq-input-bg:    #f6f1e7;
-  --aq-input-border:#d8cebb;
-  --aq-input-text:  #2b2721;
-  --aq-error-bg:    #fdf2f2;
-  --aq-error-text:  #8b2030;
+  /* ---- Editor chrome ---- */
+  --aq-editor-bg:   #EFE8DA;
+  --aq-editor-text: #2B2721;
+  --aq-editor-sel:  #D4C8B0;
+  --aq-toolbar-bg:  #E8DDD0;
+  --aq-toolbar-border:#D8CEBB;
+  --aq-toolbar-divider:#C8BDA5;
+
+  /* ---- Buttons ---- */
+  --aq-btn-text:    #2B2721;
+  --aq-btn-bg:      #DDD3C4;
+  --aq-btn-border:  #D8CEBB;
+  --aq-btn-hover:   #D4C8B0;
+  --aq-btn-accent-text:#F6F1E7;
+  --aq-btn-accent-bg:#1F3A5F;
+  --aq-btn-danger-text:#8B2030;
+  --aq-btn-danger-bg:#F8E8E8;
+  --aq-btn-danger-border:#E0C0C0;
+
+  /* ---- Inputs ---- */
+  --aq-input-bg:    #F6F1E7;
+  --aq-input-border:#D8CEBB;
+  --aq-input-text:  #2B2721;
+  --aq-input-ph:    #A0988C;
+
+  /* ---- Error strip ---- */
+  --aq-error-bg:    #FDF2F2;
+  --aq-error-text:  #8B2030;
+
+  /* ---- Canvas / React Flow ---- */
+  --aq-canvas-bg:        #EDE6D9;
+  --aq-canvas-dots:      #D8CEBB;
+  --aq-canvas-edge:      #B8A890;
+  --aq-minimap-bg:       #EFE8DA;
+  --aq-minimap-mask:     rgba(246,241,231,0.4);
+  --aq-node-bg:          #FFFFFF;
+  --aq-node-border:      #D8CEBB;
+  --aq-node-text:        #2B2721;
+  --aq-node-muted:       #5A5346;
+  --aq-node-blue:        #6A9EC5;
+  --aq-node-green:       #7EA87E;
+  --aq-node-red:         #C06050;
+  --aq-node-orange:      #D19A66;
+  --aq-node-blue-bg:     #E8F0F8;
+  --aq-node-green-bg:    #E8F0E8;
+  --aq-node-red-bg:      #F8E8E8;
+  --aq-node-orange-bg:   #F8F0E8;
+
+  /* ---- Syntax highlighting ---- */
+  --aq-syn-keyword:  #6A3F8A;
+  --aq-syn-choice:   #C06050;
+  --aq-syn-divert:   #8B6F3A;
+  --aq-syn-comment:  #5C8370;
+  --aq-syn-string:   #2A6B4A;
+  --aq-syn-var:      #1F5A7F;
+  --aq-syn-default:  #2B2721;
+  --aq-syn-gutter:   #A0988C;
+  --aq-syn-activeline:#EBE2D3;
+
+  /* ---- Semantic ---- */
+  --aq-success:      #3A7A3A;
+  --aq-success-bg:   #E8F0E8;
+  --aq-danger:       #C04040;
+  --aq-danger-bg:    #F8E8E8;
+  --aq-warning:      #9A7030;
+  --aq-warning-bg:   #FAF0E0;
+
+  /* ---- Overlays ---- */
+  --aq-overlay-bg:   rgba(246,241,231,0.92);
+  --aq-modal-bg:     #F6F1E7;
+  --aq-modal-border: #D8CEBB;
 }
 
 [data-theme="dark"] {
+  /* ---- Base ---- */
   --aq-bg:          #1a1713;
+  --aq-bg-deep:     #0e0d0b;
   --aq-surface:     #1c1917;
+  --aq-surface-hi:  #2a2620;
   --aq-border:      #3a3528;
+  --aq-border-hi:   #4a4030;
   --aq-text:        #e0d6c2;
   --aq-muted:       #8a7d66;
+  --aq-dim:         #5a5040;
+  --aq-faint:       #4a4540;
   --aq-accent:      #d4a843;
   --aq-accent-hi:   #c49a38;
-  --aq-on-accent:   #1a1713;
+  --aq-accent-text: #1a1713;
+  --aq-accent-muted:#b09050;
 
+  /* ---- Editor chrome ---- */
   --aq-editor-bg:   #141210;
+  --aq-editor-text: #e0d6c2;
+  --aq-editor-sel:  #2a2620;
   --aq-toolbar-bg:  #1c1917;
-  --aq-toolbar-border: #3a3528;
+  --aq-toolbar-border:#3a3528;
+  --aq-toolbar-divider:#2a2620;
+
+  /* ---- Buttons ---- */
   --aq-btn-text:    #9a8c70;
   --aq-btn-bg:      #2a2620;
   --aq-btn-border:  #3a3528;
+  --aq-btn-hover:   #3a3528;
+  --aq-btn-accent-text:#141210;
+  --aq-btn-accent-bg:#d4a843;
+  --aq-btn-danger-text:#c06050;
+  --aq-btn-danger-bg:#2a1818;
+  --aq-btn-danger-border:#4a3030;
+
+  /* ---- Inputs ---- */
   --aq-input-bg:    #0e0d0b;
   --aq-input-border:#3a3528;
   --aq-input-text:  #e0d6c2;
+  --aq-input-ph:    #5a5040;
+
+  /* ---- Error strip ---- */
   --aq-error-bg:    #3a2020;
   --aq-error-text:  #e8a0a0;
+
+  /* ---- Canvas / React Flow ---- */
+  --aq-canvas-bg:        #0e0d0b;
+  --aq-canvas-dots:      #2a2620;
+  --aq-canvas-edge:      #4a4030;
+  --aq-minimap-bg:       #141210;
+  --aq-minimap-mask:     rgba(0,0,0,0.6);
+  --aq-node-bg:          #141210;
+  --aq-node-border:      #3a3528;
+  --aq-node-text:        #e0d6c2;
+  --aq-node-muted:       #5a5040;
+  --aq-node-blue:        #5a8fc0;
+  --aq-node-green:       #4a8;
+  --aq-node-red:         #c44;
+  --aq-node-orange:      #d8a;
+  --aq-node-blue-bg:     #1a1a2a;
+  --aq-node-green-bg:    #1a2a1a;
+  --aq-node-red-bg:      #2a1a1a;
+  --aq-node-orange-bg:   #3c2a1e;
+
+  /* ---- Syntax highlighting ---- */
+  --aq-syn-keyword:  #c678dd;
+  --aq-syn-choice:   #d19a66;
+  --aq-syn-divert:   #e5c07b;
+  --aq-syn-comment:  #7ea87e;
+  --aq-syn-string:   #98c379;
+  --aq-syn-var:      #56b6c2;
+  --aq-syn-default:  #e0d6c2;
+  --aq-syn-gutter:   #525252;
+  --aq-syn-activeline:#1a181433;
+
+  /* ---- Semantic ---- */
+  --aq-success:      #60b060;
+  --aq-success-bg:   #1a2a1a;
+  --aq-danger:       #c06050;
+  --aq-danger-bg:    #2a1818;
+  --aq-warning:      #c09050;
+  --aq-warning-bg:   #2a2010;
+
+  /* ---- Overlays ---- */
+  --aq-overlay-bg:   rgba(10,9,7,0.92);
+  --aq-modal-bg:     #1c1917;
+  --aq-modal-border: #3a3528;
 }

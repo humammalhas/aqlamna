@@ -117,8 +117,8 @@ export default function SettingsPanel({ open, onClose }: SettingsPanelProps) {
     >
       <div
         style={{
-          backgroundColor: "#1c1917",
-          border: "1px solid #3a3528",
+          backgroundColor: "var(--aq-surface)",
+          border: "1px solid var(--aq-border)",
           borderRadius: "8px",
           padding: "1.5rem",
           maxWidth: "520px",
@@ -132,7 +132,7 @@ export default function SettingsPanel({ open, onClose }: SettingsPanelProps) {
           style={{
             fontSize: "1.1rem",
             fontWeight: 700,
-            color: "#d4a843",
+            color: "var(--aq-accent)",
             margin: 0,
             marginBlockEnd: "1rem",
           }}
@@ -260,7 +260,7 @@ export default function SettingsPanel({ open, onClose }: SettingsPanelProps) {
                 href={currentProvider.keyAcquisitionUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                style={{ color: "#b09050", textDecoration: "underline" }}
+                style={{ color: "var(--aq-accent-muted)", textDecoration: "underline" }}
               >
                 {currentProvider.keyAcquisitionUrl}
               </a>
@@ -270,7 +270,7 @@ export default function SettingsPanel({ open, onClose }: SettingsPanelProps) {
             style={{
               marginBlockStart: "0.5rem",
               fontSize: "0.75rem",
-              color: "#8a8070",
+              color: "var(--aq-muted)",
               lineHeight: 1.6,
               whiteSpace: "pre-wrap",
             }}
@@ -285,7 +285,7 @@ export default function SettingsPanel({ open, onClose }: SettingsPanelProps) {
           style={{
             marginBlockStart: "1.5rem",
             paddingBlockStart: "1rem",
-            borderBlockStart: "1px solid #2a2620",
+            borderBlockStart: "1px solid var(--aq-surface-hi)",
             display: "flex",
             flexWrap: "wrap",
             gap: "1rem",
@@ -296,7 +296,7 @@ export default function SettingsPanel({ open, onClose }: SettingsPanelProps) {
             href="https://github.com/humammalhas/aqlamna/issues/new?template=bug.yml"
             target="_blank"
             rel="noopener"
-            style={{ fontSize: "0.8125rem", color: "#8a8070", textDecoration: "none" }}
+            style={{ fontSize: "0.8125rem", color: "var(--aq-muted)", textDecoration: "none" }}
           >
             أبلغ عن خطأ
           </a>
@@ -304,7 +304,7 @@ export default function SettingsPanel({ open, onClose }: SettingsPanelProps) {
             href="https://github.com/humammalhas/aqlamna/issues/new?template=idea.yml"
             target="_blank"
             rel="noopener"
-            style={{ fontSize: "0.8125rem", color: "#8a8070", textDecoration: "none" }}
+            style={{ fontSize: "0.8125rem", color: "var(--aq-muted)", textDecoration: "none" }}
           >
             اقترح فكرة
           </a>
@@ -312,13 +312,13 @@ export default function SettingsPanel({ open, onClose }: SettingsPanelProps) {
             href="https://github.com/humammalhas/aqlamna/discussions"
             target="_blank"
             rel="noopener"
-            style={{ fontSize: "0.8125rem", color: "#8a8070", textDecoration: "none" }}
+            style={{ fontSize: "0.8125rem", color: "var(--aq-muted)", textDecoration: "none" }}
           >
             ناقش
           </a>
           <a
             href="mailto:admin@almaseer.co"
-            style={{ fontSize: "0.8125rem", color: "#8a8070", textDecoration: "none" }}
+            style={{ fontSize: "0.8125rem", color: "var(--aq-muted)", textDecoration: "none" }}
           >
             راسلنا
           </a>
@@ -329,7 +329,7 @@ export default function SettingsPanel({ open, onClose }: SettingsPanelProps) {
             <span
               style={{
                 fontSize: "0.8125rem",
-                color: "#60b060",
+                color: "var(--aq-success)",
                 alignSelf: "center",
                 marginInlineEnd: "auto",
               }}
@@ -377,9 +377,9 @@ function ProviderCard({
         paddingInline: "0.625rem",
         fontSize: "0.8125rem",
         fontFamily: "inherit",
-        color: selected ? "#141210" : "#c0b090",
-        background: selected ? "#d4a843" : "#2a2620",
-        border: selected ? "none" : "1px solid #3a3528",
+        color: selected ? "var(--aq-editor-bg)" : "var(--aq-accent-muted)",
+        background: selected ? "var(--aq-accent)" : "var(--aq-surface-hi)",
+        border: selected ? "none" : "1px solid var(--aq-border)",
         borderRadius: "6px",
         cursor: "pointer",
         textAlign: "start",
@@ -392,8 +392,8 @@ function ProviderCard({
           style={{
             fontSize: "0.625rem",
             fontWeight: 700,
-            color: selected ? "#141210" : "#60b060",
-            background: selected ? "rgba(0,0,0,0.1)" : "#1a3a1a",
+            color: selected ? "var(--aq-editor-bg)" : "var(--aq-success)",
+            background: selected ? "rgba(0,0,0,0.1)" : "var(--aq-node-green-bg)",
             paddingBlock: "0.125rem",
             paddingInline: "0.375rem",
             borderRadius: "3px",
@@ -427,7 +427,7 @@ function GroupLabel({ children }: { children: React.ReactNode }) {
       style={{
         fontSize: "0.6875rem",
         fontWeight: 600,
-        color: "#6a6450",
+        color: "var(--aq-dim)",
         textTransform: "uppercase",
         letterSpacing: "0.05em",
         marginBlockEnd: "0.375rem",
@@ -444,7 +444,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
       style={{
         display: "block",
         fontSize: "0.8125rem",
-        color: "#8a8070",
+        color: "var(--aq-muted)",
         marginBlockEnd: "0.375rem",
         marginBlockStart: "0.5rem",
       }}
@@ -470,8 +470,8 @@ function InfoRow({
         marginBlockEnd: "0.25rem",
       }}
     >
-      <span style={{ color: "#6a6450" }}>{label}</span>
-      <span style={{ color: "#9a8c70" }}>{children}</span>
+      <span style={{ color: "var(--aq-dim)" }}>{label}</span>
+      <span style={{ color: "var(--aq-muted)" }}>{children}</span>
     </div>
   );
 }
@@ -491,7 +491,7 @@ function LinterToggle() {
       day: "numeric",
     });
     metaText = /* @__PURE__ */ (
-      <span style={{ color: "#6a6450" }}>
+      <span style={{ color: "var(--aq-dim)" }}>
         {meta.totalActive} قاعدة نشطة · آخر تحديث: {dateStr}
       </span>
     );
@@ -509,10 +509,10 @@ function LinterToggle() {
         }}
       >
         <div>
-          <div style={{ fontSize: "0.875rem", color: "#c8c0b0" }}>
+          <div style={{ fontSize: "0.875rem", color: "var(--aq-dim)" }}>
             مدقّق الجودة العربية
           </div>
-          <div style={{ fontSize: "0.75rem", color: "#8a8070", marginBlockStart: "0.25rem" }}>
+          <div style={{ fontSize: "0.75rem", color: "var(--aq-muted)", marginBlockStart: "0.25rem" }}>
             يُظهر تنبيهات على الأنماط غير الفصيحة حسب قواعد ARABIC_MASTERY.md
             {metaText && (
               <>
@@ -530,9 +530,9 @@ function LinterToggle() {
             fontSize: "0.8125rem",
             fontFamily: "inherit",
             fontWeight: 600,
-            color: qualityLintEnabled ? "#141210" : "#8a8070",
-            background: qualityLintEnabled ? "#d4a843" : "#2a2620",
-            border: qualityLintEnabled ? "none" : "1px solid #3a3528",
+            color: qualityLintEnabled ? "var(--aq-editor-bg)" : "var(--aq-muted)",
+            background: qualityLintEnabled ? "var(--aq-accent)" : "var(--aq-surface-hi)",
+            border: qualityLintEnabled ? "none" : "1px solid var(--aq-border)",
             borderRadius: "6px",
             cursor: "pointer",
             whiteSpace: "nowrap",
@@ -552,8 +552,8 @@ function EditorThemeToggle() {
   return (
     <div style={infoBoxStyle}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <span style={{ fontSize: "0.875rem", color: "#c0b090" }}>🎨 مظهر المحرر</span>
-        <button onClick={toggleEditorTheme} style={{ padding: "0.375rem 0.75rem", fontSize: "0.8125rem", fontFamily: "inherit", fontWeight: 600, color: editorTheme === "light" ? "#141210" : "#8a8070", background: editorTheme === "light" ? "#d4a843" : "#2a2620", border: editorTheme === "light" ? "none" : "1px solid #3a3528", borderRadius: "6px", cursor: "pointer" }}>
+        <span style={{ fontSize: "0.875rem", color: "var(--aq-accent-muted)" }}>🎨 مظهر المحرر</span>
+        <button onClick={toggleEditorTheme} style={{ padding: "0.375rem 0.75rem", fontSize: "0.8125rem", fontFamily: "inherit", fontWeight: 600, color: editorTheme === "light" ? "var(--aq-editor-bg)" : "var(--aq-muted)", background: editorTheme === "light" ? "var(--aq-accent)" : "var(--aq-surface-hi)", border: editorTheme === "light" ? "none" : "1px solid var(--aq-border)", borderRadius: "6px", cursor: "pointer" }}>
           {editorTheme === "light" ? "فاتح" : "غامق"}
         </button>
       </div>
@@ -574,9 +574,9 @@ const inputStyle: React.CSSProperties = {
   paddingBlock: "0.5rem",
   paddingInline: "0.75rem",
   fontSize: "0.9375rem",
-  backgroundColor: "#0e0d0b",
-  color: "#e0d6c2",
-  border: "1px solid #3a3528",
+  backgroundColor: "var(--aq-input-bg)",
+  color: "var(--aq-text)",
+  border: "1px solid var(--aq-border)",
   borderRadius: "6px",
   outline: "none",
   boxSizing: "border-box",
@@ -590,7 +590,7 @@ const selectStyle: React.CSSProperties = {
 
 const noteStyle: React.CSSProperties = {
   fontSize: "0.75rem",
-  color: "#6a6450",
+  color: "var(--aq-dim)",
   lineHeight: 1.6,
   marginBlockStart: "0.75rem",
   marginBlockEnd: "0.5rem",
@@ -598,19 +598,19 @@ const noteStyle: React.CSSProperties = {
 
 const warningStyle: React.CSSProperties = {
   fontSize: "0.75rem",
-  color: "#c09050",
+  color: "var(--aq-warning)",
   lineHeight: 1.6,
   marginBlockEnd: "0.5rem",
   padding: "0.5rem",
-  background: "#2a2010",
+  background: "var(--aq-warning-bg)",
   borderRadius: "4px",
 };
 
 const infoBoxStyle: React.CSSProperties = {
   marginBlockStart: "0.5rem",
   padding: "0.75rem",
-  background: "#141210",
-  border: "1px solid #2a2620",
+  background: "var(--aq-editor-bg)",
+  border: "1px solid var(--aq-surface-hi)",
   borderRadius: "6px",
 };
 
@@ -620,8 +620,8 @@ const saveBtnStyle: React.CSSProperties = {
   fontSize: "0.8125rem",
   fontWeight: 600,
   fontFamily: "inherit",
-  color: "#141210",
-  background: "#d4a843",
+  color: "var(--aq-editor-bg)",
+  background: "var(--aq-accent)",
   border: "none",
   borderRadius: "6px",
   cursor: "pointer",
@@ -632,9 +632,9 @@ const clearBtnStyle: React.CSSProperties = {
   paddingInline: "0.75rem",
   fontSize: "0.8125rem",
   fontFamily: "inherit",
-  color: "#c06050",
+  color: "var(--aq-danger)",
   background: "transparent",
-  border: "1px solid #4a3030",
+  border: "1px solid var(--aq-btn-danger-border)",
   borderRadius: "6px",
   cursor: "pointer",
 };
@@ -644,9 +644,9 @@ const closeBtnStyle: React.CSSProperties = {
   paddingInline: "0.75rem",
   fontSize: "0.8125rem",
   fontFamily: "inherit",
-  color: "#8a8070",
-  background: "#2a2620",
-  border: "1px solid #3a3528",
+  color: "var(--aq-muted)",
+  background: "var(--aq-surface-hi)",
+  border: "1px solid var(--aq-border)",
   borderRadius: "6px",
   cursor: "pointer",
 };

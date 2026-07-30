@@ -13,27 +13,27 @@ import { useStore } from "../store.js";
 
 // Colour map for borders
 const COLOUR_MAP: Record<string, string> = {
-  green: "#4a8",
-  red: "#c44",
-  orange: "#d8a",
-  blue: "#48a",
+  green: "var(--aq-node-green)",
+  red: "var(--aq-node-red)",
+  orange: "var(--aq-node-orange)",
+  blue: "var(--aq-node-blue)",
 };
 
 const COLOUR_BG: Record<string, string> = {
-  green: "#1a2a1a",
-  red: "#2a1a1a",
-  orange: "#2a201a",
-  blue: "#1a1a2a",
+  green: "var(--aq-node-green-bg)",
+  red: "var(--aq-danger-bg)",
+  orange: "var(--aq-danger-bg)",
+  blue: "var(--aq-node-blue-bg)",
 };
 
 // Default for ghost nodes
-const GHOST_BORDER = "#c06050";
+const GHOST_BORDER = "var(--aq-danger)";
 
 function PassageNode({ data, selected }: NodeProps) {
   const d = data as unknown as PassageNodeData;
   const isGhost = d.preview === "⚠️ مقطع غير موجود";
   const borderColor = isGhost ? GHOST_BORDER : COLOUR_MAP[d.colour] ?? COLOUR_MAP.blue;
-  const bgColor = isGhost ? "#1a1414" : COLOUR_BG[d.colour] ?? COLOUR_BG.blue;
+  const bgColor = isGhost ? "var(--aq-danger-bg)" : COLOUR_BG[d.colour] ?? COLOUR_BG.blue;
 
   // Inline rename state
   const [editing, setEditing] = useState(false);
@@ -93,7 +93,7 @@ function PassageNode({ data, selected }: NodeProps) {
         borderRadius: "8px",
         padding: "0.625rem 0.75rem",
         fontSize: "0.8125rem",
-        color: "#d0c8b8",
+        color: "var(--aq-border-hi)",
         fontFamily: "system-ui, sans-serif",
         boxShadow: selected
           ? `0 0 0 2px ${borderColor}`
@@ -111,7 +111,7 @@ function PassageNode({ data, selected }: NodeProps) {
           background: borderColor,
           inlineSize: "10px",
           blockSize: "10px",
-          border: "2px solid #1c1917",
+          border: "2px solid var(--aq-surface)",
         }}
       />
 
@@ -124,7 +124,7 @@ function PassageNode({ data, selected }: NodeProps) {
           background: borderColor,
           inlineSize: "10px",
           blockSize: "10px",
-          border: "2px solid #1c1917",
+          border: "2px solid var(--aq-surface)",
         }}
       />
 
@@ -139,8 +139,8 @@ function PassageNode({ data, selected }: NodeProps) {
           style={{
             fontWeight: 700,
             fontSize: "0.9375rem",
-            color: "#d4a843",
-            backgroundColor: "#0e0d0b",
+            color: "var(--aq-accent)",
+            backgroundColor: "var(--aq-input-bg)",
             border: `1px solid ${borderColor}`,
             borderRadius: "4px",
             padding: "2px 6px",
@@ -159,7 +159,7 @@ function PassageNode({ data, selected }: NodeProps) {
           style={{
             fontWeight: 700,
             fontSize: "0.9375rem",
-            color: isGhost ? "#c06050" : "#d4a843",
+            color: isGhost ? "var(--aq-danger)" : "var(--aq-accent)",
             marginBlockEnd: "0.25rem",
             whiteSpace: "nowrap",
             overflow: "hidden",
@@ -178,7 +178,7 @@ function PassageNode({ data, selected }: NodeProps) {
       <div
         style={{
           fontSize: "0.75rem",
-          color: "#9a8c70",
+          color: "var(--aq-muted)",
           lineHeight: 1.6,
           marginBlockEnd: "0.375rem",
           maxHeight: "2.6em",
@@ -201,11 +201,11 @@ function PassageNode({ data, selected }: NodeProps) {
           <span
             style={{
               fontSize: "0.6875rem",
-              color: "#a08050",
-              backgroundColor: "#1a1814",
+              color: "var(--aq-syn-divert)",
+              backgroundColor: "var(--aq-bg-deep)",
               padding: "1px 6px",
               borderRadius: "10px",
-              border: "1px solid #3a3020",
+              border: "1px solid var(--aq-warning-bg)",
             }}
           >
             {d.choiceCount} ↯
@@ -215,11 +215,11 @@ function PassageNode({ data, selected }: NodeProps) {
           <span
             style={{
               fontSize: "0.6875rem",
-              color: "#c09040",
-              backgroundColor: "#1a1814",
+              color: "var(--aq-accent-muted)",
+              backgroundColor: "var(--aq-bg-deep)",
               padding: "1px 6px",
               borderRadius: "10px",
-              border: "1px solid #4a3020",
+              border: "1px solid var(--aq-node-red)",
             }}
           >
             ؟
@@ -229,11 +229,11 @@ function PassageNode({ data, selected }: NodeProps) {
           <span
             style={{
               fontSize: "0.6875rem",
-              color: "#c06050",
-              backgroundColor: "#1a1814",
+              color: "var(--aq-danger)",
+              backgroundColor: "var(--aq-bg-deep)",
               padding: "1px 6px",
               borderRadius: "10px",
-              border: "1px solid #4a2020",
+              border: "1px solid var(--aq-error-bg)",
             }}
           >
             ⏹

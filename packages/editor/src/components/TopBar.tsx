@@ -12,7 +12,7 @@ import { useState, useCallback } from "react";
 const HelpLink = ({ href, children }: { href: string; children: React.ReactNode }) => (
   <a href={href} target="_blank" rel="noopener noreferrer"
     style={{ display: "block", padding: "0.5rem 1rem", fontSize: "0.875rem",
-      color: "#e0d6c2", textDecoration: "none", whiteSpace: "nowrap" }}>
+      color: "var(--aq-text)", textDecoration: "none", whiteSpace: "nowrap" }}>
     {children}
   </a>
 );
@@ -60,8 +60,8 @@ export default function TopBar() {
         style={{
           display: "flex",
           flexDirection: "column",
-          background: "#1c1917",
-          borderBlockEnd: "1px solid #3a3528",
+          background: "var(--aq-surface)",
+          borderBlockEnd: "1px solid var(--aq-border)",
           flexShrink: 0,
         }}
       >
@@ -80,7 +80,7 @@ export default function TopBar() {
               style={{
                 fontSize: "1.25rem",
                 fontWeight: 700,
-                color: "#d4a843",
+                color: "var(--aq-accent)",
               }}
             >
               أقلامنا
@@ -88,7 +88,7 @@ export default function TopBar() {
             <span
               style={{
                 fontSize: "0.9375rem",
-                color: "#9a8c70",
+                color: "var(--aq-muted)",
               }}
             >
               المحرر
@@ -107,9 +107,9 @@ export default function TopBar() {
                   fontSize: "0.8125rem",
                   fontWeight: viewMode === vm.id ? 700 : 400,
                   fontFamily: "inherit",
-                  color: viewMode === vm.id ? "#141210" : "#9a8c70",
-                  background: viewMode === vm.id ? "#d4a843" : "#2a2620",
-                  border: viewMode === vm.id ? "none" : "1px solid #3a3528",
+                  color: viewMode === vm.id ? "var(--aq-editor-bg)" : "var(--aq-muted)",
+                  background: viewMode === vm.id ? "var(--aq-accent)" : "var(--aq-surface-hi)",
+                  border: viewMode === vm.id ? "none" : "1px solid var(--aq-border)",
                   borderRadius: "6px",
                   cursor: "pointer",
                 }}
@@ -130,9 +130,9 @@ export default function TopBar() {
                   paddingInline: "0.75rem",
                   fontSize: "0.9375rem",
                   fontFamily: "inherit",
-                  color: "#9a8c70",
-                  background: "#2a2620",
-                  border: "1px solid #3a3528",
+                  color: "var(--aq-muted)",
+                  background: "var(--aq-surface-hi)",
+                  border: "1px solid var(--aq-border)",
                   borderRadius: "6px",
                   cursor: "pointer",
                 }}
@@ -146,8 +146,8 @@ export default function TopBar() {
                     top: "100%",
                     insetInlineEnd: 0,
                     marginBlockStart: "0.25rem",
-                    background: "#1c1917",
-                    border: "1px solid #3a3528",
+                    background: "var(--aq-surface)",
+                    border: "1px solid var(--aq-border)",
                     borderRadius: "6px",
                     padding: "0.5rem 0",
                     zIndex: 100,
@@ -170,9 +170,9 @@ export default function TopBar() {
                 paddingInline: "0.75rem",
                 fontSize: "0.9375rem",
                 fontFamily: "inherit",
-                color: "#9a8c70",
-                background: "#2a2620",
-                border: "1px solid #3a3528",
+                color: "var(--aq-muted)",
+                background: "var(--aq-surface-hi)",
+                border: "1px solid var(--aq-border)",
                 borderRadius: "6px",
                 cursor: "pointer",
               }}
@@ -189,8 +189,8 @@ export default function TopBar() {
                 fontSize: "0.9375rem",
                 fontWeight: 600,
                 fontFamily: "inherit",
-                color: "#141210",
-                background: "#d4a843",
+                color: "var(--aq-editor-bg)",
+                background: "var(--aq-accent)",
                 border: "none",
                 borderRadius: "6px",
                 cursor: "pointer",
@@ -207,9 +207,9 @@ export default function TopBar() {
                 paddingInline: "1.25rem",
                 fontSize: "0.9375rem",
                 fontFamily: "inherit",
-                color: "#e0d6c2",
-                background: "#2a2620",
-                border: "1px solid #4a4030",
+                color: "var(--aq-text)",
+                background: "var(--aq-surface-hi)",
+                border: "1px solid var(--aq-border-hi)",
                 borderRadius: "6px",
                 cursor: "pointer",
               }}
@@ -224,7 +224,7 @@ export default function TopBar() {
           style={{
             paddingBlock: "0.375rem",
             paddingInline: "1rem",
-            borderBlockStart: "1px solid #2a2620",
+            borderBlockStart: "1px solid var(--aq-surface-hi)",
           }}
         >
           <AIActions onOpenSettings={toggleSettings} />

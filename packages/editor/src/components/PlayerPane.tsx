@@ -128,7 +128,7 @@ export default function PlayerPane() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          color: "#5a5040",
+          color: "var(--aq-dim)",
           fontSize: "0.9375rem",
         }}
       >

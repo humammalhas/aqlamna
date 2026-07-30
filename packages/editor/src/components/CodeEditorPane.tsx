@@ -24,8 +24,8 @@ const editorTheme = EditorView.theme(
     "&": {
       direction: "rtl",
       textAlign: "start",
-      backgroundColor: "#141210",
-      color: "#c8c0b0",
+      backgroundColor: "var(--aq-editor-bg)",
+      color: "var(--aq-dim)",
       fontSize: "0.9375rem",
       fontFamily:
         '"Cascadia Code", "Fira Code", "Noto Sans Arabic", Consolas, monospace',
@@ -37,8 +37,8 @@ const editorTheme = EditorView.theme(
       padding: "0.5rem 0",
     },
     ".cm-gutters": {
-      backgroundColor: "#0e0d0b",
-      color: "#4a4540",
+      backgroundColor: "var(--aq-input-bg)",
+      color: "var(--aq-faint)",
       border: "none",
       fontFamily: "inherit",
       fontSize: "0.8125rem",
@@ -46,40 +46,40 @@ const editorTheme = EditorView.theme(
       paddingInlineEnd: "0.25rem",
     },
     ".cm-activeLineGutter": {
-      backgroundColor: "#1a1814",
-      color: "#8a8070",
+      backgroundColor: "var(--aq-bg-deep)",
+      color: "var(--aq-muted)",
     },
     ".cm-activeLine": {
-      backgroundColor: "#1a181433",
+      backgroundColor: "var(--aq-bg-deep)33",
     },
     ".cm-cursor": {
-      borderInlineStart: "2px solid #d4a843",
+      borderInlineStart: "2px solid var(--aq-accent)",
     },
     ".cm-selectionBackground": {
-      backgroundColor: "#3a352866",
+      backgroundColor: "var(--aq-border)66",
     },
     ".cm-selectionMatch": {
-      backgroundColor: "#3a352844",
+      backgroundColor: "var(--aq-border)44",
     },
     ".cm-matchingBracket": {
-      color: "#d4a843",
+      color: "var(--aq-accent)",
       fontWeight: "bold",
     },
     ".cm-tooltip": {
-      backgroundColor: "#2a2620",
-      border: "1px solid #4a4030",
-      color: "#e0d6c2",
+      backgroundColor: "var(--aq-surface-hi)",
+      border: "1px solid var(--aq-border-hi)",
+      color: "var(--aq-text)",
       fontFamily: "system-ui, sans-serif",
       fontSize: "0.8125rem",
       direction: "rtl",
     },
     ".cm-diagnostic": {
       // Underline for lint errors
-      textDecoration: "underline wavy #e06060",
+      textDecoration: "underline wavy var(--aq-danger)",
     },
     ".cm-diagnostic.cm-lintRange-info": {
       // Info diagnostics: dotted underline, no wavy (quieter than warnings)
-      textDecoration: "underline dotted #8a8070",
+      textDecoration: "underline dotted var(--aq-muted)",
     },
     ".cm-lintRange-info": {
       // No gutter marker for info diagnostics
@@ -87,15 +87,15 @@ const editorTheme = EditorView.theme(
     },
     ".cm-diagnosticText": {
       // Tooltip for lint messages
-      color: "#e0c0c0",
+      color: "var(--aq-btn-danger-border)",
     },
     "&.cm-focused .cm-cursor": {
-      borderInlineStartColor: "#e8c84a",
+      borderInlineStartColor: "var(--aq-accent)",
     },
     ".cm-foldPlaceholder": {
-      backgroundColor: "#1a1814",
-      border: "1px solid #3a3528",
-      color: "#8a8070",
+      backgroundColor: "var(--aq-bg-deep)",
+      border: "1px solid var(--aq-border)",
+      color: "var(--aq-muted)",
     },
   },
   { dark: true },

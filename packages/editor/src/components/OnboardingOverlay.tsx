@@ -54,7 +54,7 @@ export default function OnboardingOverlay() {
         style={{
           maxInlineSize: "28rem",
           textAlign: "center",
-          color: "#e0d6c2",
+          color: "var(--aq-text)",
           fontFamily: "system-ui, sans-serif",
         }}
       >
@@ -62,7 +62,7 @@ export default function OnboardingOverlay() {
           style={{
             fontSize: "1.5rem",
             fontWeight: 700,
-            color: "#d4a843",
+            color: "var(--aq-accent)",
             marginBlockEnd: "1.25rem",
           }}
         >
@@ -72,7 +72,7 @@ export default function OnboardingOverlay() {
         <p
           style={{
             fontSize: "1rem",
-            color: "#b8a88a",
+            color: "var(--aq-text)",
             marginBlockEnd: "1.5rem",
             lineHeight: 1.75,
           }}
@@ -86,7 +86,7 @@ export default function OnboardingOverlay() {
             padding: 0,
             marginBlockEnd: "1.25rem",
             fontSize: "1rem",
-            color: "#c0b090",
+            color: "var(--aq-accent-muted)",
             lineHeight: 2,
           }}
         >
@@ -98,7 +98,7 @@ export default function OnboardingOverlay() {
         <p
           style={{
             fontSize: "0.875rem",
-            color: "#8a7d66",
+            color: "var(--aq-muted)",
             marginBlockEnd: "2rem",
             lineHeight: 1.6,
           }}
@@ -114,8 +114,8 @@ export default function OnboardingOverlay() {
             fontSize: "1.125rem",
             fontWeight: 700,
             fontFamily: "inherit",
-            color: "#1a1713",
-            background: "#d4a843",
+            color: "var(--aq-bg)",
+            background: "var(--aq-accent)",
             border: "none",
             borderRadius: "8px",
             cursor: "pointer",

@@ -92,7 +92,7 @@ export default function AIActions({ onOpenSettings }: { onOpenSettings: () => vo
           style={{
             display: "block",
             fontSize: "0.75rem",
-            color: "#9a8c70",
+            color: "var(--aq-muted)",
             marginBlockEnd: "0.25rem",
           }}
         >
@@ -110,9 +110,9 @@ export default function AIActions({ onOpenSettings }: { onOpenSettings: () => vo
             paddingInline: "0.625rem",
             fontSize: "0.875rem",
             fontFamily: "inherit",
-            color: "#e0d6c2",
-            backgroundColor: "#0e0d0b",
-            border: "1px solid #3a3528",
+            color: "var(--aq-text)",
+            backgroundColor: "var(--aq-input-bg)",
+            border: "1px solid var(--aq-border)",
             borderRadius: "6px",
             outline: "none",
             resize: "vertical",
@@ -125,12 +125,12 @@ export default function AIActions({ onOpenSettings }: { onOpenSettings: () => vo
             style={{
               marginBlockStart: "0.25rem",
               fontSize: "0.75rem",
-              color: "#8a7060",
+              color: "var(--aq-muted)",
               lineHeight: 1.6,
             }}
           >
             أضف مفتاح الذكاء الاصطناعي من{" "}
-            <button onClick={onOpenSettings} style={{ fontSize: "inherit", fontFamily: "inherit", color: "#d4a843", background: "none", border: "none", textDecoration: "underline", cursor: "pointer", padding: 0 }}>
+            <button onClick={onOpenSettings} style={{ fontSize: "inherit", fontFamily: "inherit", color: "var(--aq-accent)", background: "none", border: "none", textDecoration: "underline", cursor: "pointer", padding: 0 }}>
               الإعدادات
             </button>{" "}
             لتفعيل هذه الأزرار
@@ -175,7 +175,7 @@ export default function AIActions({ onOpenSettings }: { onOpenSettings: () => vo
           style={{
             marginBlockStart: "0.5rem",
             fontSize: "0.75rem",
-            color: "#8a7060",
+            color: "var(--aq-muted)",
             lineHeight: 1.6,
           }}
         >
@@ -185,7 +185,7 @@ export default function AIActions({ onOpenSettings }: { onOpenSettings: () => vo
             style={{
               fontSize: "inherit",
               fontFamily: "inherit",
-              color: "#d4a843",
+              color: "var(--aq-accent)",
               background: "none",
               border: "none",
               textDecoration: "underline",
@@ -204,9 +204,9 @@ export default function AIActions({ onOpenSettings }: { onOpenSettings: () => vo
         <div
           style={{
             marginBlockStart: "0.75rem",
-            border: "1px solid #3a3528",
+            border: "1px solid var(--aq-border)",
             borderRadius: "6px",
-            backgroundColor: "#1a1814",
+            backgroundColor: "var(--aq-bg-deep)",
             overflow: "hidden",
           }}
         >
@@ -218,11 +218,11 @@ export default function AIActions({ onOpenSettings }: { onOpenSettings: () => vo
               alignItems: "center",
               paddingBlock: "0.5rem",
               paddingInline: "0.75rem",
-              backgroundColor: "#141210",
-              borderBlockEnd: "1px solid #3a3528",
+              backgroundColor: "var(--aq-editor-bg)",
+              borderBlockEnd: "1px solid var(--aq-border)",
             }}
           >
-            <span style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#d4a843" }}>
+            <span style={{ fontSize: "0.8125rem", fontWeight: 600, color: "var(--aq-accent)" }}>
               {actionLabel}
             </span>
             <div style={{ display: "flex", gap: "0.375rem" }}>
@@ -235,8 +235,8 @@ export default function AIActions({ onOpenSettings }: { onOpenSettings: () => vo
                     fontSize: "0.8125rem",
                     fontWeight: 600,
                     fontFamily: "inherit",
-                    color: "#141210",
-                    background: "#60b060",
+                    color: "var(--aq-editor-bg)",
+                    background: "var(--aq-success)",
                     border: "none",
                     borderRadius: "4px",
                     cursor: "pointer",
@@ -252,9 +252,9 @@ export default function AIActions({ onOpenSettings }: { onOpenSettings: () => vo
                   paddingInline: "0.75rem",
                   fontSize: "0.8125rem",
                   fontFamily: "inherit",
-                  color: "#c06050",
+                  color: "var(--aq-danger)",
                   background: "transparent",
-                  border: "1px solid #4a3030",
+                  border: "1px solid var(--aq-btn-danger-border)",
                   borderRadius: "4px",
                   cursor: "pointer",
                 }}
@@ -269,7 +269,7 @@ export default function AIActions({ onOpenSettings }: { onOpenSettings: () => vo
             style={{
               padding: "0.75rem",
               fontSize: "0.875rem",
-              color: "#c8c0b0",
+              color: "var(--aq-dim)",
               lineHeight: 1.8,
               whiteSpace: "pre-wrap",
               fontFamily: "monospace",
@@ -282,10 +282,10 @@ export default function AIActions({ onOpenSettings }: { onOpenSettings: () => vo
               <div>
                 <div
                   style={{
-                    color: "#c06050",
+                    color: "var(--aq-danger)",
                     marginBlockEnd: "0.5rem",
                     padding: "0.5rem",
-                    backgroundColor: "#2a1818",
+                    backgroundColor: "var(--aq-danger-bg)",
                     borderRadius: "4px",
                     fontSize: "0.8125rem",
                     whiteSpace: "pre-wrap",
@@ -296,7 +296,7 @@ export default function AIActions({ onOpenSettings }: { onOpenSettings: () => vo
                 </div>
                 <div
                   style={{
-                    color: "#8a8070",
+                    color: "var(--aq-muted)",
                     fontSize: "0.75rem",
                     marginBlockEnd: "0.5rem",
                   }}
@@ -340,9 +340,9 @@ function AIButton({
         paddingInline: "0.75rem",
         fontSize: "0.8125rem",
         fontFamily: "inherit",
-        color: disabled ? "#5a5440" : "#d4a843",
-        background: disabled ? "#1a1814" : "#2a2620",
-        border: `1px solid ${disabled ? "#2a2620" : "#4a4030"}`,
+        color: disabled ? "var(--aq-dim)" : "var(--aq-accent)",
+        background: disabled ? "var(--aq-bg-deep)" : "var(--aq-surface-hi)",
+        border: `1px solid ${disabled ? "var(--aq-surface-hi)" : "var(--aq-border-hi)"}`,
         borderRadius: "6px",
         cursor: disabled ? "default" : "pointer",
         opacity: disabled ? 0.6 : 1,

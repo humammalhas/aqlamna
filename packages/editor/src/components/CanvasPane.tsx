@@ -244,7 +244,7 @@ export default function CanvasPane() {
 
   const defaultEdgeOptions = useMemo(
     () => ({
-      style: { stroke: "#4a4030", strokeWidth: 1.5 },
+      style: { stroke: "var(--aq-border-hi)", strokeWidth: 1.5 },
       animated: false,
     }),
     [],
@@ -258,7 +258,7 @@ export default function CanvasPane() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          color: "#5a5040",
+          color: "var(--aq-dim)",
         }}
       >
         <p>جاري تحميل المخطّط...</p>
@@ -291,20 +291,20 @@ export default function CanvasPane() {
         zoomOnPinch
         zoomActivationKeyCode="Control"
         selectionOnDrag={false}
-        style={{ background: "#0e0d0b" }}
+        style={{ background: "var(--aq-input-bg)" }}
       >
-        <Background variant={BackgroundVariant.Dots} gap={24} size={1} color="#2a2620" />
+        <Background variant={BackgroundVariant.Dots} gap={24} size={1} color="var(--aq-surface-hi)" />
         <Controls style={{ direction: "rtl" }} position="bottom-left" />
         <MiniMap
-          style={{ background: "#141210", border: "1px solid #3a3528" }}
+          style={{ background: "var(--aq-editor-bg)", border: "1px solid var(--aq-border)" }}
           nodeColor={(n) => {
             const d = n.data as { colour?: string } | undefined;
-            if (!d?.colour) return "#5a8fc0";
+            if (!d?.colour) return "var(--aq-node-blue)";
             switch (d.colour) {
-              case "green": return "#5a9";
-              case "red": return "#c55";
-              case "orange": return "#d9a";
-              default: return "#5a8fc0";
+              case "green": return "var(--aq-node-green)";
+              case "red": return "var(--aq-node-red)";
+              case "orange": return "var(--aq-node-orange)";
+              default: return "var(--aq-node-blue)";
             }
           }}
           maskColor="rgba(0,0,0,0.6)"
@@ -317,9 +317,9 @@ export default function CanvasPane() {
               padding: "0.375rem 0.625rem",
               fontSize: "0.75rem",
               fontFamily: "inherit",
-              color: "#e0d6c2",
-              background: "#2a2620",
-              border: "1px solid #3a3528",
+              color: "var(--aq-text)",
+              background: "var(--aq-surface-hi)",
+              border: "1px solid var(--aq-border)",
               borderRadius: "6px",
               cursor: "pointer",
             }}

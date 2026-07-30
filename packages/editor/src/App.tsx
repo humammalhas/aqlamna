@@ -128,7 +128,7 @@ export default function App() {
           style={{
             inlineSize: "4px",
             cursor: "col-resize",
-            background: dragging ? "#d4a843" : "#3a3528",
+            background: dragging ? "var(--aq-accent)" : "var(--aq-border)",
             flexShrink: 0,
             transition: dragging ? "none" : "background 0.15s",
           }}

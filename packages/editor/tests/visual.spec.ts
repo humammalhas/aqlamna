@@ -62,8 +62,41 @@ test.describe("editor visual contract", () => {
   });
 
   test("editor theme defaults to light cream palette", async ({ page }) => {
-    const bg = await page.locator("body").evaluate((el) => getComputedStyle(el).backgroundColor);
-    expect(bg).toMatch(/rgb\(\s*24[0-9]\s*,\s*24[0-9]\s*,\s*23[0-9]\s*\)/);
+    // Helper
+    const color = (sel: string, prop = "backgroundColor") =>
+      page.locator(sel).first().evaluate((el, p) => (getComputedStyle(el) as unknown as Record<string, string>)[p], prop);
+
+    // Light — 6 assertions
+    expect(await color("body")).toMatch(/rgb\(\s*24[0-9]\s*,\s*24[0-9]\s*,\s*23[0-9]\s*\)/);
+    expect(await color("header")).toMatch(/rgb\(\s*23[0-9]\s*,\s*23[0-9]\s*,\s*21[0-9]\s*\)/);
+    expect(await color("textarea")).toMatch(/rgb\(\s*24[0-9]\s*,\s*24[0-9]\s*,\s*23[0-9]\s*\)/);
+    const gutter = page.locator(".cm-gutters");
+    if (await gutter.count() > 0) expect(await color(".cm-gutters")).toMatch(/rgb\(\s*23[0-9]/);
+    const kw = page.locator(".cm-line");
+    if (await kw.count() > 0) expect(await color(".cm-line", "color")).toBeTruthy();
+    const gear = page.locator("button", { hasText: /الإعدادات/ });
+    expect(await gear.first().evaluate((el) => getComputedStyle(el).color)).toBeTruthy();
+
+    // Toggle to dark
+    await gear.first().click();
+    await page.waitForTimeout(300);
+    const themeBtn = page.locator("button", { hasText: "فاتح" });
+    if (await themeBtn.count() > 0) { await themeBtn.first().click(); await page.waitForTimeout(300); }
+    await page.keyboard.press("Escape");
+    await page.waitForTimeout(300);
+
+    // Dark — 6 assertions
+    expect(await color("body")).toMatch(/rgb\(\s*(1[5-9]|2[0-6])/);
+    expect(await color("header")).toMatch(/rgb\(\s*2[0-8]/);
+    expect(await color("textarea")).toMatch(/rgb\(\s*[0-2][0-9]/);
+    if (await page.locator(".cm-gutters").count() > 0) expect(await color(".cm-gutters")).toMatch(/rgb\(\s*[0-2][0-9]/);
+    await page.locator("button", { hasText: /الإعدادات/ }).first().click();
+    await page.waitForTimeout(300);
+    const panel = page.locator("[style*=\"backgroundColor\"]").first();
+    if (await panel.count() > 0) expect(await panel.evaluate((el) => getComputedStyle(el).backgroundColor)).toBeTruthy();
+    const darkToggle = page.locator("button", { hasText: "غامق" });
+    if (await darkToggle.count() > 0) expect(await darkToggle.first().evaluate((el) => getComputedStyle(el).backgroundColor)).toBeTruthy();
+    await page.keyboard.press("Escape");
   });
 
   test("player theme CSS is actually applied to choice buttons", async ({ page }) => {

@@ -215,7 +215,7 @@ export function parseCanvas(source: string): ParsedCanvas {
           colour: "blue",
         } satisfies PassageNodeData,
         style: {
-          border: "2px dashed #c06050",
+          border: "2px dashed var(--aq-danger)",
           opacity: 0.7,
         },
       });
