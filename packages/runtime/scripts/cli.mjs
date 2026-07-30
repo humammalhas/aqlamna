@@ -19,9 +19,11 @@ const pkgDir = join(__dirname, "..");
 
 const args = process.argv.slice(2);
 if (args.length === 0 || args[0] === "--help" || args[0] === "-h") {
-  console.log("Usage: node cli.mjs <path-to.qalam> [-o out.html]");
+  console.log("Usage: node cli.mjs <path-to.qalam> [-o out.html] [--theme dark|light|book]");
   process.exit(args.length === 0 ? 1 : 0);
 }
+
+const VALID_THEMES = new Set(["dark", "light", "book"]);
 
 const qalamPath = resolve(args[0]);
 let outPath = qalamPath.replace(/\.qalam$/, ".html");
@@ -32,9 +34,15 @@ for (let i = 1; i < args.length; i++) {
     i++;
   } else if (args[i] === "--theme") {
     const t = args[i + 1];
-    if (t === "dark" || t === "light" || t === "book") {
+    if (t && VALID_THEMES.has(t)) {
       theme = t;
       i++;
+    } else {
+      console.error(
+        "[export] قيمة السمة غير صالحة: '" + (t ?? "") + "'.\n" +
+        "  القيم المسموحة: dark, light, book",
+      );
+      process.exit(1);
     }
   }
 }
@@ -66,7 +74,7 @@ console.log("[export] Wrote: " + outPath + " (" + html.length + " bytes)");
 
 // ---- HTML assembly ---------------------------------------------------------
 
-function buildHtml(storyJson) {
+function buildHtml(storyJson, theme) {
   // Read the pre-built runtime bundle
   const bundlePath = join(pkgDir, "dist", "aqlamna-runtime.js");
   let runtimeJs;
@@ -80,8 +88,8 @@ function buildHtml(storyJson) {
     process.exit(1);
   }
 
-  // Inline the theme CSS (same as src/themes/dark.css, duplicated for simplicity)
-  const css = getThemeCss();
+  // Read the theme CSS from src/themes/{theme}.css
+  const css = getThemeCss(theme);
 
   const storyJsonText = JSON.stringify(storyJson);
   const safeJson = storyJsonText.replace(/</g, "\\u003c");
@@ -119,149 +127,16 @@ function escapeHtml(s) {
   return s.replace(/[&<>"']/g, (c) => map[c] ?? c);
 }
 
-// Inlined theme CSS (synced with src/themes/dark.css)
-function getThemeCss() {
-  return `
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-html {
-  background: #1a1814;
-}
-
-body {
-  min-block-size: 100vh;
-}
-
-.aq-story {
-  direction: rtl;
-  text-align: start;
-  font-family:
-    "IBM Plex Sans Arabic",
-    "Noto Sans Arabic",
-    "Amiri",
-    "Tajawal",
-    system-ui,
-    sans-serif;
-  font-size: 1.125rem;
-  line-height: 1.85;
-  color: #e0d6c2;
-  background: #1a1814;
-  max-inline-size: 42rem;
-  margin-inline: auto;
-  padding: 2rem 1.5rem;
-}
-
-.aq-title {
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: #d4a843;
-  text-align: center;
-  margin-block-end: 2rem;
-  border-block-end: 1px solid #3a3528;
-  padding-block-end: 0.75rem;
-}
-
-.aq-output {
-  margin-block-end: 1.5rem;
-}
-
-.aq-text {
-  margin-block: 0.75rem;
-  text-indent: 0;
-}
-
-.aq-choices {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin-block: 2rem;
-}
-
-.aq-choice-btn {
-  display: block;
-  inline-size: 100%;
-  padding-block: 0.75rem;
-  padding-inline: 1.25rem;
-  font-family: inherit;
-  font-size: 1.0625rem;
-  text-align: start;
-  color: #e0d6c2;
-  background: #2a2620;
-  border: 1px solid #4a4030;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease;
-}
-
-.aq-choice-btn:hover {
-  background: #3a3528;
-  border-color: #8a7040;
-}
-
-.aq-choice-btn:focus-visible {
-  outline: 2px solid #d4a843;
-  outline-offset: 2px;
-}
-
-.aq-end {
-  text-align: center;
-  margin-block: 3rem;
-}
-
-.aq-end-text {
-  font-size: 1.25rem;
-  color: #d4a843;
-  font-weight: 600;
-  margin-block-end: 1.5rem;
-}
-
-.aq-toolbar {
-  display: flex;
-  justify-content: center;
-  gap: 0.5rem;
-  margin-block-start: 3rem;
-  padding-block-start: 1.5rem;
-  border-block-start: 1px solid #3a3528;
-}
-
-.aq-btn {
-  padding-block: 0.5rem;
-  padding-inline: 1rem;
-  font-family: inherit;
-  font-size: 0.875rem;
-  color: #9a8c70;
-  background: transparent;
-  border: 1px solid #3a3528;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: color 0.15s ease, border-color 0.15s ease;
-}
-
-.aq-btn:hover {
-  color: #d4a843;
-  border-color: #5a4a30;
-}
-
-.aq-btn:focus-visible {
-  outline: 2px solid #d4a843;
-  outline-offset: 2px;
-}
-
-@media (max-width: 480px) {
-  .aq-story {
-    padding: 1rem;
-    font-size: 1rem;
+/** Read the theme CSS file from src/themes/. */
+function getThemeCss(theme) {
+  const cssPath = join(pkgDir, "src", "themes", theme + ".css");
+  try {
+    return readFileSync(cssPath, "utf-8");
+  } catch {
+    console.error(
+      "[export] Theme CSS not found at: " + cssPath +
+      "\n  Ensure the theme file exists in src/themes/"
+    );
+    process.exit(1);
   }
-
-  .aq-title {
-    font-size: 1.375rem;
-  }
-}
-`;
 }

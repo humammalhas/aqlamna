@@ -4,7 +4,7 @@
 
 import { describe, it, expect, beforeAll } from "vitest";
 import { execSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { readFileSync, unlinkSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -209,10 +209,6 @@ describe("exportStandalone", () => {
 
     // ---- Execute the bundle — inject document and localStorage as params ----
 
-    // The bundled JS is a self-executing IIFE that references `document` and
-    // `localStorage` as free variables.  new Function("document", "localStorage", js)
-    // makes them local parameters that shadow the globals — the IIFE resolves
-    // them from this enclosing scope.
     const fn = new Function("document", "localStorage", js);
     fn(doc, ls);
 
@@ -255,5 +251,50 @@ describe("exportStandalone", () => {
     const allText2 = collectText(player);
     expect(allText2).toContain("جمعتِ");
     expect(allText2).toContain("4");
+  });
+
+  it("--theme flag produces different CSS for dark, light, and book", () => {
+    const outDark = join(PKG_DIR, "examples", "_test_dark.html");
+    const outLight = join(PKG_DIR, "examples", "_test_light.html");
+    const outBook = join(PKG_DIR, "examples", "_test_book.html");
+
+    execSync(
+      `node scripts/cli.mjs "${FIXTURE_QALAM}" --theme dark -o "${outDark}"`,
+      { cwd: PKG_DIR, stdio: "pipe" },
+    );
+    execSync(
+      `node scripts/cli.mjs "${FIXTURE_QALAM}" --theme light -o "${outLight}"`,
+      { cwd: PKG_DIR, stdio: "pipe" },
+    );
+    execSync(
+      `node scripts/cli.mjs "${FIXTURE_QALAM}" --theme book -o "${outBook}"`,
+      { cwd: PKG_DIR, stdio: "pipe" },
+    );
+
+    const darkHtml = readFileSync(outDark, "utf-8");
+    const lightHtml = readFileSync(outLight, "utf-8");
+    const bookHtml = readFileSync(outBook, "utf-8");
+
+    function extractStyle(html: string): string {
+      const m = html.match(/<style>\n([\s\S]*?)\n<\/style>/);
+      if (!m) throw new Error("No <style> block found");
+      return m[1]!;
+    }
+
+    const darkCss = extractStyle(darkHtml);
+    const lightCss = extractStyle(lightHtml);
+    const bookCss = extractStyle(bookHtml);
+
+    expect(darkCss).not.toBe(lightCss);
+    expect(darkCss).not.toBe(bookCss);
+    expect(lightCss).not.toBe(bookCss);
+
+    expect(darkCss).toContain("background: #1a1814");
+    expect(lightCss).toContain("background: #fafaf9");
+    expect(bookCss).toContain("background: #f5f0e8");
+
+    unlinkSync(outDark);
+    unlinkSync(outLight);
+    unlinkSync(outBook);
   });
 });

@@ -17,6 +17,7 @@
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "build:rules": "node scripts/build-rules.mjs",
+    "lint:docs": "node scripts/lint-docs.mjs",
     "test": "vitest run",
     "test:watch": "vitest"
   },
