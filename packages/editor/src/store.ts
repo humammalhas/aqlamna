@@ -9,6 +9,20 @@ import type { StoryJSON } from "@aqlamna/runtime";
 import { saveSource } from "./lib/db.js";
 import { getViewMode, setViewMode as persistViewMode, type ViewMode } from "./lib/canvas-db.js";
 
+export type PlayerTheme = "dark" | "light" | "book";
+
+function loadTheme(): PlayerTheme {
+  try {
+    const t = localStorage.getItem("aqlamna-player-theme");
+    if (t === "light" || t === "book") return t;
+  } catch { /* noop */ }
+  return "dark";
+}
+
+function saveTheme(t: PlayerTheme) {
+  try { localStorage.setItem("aqlamna-player-theme", t); } catch { /* noop */ }
+}
+
 // ---- QalamError shape (mirrors @aqlamna/core's QalamError) ----------------
 
 export interface QalamError {
@@ -79,6 +93,7 @@ export const useStore = create<EditorStore>((set, get) => ({
   viewMode: "text",
   viewModeLoaded: false,
   qualityLintEnabled: localStorage.getItem("aqlamna-quality-lint") !== "off",
+  playerTheme: loadTheme(),
 
   setSource: (source: string) => {
     set({ source });

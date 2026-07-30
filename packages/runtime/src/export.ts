@@ -16,11 +16,28 @@ const _dirname = dirname(_filename);
 /** Path to the built runtime JS bundle (relative to this compiled file in dist/). */
 const RUNTIME_BUNDLE = join(_dirname, "aqlamna-runtime.js");
 
+export type PlayerTheme = "dark" | "light" | "book";
+
+/**
+ * Read a theme CSS file from src/themes/.
+ * Falls back to DARK_THEME_DEFAULT if the file is missing.
+ */
+function readThemeCss(theme: PlayerTheme): string {
+  const themePath = join(_dirname, "..", "src", "themes", `${theme}.css`);
+  try {
+    return readFileSync(themePath, "utf-8");
+  } catch {
+    // In dist/, the path resolves differently — fall back to the inlined default
+    if (theme === "dark") return DARK_THEME_DEFAULT;
+    return readThemeCss("dark");
+  }
+}
+
 // ---------------------------------------------------------------------------
-// Dark theme CSS — inlined at build time so no file reads needed for CSS.
+// Dark theme CSS — inlined at build time as the default fallback.
 // This is the same as src/themes/dark.css.
 // ---------------------------------------------------------------------------
-const DARK_THEME_CSS = `
+const DARK_THEME_DEFAULT = `
 *,
 *::before,
 *::after {

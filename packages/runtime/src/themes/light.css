@@ -1,6 +1,6 @@
 /* ---------------------------------------------------------------------------
-   Aqlamna dark theme — RTL-first, CSS logical properties only
-   Font stack per design §7.4 (self-hosted only, no Google Fonts link)
+   Aqlamna light theme — clean, high-contrast for classroom projectors & daylight
+   RTL-first, CSS logical properties only
    --------------------------------------------------------------------------- */
 
 /* --- Container ------------------------------------------------------------ */
@@ -17,8 +17,8 @@
     sans-serif;
   font-size: 1.125rem;
   line-height: 1.85;
-  color: #e0d6c2;
-  background: #1a1814;
+  color: #1a1a1a;
+  background: #fafaf9;
   max-inline-size: 42rem;
   margin-inline: auto;
   padding: 2rem 1.5rem;
@@ -29,10 +29,10 @@
 .aq-title {
   font-size: 1.75rem;
   font-weight: 700;
-  color: #d4a843;
+  color: #1a1a1a;
   text-align: center;
   margin-block-end: 2rem;
-  border-block-end: 1px solid #3a3528;
+  border-block-end: 1px solid #d4d4d4;
   padding-block-end: 0.75rem;
 }
 
@@ -59,27 +59,26 @@
 .aq-choice-btn {
   display: block;
   inline-size: 100%;
-  min-block-size: 44px;
   padding-block: 0.75rem;
   padding-inline: 1.25rem;
   font-family: inherit;
   font-size: 1.0625rem;
   text-align: start;
-  color: #e0d6c2;
-  background: #2a2620;
-  border: 1px solid #4a4030;
+  color: #1a1a1a;
+  background: #ffffff;
+  border: 1px solid #a3a3a3;
   border-radius: 6px;
   cursor: pointer;
   transition: background 0.15s ease, border-color 0.15s ease;
 }
 
 .aq-choice-btn:hover {
-  background: #3a3528;
-  border-color: #8a7040;
+  background: #f0f0f0;
+  border-color: #525252;
 }
 
 .aq-choice-btn:focus-visible {
-  outline: 2px solid #d4a843;
+  outline: 2px solid #2563eb;
   outline-offset: 2px;
 }
 
@@ -92,7 +91,7 @@
 
 .aq-end-text {
   font-size: 1.25rem;
-  color: #d4a843;
+  color: #374151;
   font-weight: 600;
   margin-block-end: 1.5rem;
 }
@@ -105,7 +104,7 @@
   gap: 0.5rem;
   margin-block-start: 3rem;
   padding-block-start: 1.5rem;
-  border-block-start: 1px solid #3a3528;
+  border-block-start: 1px solid #d4d4d4;
 }
 
 .aq-btn {
@@ -113,21 +112,21 @@
   padding-inline: 1rem;
   font-family: inherit;
   font-size: 0.875rem;
-  color: #9a8c70;
+  color: #525252;
   background: transparent;
-  border: 1px solid #3a3528;
+  border: 1px solid #d4d4d4;
   border-radius: 4px;
   cursor: pointer;
   transition: color 0.15s ease, border-color 0.15s ease;
 }
 
 .aq-btn:hover {
-  color: #d4a843;
-  border-color: #5a4a30;
+  color: #1a1a1a;
+  border-color: #a3a3a3;
 }
 
 .aq-btn:focus-visible {
-  outline: 2px solid #d4a843;
+  outline: 2px solid #2563eb;
   outline-offset: 2px;
 }
 

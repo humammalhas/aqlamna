@@ -1,8 +1,8 @@
 // ---------------------------------------------------------------------------
 // cli.mjs — Aqlamna standalone HTML exporter CLI
 //
-// Usage: node cli.mjs <path-to.qalam> [-o out.html]
-//   npm run export -- <path-to.qalam> [-o out.html]
+// Usage: node cli.mjs <path-to.qalam> [-o out.html] [--theme dark|light|book]
+//   npm run export -- <path-to.qalam> [-o out.html] [--theme dark|light|book]
 //
 // Compiles the .qalam source via @aqlamna/core, then inlines the compiled
 // story JSON, the runtime engine, and the theme CSS into a single .html file.
@@ -25,10 +25,17 @@ if (args.length === 0 || args[0] === "--help" || args[0] === "-h") {
 
 const qalamPath = resolve(args[0]);
 let outPath = qalamPath.replace(/\.qalam$/, ".html");
+let theme = "dark";
 for (let i = 1; i < args.length; i++) {
   if (args[i] === "-o" || args[i] === "--out") {
     outPath = resolve(args[i + 1] ?? outPath);
     i++;
+  } else if (args[i] === "--theme") {
+    const t = args[i + 1];
+    if (t === "dark" || t === "light" || t === "book") {
+      theme = t;
+      i++;
+    }
   }
 }
 
@@ -52,7 +59,7 @@ try {
 
 // ---- Build the HTML --------------------------------------------------------
 
-const html = buildHtml(storyJson);
+const html = buildHtml(storyJson, theme);
 writeFileSync(outPath, html, "utf-8");
 
 console.log("[export] Wrote: " + outPath + " (" + html.length + " bytes)");

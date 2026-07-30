@@ -14,6 +14,8 @@ export interface RendererOptions {
   onSave: () => void;
   /** Called when the player clicks load. */
   onLoad: () => void;
+  /** Called when the player clicks the theme toggle. */
+  onThemeToggle?: () => void;
 }
 
 /**
@@ -128,6 +130,16 @@ export function renderScene(
 
   toolbar.appendChild(saveBtn);
   toolbar.appendChild(loadBtn);
+
+  // Theme toggle button — only shown if callback is provided
+  if (options.onThemeToggle) {
+    const themeBtn = document.createElement("button");
+    themeBtn.className = "aq-btn aq-theme-btn";
+    themeBtn.textContent = "🎨";
+    themeBtn.title = "تغيير المظهر";
+    themeBtn.addEventListener("click", options.onThemeToggle);
+    toolbar.appendChild(themeBtn);
+  }
 
   if (scene.choices.length > 0 || !scene.ended) {
     const restartBtn = document.createElement("button");

@@ -9,12 +9,22 @@ import SettingsPanel from "./SettingsPanel.js";
 import AIActions from "./AIActions.js";
 import { useState, useCallback } from "react";
 
+const HelpLink = ({ href, children }: { href: string; children: React.ReactNode }) => (
+  <a href={href} target="_blank" rel="noopener noreferrer"
+    style={{ display: "block", padding: "0.5rem 1rem", fontSize: "0.875rem",
+      color: "#e0d6c2", textDecoration: "none", whiteSpace: "nowrap" }}>
+    {children}
+  </a>
+);
+
 export default function TopBar() {
   const storyJson = useStore((s) => s.storyJson);
   const compileSource = useStore((s) => s.compileSource);
   const viewMode = useStore((s) => s.viewMode);
   const setViewMode = useStore((s) => s.setViewMode);
+  const playerTheme = useStore((s) => s.playerTheme);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
 
   const toggleSettings = useCallback(() => {
     setSettingsOpen((v) => !v);
@@ -39,7 +49,7 @@ export default function TopBar() {
     }
     if (!json) return; // compilation failed
 
-    const html = buildStandaloneHtml(json);
+    const html = buildStandaloneHtml(json, playerTheme);
     const baseName = (json.title ?? "قصة").replace(/[<>:"/\\|?*]/g, "_");
     downloadHtml(html, `${baseName}.html`);
   };
@@ -110,6 +120,47 @@ export default function TopBar() {
           </div>
 
           <div style={{ display: "flex", gap: "0.5rem" }}>
+            {/* Help button */}
+            <div style={{ position: "relative" }}>
+              <button
+                onClick={() => setShowHelp((v) => !v)}
+                title="مساعدة"
+                style={{
+                  paddingBlock: "0.5rem",
+                  paddingInline: "0.75rem",
+                  fontSize: "0.9375rem",
+                  fontFamily: "inherit",
+                  color: "#9a8c70",
+                  background: "#2a2620",
+                  border: "1px solid #3a3528",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                }}
+              >
+                ❓
+              </button>
+              {showHelp && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "100%",
+                    insetInlineEnd: 0,
+                    marginBlockStart: "0.25rem",
+                    background: "#1c1917",
+                    border: "1px solid #3a3528",
+                    borderRadius: "6px",
+                    padding: "0.5rem 0",
+                    zIndex: 100,
+                    minInlineSize: "180px",
+                  }}
+                >
+                  <HelpLink href="/docs/البداية.md">📖 البداية — الدليل التعليمي</HelpLink>
+                  <HelpLink href="/docs/المرجع.md">📚 المرجع — دليل اللغة</HelpLink>
+                  <HelpLink href="/docs/الأخطاء.md">⚠️ الأخطاء — رموز الخطأ</HelpLink>
+                </div>
+              )}
+            </div>
+
             {/* Settings button */}
             <button
               onClick={toggleSettings}

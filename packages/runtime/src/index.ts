@@ -27,11 +27,14 @@ export type {
   StoryScene,
   OutputNode,
   AvailableChoice,
+  PlayerTheme,
 } from "./types.js";
 
 export interface MountOptions {
   /** If true, show save/load/download buttons. Default true. */
   showToolbar?: boolean;
+  /** Called when the player clicks the theme toggle button. */
+  onThemeToggle?: () => void;
 }
 
 /**

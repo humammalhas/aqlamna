@@ -64,10 +64,19 @@ export default function App() {
 
   // ---- Main area -----------------------------------------------------------
 
+  // On mobile (≤768px), stack vertically and show only one pane at a time.
+  // The view toggle [نص] [مخطط] switches between the text editor and canvas.
+  const isMobile = typeof window !== "undefined" && window.innerWidth <= 768;
+
   const mainArea = (
     <div
-      className="flex flex-1"
-      style={{ minBlockSize: 0 }}
+      className="editor-main-area"
+      style={{
+        display: "flex",
+        flex: 1,
+        minBlockSize: 0,
+        flexDirection: isMobile ? "column" : "row",
+      }}
     >
       {/* Text editor (left/top in split) */}
       {showText && (
@@ -77,6 +86,7 @@ export default function App() {
       {/* Divider between text and canvas */}
       {viewMode === "split" && showText && showCanvas && (
         <div
+          className="editor-divider"
           style={{
             inlineSize: "1px",
             background: "#3a3528",
@@ -92,6 +102,7 @@ export default function App() {
       {/* Divider between editor area and player */}
       {showText && (
         <div
+          className="editor-divider"
           style={{
             inlineSize: "1px",
             background: "#3a3528",

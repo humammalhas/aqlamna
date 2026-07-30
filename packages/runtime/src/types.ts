@@ -2,6 +2,9 @@
 // Aqlamna runtime types — the story JSON shape the engine consumes
 // ---------------------------------------------------------------------------
 
+/** Player theme identifier. */
+export type PlayerTheme = "dark" | "light" | "book";
+
 /** Top-level compiled story JSON (design doc §4). */
 export interface StoryJSON {
   qalam_version: string;

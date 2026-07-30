@@ -1,10 +1,19 @@
 // ---------------------------------------------------------------------------
 // Browser-compatible standalone HTML export.
-// Uses runtime bundle + dark theme CSS inlined at build time via copy-runtime.
+// Uses runtime bundle + theme CSS inlined at build time via copy-runtime.
+// Theme is chosen at export time — only the selected theme is inlined.
 // ---------------------------------------------------------------------------
 
-import { RUNTIME_BUNDLE, DARK_THEME_CSS } from "../generated/runtime-bundle.js";
+import { RUNTIME_BUNDLE, DARK_THEME_CSS, LIGHT_THEME_CSS, BOOK_THEME_CSS } from "../generated/runtime-bundle.js";
 import type { StoryJSON } from "@aqlamna/runtime";
+
+export type PlayerTheme = "dark" | "light" | "book";
+
+const THEME_CSS: Record<PlayerTheme, string> = {
+  dark: DARK_THEME_CSS,
+  light: LIGHT_THEME_CSS,
+  book: BOOK_THEME_CSS,
+};
 
 function escapeHtml(s: string): string {
   const map: Record<string, string> = {
@@ -17,8 +26,8 @@ function escapeHtml(s: string): string {
   return s.replace(/[&<>"']/g, (c) => map[c] ?? c);
 }
 
-export function buildStandaloneHtml(storyJson: StoryJSON): string {
-  const css = DARK_THEME_CSS;
+export function buildStandaloneHtml(storyJson: StoryJSON, theme: PlayerTheme = "dark"): string {
+  const css = THEME_CSS[theme] ?? DARK_THEME_CSS;
   const runtimeJs = RUNTIME_BUNDLE;
 
   // Prevent "</script>" in story data from breaking out of the tag

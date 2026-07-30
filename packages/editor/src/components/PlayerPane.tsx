@@ -1,13 +1,19 @@
 // ---------------------------------------------------------------------------
 // PlayerPane — mounts the @aqlamna/runtime player when storyJson is available.
-// Injects the dark theme CSS scoped to the player container so choices render
-// as styled buttons.
+// Injects the chosen theme CSS scoped to the player container so choices
+// render as styled buttons. Theme is read from the Zustand store.
 // ---------------------------------------------------------------------------
 
 import { useEffect, useRef } from "react";
 import { useStore } from "../store.js";
 import { mount, type StoryJSON } from "@aqlamna/runtime";
-import { DARK_THEME_CSS } from "../generated/runtime-bundle.js";
+import { DARK_THEME_CSS, LIGHT_THEME_CSS, BOOK_THEME_CSS } from "../generated/runtime-bundle.js";
+
+const THEME_CSS: Record<string, string> = {
+  dark: DARK_THEME_CSS,
+  light: LIGHT_THEME_CSS,
+  book: BOOK_THEME_CSS,
+};
 
 // ---- CSS scoping -----------------------------------------------------------
 
@@ -68,6 +74,7 @@ function scopeCss(css: string, scope: string): string {
 
 export default function PlayerPane() {
   const storyJson = useStore((s) => s.storyJson);
+  const playerTheme = useStore((s) => s.playerTheme);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -76,27 +83,34 @@ export default function PlayerPane() {
     // Clear previous content
     containerRef.current.innerHTML = "";
 
-    // Inject scoped theme CSS into document.head once
+    // Inject scoped theme CSS into document.head, replacing any previous theme
     const STYLE_ID = "aqlamna-player-theme";
     let styleEl = document.getElementById(STYLE_ID) as HTMLStyleElement | null;
     if (!styleEl) {
       styleEl = document.createElement("style");
       styleEl.id = STYLE_ID;
-      styleEl.textContent = scopeCss(DARK_THEME_CSS, ".player-pane");
       document.head.appendChild(styleEl);
     }
+    const css = THEME_CSS[playerTheme] ?? DARK_THEME_CSS;
+    styleEl.textContent = scopeCss(css, ".player-pane");
 
     // Mount the runtime player
     const unmount = mount(
       storyJson as unknown as StoryJSON,
       containerRef.current,
-      { showToolbar: true },
+      {
+        showToolbar: true,
+        onThemeToggle: () => {
+          const current = useStore.getState().playerTheme;
+          setPlayerTheme(cycleTheme(current));
+        },
+      },
     );
 
     return () => {
       unmount();
     };
-  }, [storyJson]);
+  }, [storyJson, playerTheme]);
 
   if (!storyJson) {
     return (

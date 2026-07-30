@@ -274,3 +274,47 @@ test.describe("pwa installability", () => {
     await expect(html).toHaveAttribute("dir", "rtl");
   });
 });
+
+// ---- Mobile tests — iPhone 14 viewport (390x844) --------------------------
+
+test.describe("mobile layout (390x844)", () => {
+  test.use({ viewport: { width: 390, height: 844 } });
+
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/");
+    await page.waitForSelector(".cm-line", { timeout: 15000 });
+  });
+
+  test("no horizontal overflow", async ({ page }) => {
+    const result = await page.evaluate(() => ({
+      scrollWidth: document.documentElement.scrollWidth,
+      innerWidth: window.innerWidth,
+    }));
+    // Allow small tolerance for browser scrollbar and subpixel rounding
+    expect(result.scrollWidth).toBeLessThanOrEqual(result.innerWidth + 20);
+  });
+
+  test("choice button height >= 44px", async ({ page }) => {
+    await page.getByRole("button", { name: /شغّل/ }).click();
+    await page.waitForSelector(".aq-choice-btn", { timeout: 10000 });
+    const height = await page.locator(".aq-choice-btn").first().evaluate((el) => {
+      return el.getBoundingClientRect().height;
+    });
+    expect(height).toBeGreaterThanOrEqual(44);
+  });
+
+  test("editor shows one pane at a time, not two side by side", async ({ page }) => {
+    const dividers = page.locator(".editor-divider");
+    const count = await dividers.count();
+    for (let i = 0; i < count; i++) {
+      const display = await dividers.nth(i).evaluate((el) => {
+        return getComputedStyle(el).display;
+      });
+      expect(display).toBe("none");
+    }
+    const flexDir = await page.locator(".editor-main-area").evaluate((el) => {
+      return getComputedStyle(el).flexDirection;
+    });
+    expect(flexDir).toBe("column");
+  });
+});

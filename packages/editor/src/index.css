@@ -61,3 +61,22 @@ body {
   padding-block: 0.5rem;
   padding-inline: 1rem;
 }
+
+/* ---- Mobile responsive --------------------------------------------------- */
+
+@media (max-width: 768px) {
+  /* Stack panes vertically */
+  .editor-main-area {
+    flex-direction: column !important;
+  }
+
+  /* Hide dividers on mobile */
+  .editor-divider {
+    display: none;
+  }
+
+  /* Prevent horizontal overflow on mobile */
+  html, body {
+    overflow-x: hidden;
+  }
+}
