@@ -99,7 +99,7 @@ nav a:hover, nav a.here { background: var(--aq-accent); color: var(--aq-on-accen
 /* ---- Footer ---- */
 footer { margin-block-start: 3.5rem; padding-block-start: 1.25rem; border-block-start: 1px solid var(--aq-border); color: var(--aq-muted); font-size: 0.875rem; display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; }
 footer a { color: var(--aq-muted); text-decoration: none; }
-footer a:hover { color: var(--aq-accent); }
+footer a:hover { background: var(--aq-accent); color: var(--aq-on-accent); }
 
 /* ---- Cards ---- */
 .card { background: var(--aq-surface); border: 1px solid var(--aq-border); border-radius: 0.5rem; padding: 1.25rem; }
