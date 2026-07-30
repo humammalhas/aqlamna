@@ -1,0 +1,58 @@
+{
+  "qalam_version": "0.1",
+  "title": "اختبار الفقرات",
+  "author": null,
+  "language": "ar",
+  "direction": "rtl",
+  "start": "البداية",
+  "variables": {
+    "العدد": {
+      "type": "number",
+      "initial": 0
+    }
+  },
+  "lists": {},
+  "passages": {
+    "البداية": {
+      "tags": [],
+      "content": [
+        {
+          "type": "text",
+          "value": "السطر الأول من الفقرة الأولى."
+        },
+        {
+          "type": "text",
+          "value": null
+        },
+        {
+          "type": "text",
+          "value": "السطر الثاني من الفقرة الأولى."
+        },
+        {
+          "type": "text",
+          "value": null
+        },
+        {
+          "type": "text",
+          "value": "السطر الثالث من الفقرة الأولى."
+        },
+        {
+          "type": "text",
+          "value": "سطر وحيد في الفقرة الثانية."
+        },
+        {
+          "type": "text",
+          "value": "جمعتِ "
+        },
+        {
+          "type": "interpolation",
+          "var": "العدد"
+        },
+        {
+          "type": "text",
+          "value": " من المكوّنات. هذا سطر بعد الإقحام."
+        }
+      ]
+    }
+  }
+}

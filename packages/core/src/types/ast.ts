@@ -56,7 +56,8 @@ export type ContentNode =
 
 export interface TextNode {
   type: "text";
-  value: string;
+  /** Prose text. null = line break (render as <br>). */
+  value: string | null;
 }
 
 export interface DivertNode {

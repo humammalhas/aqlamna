@@ -100,7 +100,9 @@ function countWords(content: ContentNode[]): number {
   for (const node of content) {
     switch (node.type) {
       case "text":
-        total += node.value.trim().split(/\s+/).filter(Boolean).length;
+        if (node.value !== null) {
+          total += node.value.trim().split(/\s+/).filter(Boolean).length;
+        }
         break;
       case "conditional":
         total += countWords(node.then) + countWords(node.else);

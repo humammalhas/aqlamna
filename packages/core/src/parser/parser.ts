@@ -469,6 +469,7 @@ class ParserState {
     // Process the buffer
     let ti = 0;
     let textBuf = "";
+    let prevTextLine = -1;
 
     const flushText = () => {
       if (textBuf.length === 0) return;
@@ -556,7 +557,20 @@ class ParserState {
       }
 
       if (t.kind === K.TEXT) {
-        textBuf += t.value;
+        if (prevTextLine !== -1 && t.line !== prevTextLine) {
+          // New line: flush current text
+          flushText();
+          // Emit null break only between consecutive non-blank lines.
+          // A blank line in between means a new paragraph — no break.
+          const gap = t.line - prevTextLine;
+          if (gap === 1 && result.length > 0 && t.value.trim().length > 0) {
+            result.push({ type: "text", value: null } as TextNode);
+          }
+          textBuf = t.value;
+        } else {
+          textBuf += t.value;
+        }
+        prevTextLine = t.line;
         ti++;
         continue;
       }

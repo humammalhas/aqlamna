@@ -67,7 +67,9 @@ export function mount(
       onSave: () => {
         if (showToolbar) {
           saveToLocalStorage(title, engine.getState());
+          return "تم الحفظ";
         }
+        return "";
       },
       onLoad: async () => {
         if (showToolbar) {
@@ -75,8 +77,11 @@ export function mount(
           if (saved) {
             engine.loadState(saved);
             render(engine.start());
+            return "تم التحميل";
           }
+          return "لا يوجد حفظ محفوظ";
         }
+        return "";
       },
     });
   }

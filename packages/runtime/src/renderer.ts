@@ -10,10 +10,10 @@ export interface RendererOptions {
   onChoice: (choiceId: string) => void;
   /** Called when the player clicks restart. */
   onRestart: () => void;
-  /** Called when the player clicks save. */
-  onSave: () => void;
-  /** Called when the player clicks load. */
-  onLoad: () => void;
+  /** Called when the player clicks save. Returns the feedback message. */
+  onSave: () => string;
+  /** Called when the player clicks load. Returns the feedback message. */
+  onLoad: () => Promise<string>;
   /** Called when the player clicks the theme toggle. */
   onThemeToggle?: () => void;
 }
@@ -121,12 +121,18 @@ export function renderScene(
   const saveBtn = document.createElement("button");
   saveBtn.className = "aq-btn aq-save-btn";
   saveBtn.textContent = "💾 حفظ";
-  saveBtn.addEventListener("click", options.onSave);
+  saveBtn.addEventListener("click", () => {
+    const msg = options.onSave();
+    showFeedback(toolbar, msg);
+  });
 
   const loadBtn = document.createElement("button");
   loadBtn.className = "aq-btn aq-load-btn";
   loadBtn.textContent = "📂 تحميل";
-  loadBtn.addEventListener("click", options.onLoad);
+  loadBtn.addEventListener("click", async () => {
+    const msg = await options.onLoad();
+    showFeedback(toolbar, msg);
+  });
 
   toolbar.appendChild(saveBtn);
   toolbar.appendChild(loadBtn);
@@ -151,4 +157,18 @@ export function renderScene(
 
   wrapper.appendChild(toolbar);
   container.appendChild(wrapper);
+}
+
+function showFeedback(toolbar: HTMLElement, msg: string) {
+  const old = toolbar.querySelector(".aq-feedback");
+  if (old) old.remove();
+
+  const span = document.createElement("span");
+  span.className = "aq-feedback";
+  span.textContent = msg;
+  toolbar.appendChild(span);
+
+  setTimeout(() => {
+    if (span.parentNode) span.remove();
+  }, 2000);
 }
