@@ -101,6 +101,100 @@ unrelated identifiers.
 In the compiled JSON, a divert to a sub-section keeps the dotted form as its
 `target` string.
 
+### 1.12 Multi-branch conditionals compile to nested conditionals
+
+Design §3.2 allows:
+
+```
+{الشجاعة:
+  - الشجاعة < 3: ترتجف.
+  - الشجاعة < 7: تتردد.
+  - غير_ذلك: تندفع.
+}
+```
+
+There is no multi-branch node type in the story JSON. This compiles to a **chain of
+nested `conditional` nodes**, each subsequent branch living in the previous one's `else`:
+
+```json
+{ "type": "conditional", "condition": { "var": "الشجاعة", "op": "<", "value": 3 },
+  "then": [ ...branch 1... ],
+  "else": [
+    { "type": "conditional", "condition": { "var": "الشجاعة", "op": "<", "value": 7 },
+      "then": [ ...branch 2... ],
+      "else": [ ...غير_ذلك branch... ] }
+  ]}
+```
+
+With exactly two branches (one condition plus `غير_ذلك`) this is a single conditional
+node with a populated `else`. If there is no `غير_ذلك` branch, the innermost `else` is `[]`.
+
+The header variable before the `:` is only a scoping hint for the reader — the compiled
+conditions come from the `-` branch lines, NOT from the header.
+
+**This must never silently collapse into one text node.** Emitting the branch lines as
+literal prose is a bug, not a fallback.
+
+### 1.13 Nested choices stay nested
+
+`**` choices belong to their parent `*` choice, not to the passage. A nested choice group
+compiles to a `choices` node inside the parent choice's `content` array, positioned where
+it appeared in the source.
+
+Nested choice IDs extend the parent's ID with an underscore and a 1-based counter:
+`choice_1` → `choice_1_1`, `choice_1_2`. Depth 3 continues the pattern (`choice_1_2_1`).
+
+Flattening nested choices into siblings changes the story's logic and is a bug.
+
+### 1.14 Every subsection is emitted
+
+A passage with several `= subsection` blocks emits **one entry per subsection**, each keyed
+`passage.subsection`. Emitting only the first is a bug. The parent passage keeps whatever
+content appeared before the first `=` marker.
+
+### 1.6b Assigning a list value
+
+Amends §1.6. `~ حالة_الباب = مكسور` — where `مكسور` is a value of a declared `قائمة` — is
+valid and compiles to `{"type":"set","var":"حالة_الباب","op":"=","value":"مكسور"}`.
+
+Resolution rule: a bare identifier on the right-hand side of `~` is valid **only** if it is
+a declared value of the list being assigned to. Anything else is still `E201`.
+
+### 1.15 Arabic message style, and the exact message strings
+
+Every Arabic string Aqlamna ships obeys `ARABIC_MASTERY.md` — but only its **language and
+punctuation** sections. The narrative rules (bloated endings §1.1, preaching §1.2, sensory
+detail §1.6) are about storytelling and do not apply to UI or error text.
+
+Rules that DO apply everywhere:
+
+- `""` for quotation, never `«»` (§1b.1)
+- one adjective, never a doubled pair (§1b.2)
+- no `قام بـ`, no `تمّ + مصدر` (§2.4)
+- correct plurals — `مشكلات` not `مشاكل`, `مديرون` not `مدراء` (§2.2)
+- tashkeel only where it prevents ambiguity, never decorative (§3)
+- active voice, plain phrasing (§5.2, §5.4)
+
+Language keywords are quoted **exactly as the language spells them** — `متغير` with no
+shadda, `قائمة`, `صح`, `خطأ` — even where prose Arabic would vocalise differently. A message
+that misspells the keyword it's telling the author to use is worse than useless.
+
+**The messages. Use these strings verbatim; `{...}` are substitutions.**
+
+| Code | `message_ar` | `message_en` |
+|------|--------------|--------------|
+| E101 | `لا يوجد مقطع بهذا الاسم: {name}` | `No passage named {name}.` |
+| E102 | `اسم المقطع مكرّر: {name}` | `Duplicate passage name: {name}.` |
+| E103 | `ترويسة المقطع غير مغلقة؛ أضف === في نهاية السطر.` | `Unterminated passage header — add === at the end of the line.` |
+| E104 | `خيار خارج أيّ مقطع؛ ابدأ مقطعًا بـ === قبل كتابة الخيارات.` | `Choice outside a passage — open a passage with === first.` |
+| E105 | `شرط غير مكتمل؛ القوس { لم يُغلق.` | `Malformed conditional — { was never closed.` |
+| E201 | `تعبير غير مدعوم في الإسناد: {expr}. المدعوم: رقم أو نصّ أو صح/خطأ أو قيمة من قائمة.` | `Unsupported expression in assignment: {expr}. Allowed: a number, a string, صح/خطأ, or a declared list value.` |
+| E202 | `متغير غير معرّف: {name}. أعلنه بـ متغير قبل استخدامه.` | `Undeclared variable: {name}. Declare it with متغير first.` |
+| E203 | `نوع غير متطابق: المتغير {name} نوعه {expected}، والقيمة المسندة {got}.` | `Type mismatch: {name} is {expected}, assigned value is {got}.` |
+
+Do not paraphrase these, and do not "improve" the Arabic. If a message is wrong, say so and
+stop — the project owner decides the wording.
+
 ### 1.9 Error codes
 
 Every parser and compiler error has a stable code and a message in both languages.

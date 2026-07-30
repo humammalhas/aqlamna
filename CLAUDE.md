@@ -26,8 +26,22 @@ the whole point.
 
 - ✅ Step 1 — monorepo scaffold, Vitest, fixture harness (`c6efa8c`)
 - ✅ Step 2 — tokenizer, 43 unit tests (`c16651d`)
-- ⏳ Step 3 — parser → AST
-- ⬜ Steps 4-7 — compiler · errors · runtime · standalone export
+- ✅ Step 3 — parser → AST, 55 unit tests (`555f111`)
+- ✅ Step 4 — **compiler. All 4 fixtures green — the language works end to end.**
+  Verified independently: byte-identical output, 3-branch nesting, depth-3 choice IDs,
+  list-value assignment, dash-leading prose.
+- ✅ Step 5 — 8 coded errors E101-E105 / E201-E203, Arabic + English, real line:column
+  (`8a1655e`, `500aa96`, `24db95b`). Message strings are FIXED in `PHASE1_SPEC.md` §1.15 —
+  nobody paraphrases them. Verified: all 8 reachable, both languages non-empty,
+  positions non-zero, type names localised per language.
+- ⏳ Step 6 — runtime player (state machine + RTL renderer, zero dependencies)
+- ⬜ Step 7 — standalone HTML export (<100KB, offline, no CDN)
+
+**4 fixtures** (01_minimal, 02_choices, 03_variables, 04_nesting). Fixture 04 was added
+during review after a fourth hand-written story exposed three silent-corruption bugs:
+multi-branch conditionals collapsing to raw prose, nested `**` choices flattening to
+siblings, and only the first `= subsection` being emitted. Lesson: fixtures 01-03 were
+too small to cover the language — write a new story by hand after every engine change.
 
 Not yet pushed to GitHub. No npm package published.
 

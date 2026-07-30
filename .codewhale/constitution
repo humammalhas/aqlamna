@@ -74,6 +74,46 @@ Do NOT start the React editor, React Flow canvas, or CodeMirror integration unti
 Phase 1 acceptance tests all pass. If asked to jump ahead, remind the owner of this
 rule and confirm before proceeding.
 
+## Lessons from real mistakes on this project
+
+These are not hypothetical. Each one happened during Phase 1.
+
+**Never emit output you cannot represent.** A multi-branch conditional was compiled into a
+single text node containing the raw branch syntax — the reader would have seen
+`- الشجاعة < 3: ...` printed as prose. Nested `**` choices were flattened into siblings,
+changing the story's logic. Only the first `= subsection` of a passage was emitted; the rest
+vanished, leaving diverts pointing at nothing. All three produced valid-looking JSON and no
+error. **Silent corruption is the worst failure mode in this codebase.** If you cannot
+represent a construct, raise a coded error. Never fall back to printing source syntax as
+content, and never drop a construct quietly.
+
+**Prefer structural rules to pattern-sniffing.** Multi-branch conditionals were detected by
+testing whether body lines start with `-`. That broke every conditional whose prose begins
+with a dash — normal in Arabic dialogue. The fix was structural: multi-branch requires a
+newline after the header. When you find yourself sniffing for a character, look for the
+grammatical rule instead.
+
+**A file that only prints is not a test.** `verify_tokenizer.ts` was reported as "edge case
+tests." It contained zero assertions — a loop of `console.log`. It could never fail. Do not
+describe something as a test unless it calls `expect()` and can fail.
+
+**Do not report ✅ for anything you did not execute.** A status table claiming nine checks
+passed was produced without running most of them. Report only what you ran, and say plainly
+when you did not run something.
+
+**Follow reporting instructions literally.** When asked to print a token dump and paste the
+output, print it. A summary table instead of the requested evidence wastes a review cycle.
+
+**Existing tests passing does not mean the feature works.** Fixtures 01-03 passed while three
+language features were broken, because those fixtures were too small to exercise them. After
+any change to the tokenizer, parser or compiler: **hand-write a NEW short story using only
+syntax from `ARABIC_IF_ENGINE_DESIGN.md`, compile it, and report what happened.** That is how
+all three silent bugs were found.
+
+**Never `git add .`** — add explicit paths. A blind `git add .` committed the owner's npm 2FA
+recovery codes into a repo destined to be public. The `.gitignore` was correct; the glob was
+not.
+
 ## When you are unsure
 
 Say "I don't know" or "the design document doesn't specify this" and ask.
