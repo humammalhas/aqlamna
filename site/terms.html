@@ -7,91 +7,63 @@
   <meta name="description" content="شروط الاستخدام — أقلامنا">
   <link rel="icon" href="/assets/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" sizes="512x512" href="/assets/icon-512.png">
-  <title>الشروط — أقلامنا</title>
+  <title>شروط الاستخدام — أقلامنا</title>
   <link rel="stylesheet" href="/assets/aqlamna.css">
   <style>
 .page{inline-size:100%;max-inline-size:48rem;padding-inline:1.5rem;padding-block:2rem}
 .hero{text-align:center;padding-block:3rem 1.5rem}
-.hero-logo{display:block;max-inline-size:180px;margin-inline:auto;margin-block-end:1.5rem}
+.hero-logo{display:block;max-inline-size:100px;margin-inline:auto;margin-block-end:1.5rem}
 .hero-title{font-size:2.25rem;font-weight:700}
-.hero-subtitle{font-size:1.125rem;max-inline-size:32rem;margin-inline:auto}
-.demo-section{margin-block:2rem}
-.demo-heading{font-size:1.125rem;font-weight:700;margin-block-end:.75rem;text-align:center}
-.demo-label{font-size:.875rem;margin-block-end:.75rem;text-align:center}
-.demo-frame{inline-size:100%;block-size:520px;border-radius:8px;overflow:hidden}
-@media(max-inline-size:480px){.demo-frame{block-size:480px}}
-.cta-wrap{text-align:center;margin-block:2rem}
-.cta-button{display:inline-block;font-size:1.125rem;font-weight:700;padding-inline:2.5rem;padding-block:.875rem;border-radius:8px;text-decoration:none;transition:background .2s}
-.loop-section{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-block:2rem}
-@media(max-inline-size:600px){.loop-section{grid-template-columns:1fr}}
-.loop-card{border-radius:8px;overflow:hidden}
-.loop-card h3{font-size:.8125rem;font-weight:700;padding:.625rem .875rem;margin:0}
-.loop-source{padding:.75rem;margin:0;font-size:.8125rem;line-height:1.7;overflow-x:auto;direction:rtl;text-align:start;font-family:"Courier New",monospace;white-space:pre}
-.loop-result{padding:.75rem}
-.loop-prose{font-size:.9375rem;margin-block-end:.75rem;line-height:1.75}
-.loop-choices button{display:block;inline-size:100%;padding:.5rem .75rem;margin-block-end:.375rem;font-size:.875rem;font-family:inherit;border-radius:6px;cursor:default}
-.features{margin-block:3rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:2rem}
-.feature h2{font-size:1.25rem;font-weight:700;margin-block-end:.5rem}
-.feature p{font-size:1rem;line-height:1.75}
-.privacy-line{margin-block:3rem 2rem;padding:1.5rem;border-radius:8px;text-align:center}
-.privacy-line p{font-size:.9375rem;line-height:1.75}
-.site-footer{margin-block-start:auto;padding-block:2rem;text-align:center;font-size:.8125rem}
-.site-footer nav{display:flex;flex-wrap:wrap;justify-content:center;gap:1.5rem;margin-block-end:1rem}
-.site-footer a{text-decoration:none}
+.prose{max-inline-size:40rem;margin-inline:auto}
+.prose p{line-height:1.85;margin-block:.85rem;font-size:1.0625rem}
+.prose h2{font-size:1.375rem;font-weight:700;margin-block:2.25rem .75rem}
+.prose h3{font-size:1.125rem;font-weight:700;margin-block:1.5rem .5rem}
+.prose ul,.prose ol{margin-block:.85rem;padding-inline-start:1.5rem}
+.prose li{margin-block:.35rem}
+.prose hr{margin-block:2rem}
+.prose blockquote{padding:.75rem 1rem;margin-block:1rem;border-radius:0 .35rem .35rem 0}
+.prose a{text-decoration:underline}
 .back-link{text-align:center;margin-block:3rem 2rem}
 .back-link a{text-decoration:none;font-size:.9375rem}
 .english-link{text-align:center;margin-block-start:3rem;font-size:.8125rem}
-.prose{max-inline-size:40rem;margin-inline:auto}
-.docs-section{margin-block:2rem;text-align:center}
-.docs-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(8rem,1fr));gap:.75rem;margin-block-start:1rem}
-.docs-card{padding:1rem;border-radius:8px;text-decoration:none}
-.docs-card h3{font-size:1rem;font-weight:700;margin-block-end:.25rem}
-.docs-card-note{font-size:.75rem;margin:0}
-  
+.site-footer{margin-block-start:auto;padding-block:2rem;text-align:center;font-size:.8125rem}
+.site-footer nav{display:flex;flex-wrap:wrap;justify-content:center;gap:1.5rem;margin-block-end:1rem}
+.site-footer a{text-decoration:none}
+.version{text-align:center;font-size:.9375rem;margin-block-end:2rem}
+  </style>
 </head>
 <body>
   <main class="page reading-page">
     <header class="hero">
       <a href="/"><img class="hero-logo" src="/assets/logo-transparent.png" alt="شعار أقلامنا" width="100" height="100"></a>
-      <h1>شروط الاستخدام</h1>
+      <h1 class="hero-title">شروط الاستخدام</h1>
       <p class="version">الإصدار 1.0 — 30 تموز 2026</p>
     </header>
 
     <div class="prose">
-      <p>أقلامنا أداة مفتوحة المصدر لكتابة القصص التفاعلية بالعربية. تملكها شركة المصير لبرامج وأنظمة الحاسوب ذ.م.م، المسجّلة في الأردن.</p>
-
-      <hr>
-
-      <h2>ملكية قصصك</h2>
-      <p>أنت تملك كلّ ما تكتبه وتصدّره باستخدام أقلامنا. شركة المصير لا تدّعي أيّ حقّ أو ترخيص أو ملكية على محتواك.</p>
-
-      <h2>رخصة البرنامج</h2>
-      <p>أقلامنا برنامج حرّ مرخّص برخصة GPL-3.0. يحقّ لأيّ شخص استخدامه ودراسته وتعديله وإعادة توزيعه وفق شروط تلك الرخصة.</p>
-      <p>نصّ الرخصة الكامل: <a href="https://github.com/humammalhas/aqlamna/blob/main/LICENSE">LICENSE</a></p>
-
-      <h2>لا ضمانات</h2>
-      <p>البرنامج مقدَّم "كما هو"، دون ضمان من أيّ نوع. بعبارة واضحة: نقدّم أقلامنا مجّانًا وبحسن نيّة، لكنّنا لا نضمن أنّها ستعمل دون أخطاء أو انقطاع. إذا فقدتَ قصة بسبب عطل تقني — لا نتحمّل مسؤولية ذلك. احتفظ بنسخ احتياطية من ملفّاتك.</p>
-
-      <h2>مزوّدو الذكاء الاصطناعي</h2>
-      <p>استخدام ميزات الذكاء الاصطناعي علاقة بينك وبين المزوّد الذي اخترته. أنت تدفع له مباشرة. شركة المصير لا تتوسّط في الدفع، ولا تحدّد الأسعار، ولا تتحمّل مسؤولية تكاليف المزوّد أو انقطاع خدمته أو رفضه طلبًا أو جودة مخرجاته.</p>
-
-      <h2>مسؤوليتك</h2>
-      <p>أنت مسؤول عمّا تكتبه وتنشره باستخدام الأداة.</p>
-
-      <h2>لا التزام بمستوى خدمة</h2>
-      <p>أقلامنا برنامج مجّاني مقدَّم بحسن نيّة. لا نلتزم بوقت تشغيل أو سرعة استجابة أو دعم فنّي.</p>
-
-      <h2>التواصل</h2>
-      <p>admin@almaseer.co</p>
-
-      <h2>القانون الحاكم</h2>
-      <p>تخضع هذه الشروط لقوانين المملكة الأردنية الهاشمية.</p>
-
-      <hr>
-
-      <blockquote>
-        هذا المستند ليس استشارة قانونية. ينبغي مراجعته من محامٍ مختصّ قبل إضافة حسابات مستخدمين أو مدفوعات أو أيّ ميزة تخزّن بيانات عن الطلاب.
-      </blockquote>
+<h1 id="شروط-الاستخدام-أقلامنا">شروط الاستخدام — أقلامنا</h1>
+<p><strong>الإصدار 1.0 — 30 تموز 2026</strong></p>
+<p>أقلامنا أداة مفتوحة المصدر لكتابة القصص التفاعلية بالعربية. تملكها شركة المصير لبرامج وأنظمة الحاسوب ذ.م.م، المسجّلة في الأردن.</p>
+<hr>
+<h2 id="ملكية-قصصك">ملكية قصصك</h2>
+<p>أنت تملك كلّ ما تكتبه وتصدّره باستخدام أقلامنا. شركة المصير لا تدّعي أيّ حقّ أو ترخيص أو ملكية على محتواك.</p>
+<h2 id="رخصة-البرنامج">رخصة البرنامج</h2>
+<p>أقلامنا برنامج حرّ مرخّص برخصة GPL-3.0. يحقّ لأيّ شخص استخدامه ودراسته وتعديله وإعادة توزيعه وفق شروط تلك الرخصة.</p>
+<p>نصّ الرخصة الكامل: <a href="https://github.com/almaseer/aqlamna/blob/main/LICENSE" target="_blank" rel="noopener">LICENSE</a></p>
+<h2 id="لا-ضمانات">لا ضمانات</h2>
+<p>البرنامج مقدَّم &quot;كما هو&quot;، دون ضمان من أيّ نوع. بعبارة واضحة: نقدّم أقلامنا مجّانًا وبحسن نيّة، لكنّنا لا نضمن أنّها ستعمل دون أخطاء أو انقطاع. إذا فقدتَ قصة بسبب عطل تقني — لا نتحمّل مسؤولية ذلك. احتفظ بنسخ احتياطية من ملفّاتك.</p>
+<h2 id="مزو-دو-الذكاء-الاصطناعي">مزوّدو الذكاء الاصطناعي</h2>
+<p>استخدام ميزات الذكاء الاصطناعي علاقة بينك وبين المزوّد الذي اخترته. أنت تدفع له مباشرة. شركة المصير لا تتوسّط في الدفع، ولا تحدّد الأسعار، ولا تتحمّل مسؤولية تكاليف المزوّد أو انقطاع خدمته أو رفضه طلبًا أو جودة مخرجاته.</p>
+<h2 id="مسؤوليتك">مسؤوليتك</h2>
+<p>أنت مسؤول عمّا تكتبه وتنشره باستخدام الأداة.</p>
+<h2 id="لا-التزام-بمستوى-خدمة">لا التزام بمستوى خدمة</h2>
+<p>أقلامنا برنامج مجّاني مقدَّم بحسن نيّة. لا نلتزم بوقت تشغيل أو سرعة استجابة أو دعم فنّي.</p>
+<h2 id="التواصل">التواصل</h2>
+<p>admin@almaseer.co</p>
+<h2 id="القانون-الحاكم">القانون الحاكم</h2>
+<p>تخضع هذه الشروط لقوانين المملكة الأردنية الهاشمية.</p>
+<hr>
+<blockquote>هذا المستند ليس استشارة قانونية. ينبغي مراجعته من محامٍ مختصّ قبل إضافة حسابات مستخدمين أو مدفوعات أو أيّ ميزة تخزّن بيانات عن الطلاب.</blockquote>
     </div>
 
     <div class="english-link">
@@ -111,7 +83,7 @@
       <a href="https://github.com/humammalhas/aqlamna/issues/new?template=idea.yml" target="_blank" rel="noopener">اقترح فكرة</a>
       <a href="https://github.com/humammalhas/aqlamna/discussions" target="_blank" rel="noopener">ناقش</a>
       <a href="mailto:admin@almaseer.co">راسلنا</a>
-      <a href="https://github.com/humammalhas/aqlamna">GPL-3.0</a>
+      <a href="https://github.com/humammalhas/aqlamna" target="_blank" rel="noopener">GPL-3.0</a>
       <a href="/privacy">الخصوصية</a>
       <a href="/terms">الشروط</a>
     </nav>

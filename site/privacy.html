@@ -7,115 +7,78 @@
   <meta name="description" content="سياسة الخصوصية — أقلامنا">
   <link rel="icon" href="/assets/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" sizes="512x512" href="/assets/icon-512.png">
-  <title>الخصوصية — أقلامنا</title>
+  <title>سياسة الخصوصية — أقلامنا</title>
   <link rel="stylesheet" href="/assets/aqlamna.css">
   <style>
 .page{inline-size:100%;max-inline-size:48rem;padding-inline:1.5rem;padding-block:2rem}
 .hero{text-align:center;padding-block:3rem 1.5rem}
-.hero-logo{display:block;max-inline-size:180px;margin-inline:auto;margin-block-end:1.5rem}
+.hero-logo{display:block;max-inline-size:100px;margin-inline:auto;margin-block-end:1.5rem}
 .hero-title{font-size:2.25rem;font-weight:700}
-.hero-subtitle{font-size:1.125rem;max-inline-size:32rem;margin-inline:auto}
-.demo-section{margin-block:2rem}
-.demo-heading{font-size:1.125rem;font-weight:700;margin-block-end:.75rem;text-align:center}
-.demo-label{font-size:.875rem;margin-block-end:.75rem;text-align:center}
-.demo-frame{inline-size:100%;block-size:520px;border-radius:8px;overflow:hidden}
-@media(max-inline-size:480px){.demo-frame{block-size:480px}}
-.cta-wrap{text-align:center;margin-block:2rem}
-.cta-button{display:inline-block;font-size:1.125rem;font-weight:700;padding-inline:2.5rem;padding-block:.875rem;border-radius:8px;text-decoration:none;transition:background .2s}
-.loop-section{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-block:2rem}
-@media(max-inline-size:600px){.loop-section{grid-template-columns:1fr}}
-.loop-card{border-radius:8px;overflow:hidden}
-.loop-card h3{font-size:.8125rem;font-weight:700;padding:.625rem .875rem;margin:0}
-.loop-source{padding:.75rem;margin:0;font-size:.8125rem;line-height:1.7;overflow-x:auto;direction:rtl;text-align:start;font-family:"Courier New",monospace;white-space:pre}
-.loop-result{padding:.75rem}
-.loop-prose{font-size:.9375rem;margin-block-end:.75rem;line-height:1.75}
-.loop-choices button{display:block;inline-size:100%;padding:.5rem .75rem;margin-block-end:.375rem;font-size:.875rem;font-family:inherit;border-radius:6px;cursor:default}
-.features{margin-block:3rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:2rem}
-.feature h2{font-size:1.25rem;font-weight:700;margin-block-end:.5rem}
-.feature p{font-size:1rem;line-height:1.75}
-.privacy-line{margin-block:3rem 2rem;padding:1.5rem;border-radius:8px;text-align:center}
-.privacy-line p{font-size:.9375rem;line-height:1.75}
-.site-footer{margin-block-start:auto;padding-block:2rem;text-align:center;font-size:.8125rem}
-.site-footer nav{display:flex;flex-wrap:wrap;justify-content:center;gap:1.5rem;margin-block-end:1rem}
-.site-footer a{text-decoration:none}
+.prose{max-inline-size:40rem;margin-inline:auto}
+.prose p{line-height:1.85;margin-block:.85rem;font-size:1.0625rem}
+.prose h2{font-size:1.375rem;font-weight:700;margin-block:2.25rem .75rem}
+.prose h3{font-size:1.125rem;font-weight:700;margin-block:1.5rem .5rem}
+.prose ul,.prose ol{margin-block:.85rem;padding-inline-start:1.5rem}
+.prose li{margin-block:.35rem}
+.prose hr{margin-block:2rem}
+.prose blockquote{padding:.75rem 1rem;margin-block:1rem;border-radius:0 .35rem .35rem 0}
+.prose a{text-decoration:underline}
 .back-link{text-align:center;margin-block:3rem 2rem}
 .back-link a{text-decoration:none;font-size:.9375rem}
 .english-link{text-align:center;margin-block-start:3rem;font-size:.8125rem}
-.prose{max-inline-size:40rem;margin-inline:auto}
-.docs-section{margin-block:2rem;text-align:center}
-.docs-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(8rem,1fr));gap:.75rem;margin-block-start:1rem}
-.docs-card{padding:1rem;border-radius:8px;text-decoration:none}
-.docs-card h3{font-size:1rem;font-weight:700;margin-block-end:.25rem}
-.docs-card-note{font-size:.75rem;margin:0}
-  
+.site-footer{margin-block-start:auto;padding-block:2rem;text-align:center;font-size:.8125rem}
+.site-footer nav{display:flex;flex-wrap:wrap;justify-content:center;gap:1.5rem;margin-block-end:1rem}
+.site-footer a{text-decoration:none}
+.version{text-align:center;font-size:.9375rem;margin-block-end:2rem}
+  </style>
 </head>
 <body>
   <main class="page reading-page">
     <header class="hero">
       <a href="/"><img class="hero-logo" src="/assets/logo-transparent.png" alt="شعار أقلامنا" width="100" height="100"></a>
-      <h1>سياسة الخصوصية</h1>
+      <h1 class="hero-title">سياسة الخصوصية</h1>
       <p class="version">الإصدار 1.0 — 30 تموز 2026</p>
     </header>
 
     <div class="prose">
-      <p>أقلامنا أداة مفتوحة المصدر لكتابة القصص التفاعلية بالعربية. تملكها شركة المصير لبرامج وأنظمة الحاسوب ذ.م.م، المسجّلة في الأردن.</p>
-      <p>هذه السياسة تشرح ما نجمعه عنك. الجواب المختصر: لا شيء.</p>
-
-      <hr>
-
-      <h2>لا حسابات ولا تسجيل دخول</h2>
-      <p>لا نطلب بريدًا إلكترونيًّا ولا كلمة مرور ولا أيّ بيانات شخصية. لا يوجد تسجيل دخول من أيّ نوع.</p>
-
-      <h2>لا خادم لنا</h2>
-      <p>المحرّر موقع ثابت (static site). لا قاعدة بيانات ولا خادم خلفي ولا تخزين من جانبنا. قصصك لا تصلنا لأنها لا تغادر جهازك.</p>
-
-      <h2>قصصك على جهازك فقط</h2>
-      <p>القصص تُخزَّن في المتصفّح (IndexedDB) على جهازك أنت. إذا مسحتَ بيانات المتصفّح تُحذف القصص. لا نحتفظ بنسخة منها.</p>
-
-      <h2>لا تتبّع ولا إعلانات</h2>
-      <p>لا نستخدم ملفّات تتبّع (cookies)، ولا أدوات تحليل زيارات، ولا متتبّعات طرف ثالث، ولا إعلانات.</p>
-
-      <h2>ميزات الذكاء الاصطناعي</h2>
-      <p>ميزات الذكاء الاصطناعي اختيارية ومعطّلة تلقائيًّا. الكاتب يُدخل مفتاح API الخاصّ به ("أحضر مفتاحك") ويختار مزوّد الخدمة بنفسه.</p>
-      <p>عندما يضغط الكاتب زرّ ذكاء اصطناعي — وفقط عندها — يُرسَل إلى المزوّد الذي اختاره:</p>
-      <ul>
-        <li>موجّه نظام يحتوي قواعد كتابة عربية</li>
-        <li>نصّ القصة التي يعمل عليها</li>
-        <li>أسماء المقاطع والمتغيّرات في تلك القصة</li>
-      </ul>
-      <p>لا يُرسَل شيء إلى شركة المصير. لا يُرسَل شيء عندما لا تُستخدم أزرار الذكاء الاصطناعي.</p>
-
-      <h3>المزوّدون المدعومون</h3>
-      <p>DeepSeek، OpenAI، Groq، Together AI، Mistral، Venice، OpenRouter، Anthropic، Google Gemini، Ollama، LM Studio، وأيّ نقطة اتصال متوافقة مع OpenAI.</p>
-      <p>بمجرّد وصول النصّ إلى المزوّد، تحكمه سياسة خصوصية ذلك المزوّد. اقرأها قبل الاستخدام.</p>
-      <p><strong>الخيار الأكثر خصوصية:</strong> Ollama وLM Studio يعملان على حاسوبك. اختيارهما يعني أنّ نصّ القصة لا يغادر جهازك.</p>
-
-      <h3>تخزين مفتاح API</h3>
-      <p>المفتاح يُخزَّن في localStorage بالمتصفّح، لكلّ مزوّد على حدة. المفتاح غير محميّ بتقنية تعمية — صفحة الويب لا تستطيع حمايته حماية حقيقية. المفتاح يُرسَل فقط إلى المزوّد الذي اخترته، ولا يُرسَل إلينا.</p>
-
-      <h2>خدمة العامل (Service Worker)</h2>
-      <p>خدمة عامل تحفظ ملفّات التطبيق ليعمل المحرّر دون اتصال. لا تحفظ طلبات الذكاء الاصطناعي ولا ردوده.</p>
-
-      <h2>ملفّات القصص المصدَّرة</h2>
-      <p>الملفّ المصدَّر (HTML) لا يحتوي متتبّعات ولا يُرسل طلبات شبكة. من يفتحه لا يُرسل بيانات لأحد.</p>
-
-      <h2>الاستضافة</h2>
-      <p>الموقع مستضاف على Cloudflare Pages. كأيّ مستضيف ويب، يعالج Cloudflare بيانات تقنية — عنوان IP، نوع المتصفّح، الطوابع الزمنية — لتقديم الموقع والحماية من سوء الاستخدام.</p>
-
-      <h2>الأطفال</h2>
-      <p>أقلامنا لا تجمع بيانات شخصية من أحد، بمن فيهم الأطفال. لا توجد ميزات تتبّع للطلاب أو الفصول الدراسية. إذا استخدم معلّم أقلامنا مع تلاميذه، فلا بيانات تلاميذ تصلنا ولا يخزّنها البرنامج.</p>
-
-      <h2>التواصل</h2>
-      <p>admin@almaseer.co</p>
-
-      <h2>القانون الحاكم</h2>
-      <p>تخضع هذه السياسة لقوانين المملكة الأردنية الهاشمية.</p>
-
-      <hr>
-
-      <blockquote>
-        هذا المستند ليس استشارة قانونية. ينبغي مراجعته من محامٍ مختصّ قبل إضافة حسابات مستخدمين أو مدفوعات أو أيّ ميزة تخزّن بيانات عن الطلاب.
-      </blockquote>
+<h1 id="سياسة-الخصوصية-أقلامنا">سياسة الخصوصية — أقلامنا</h1>
+<p><strong>الإصدار 1.0 — 30 تموز 2026</strong></p>
+<p>أقلامنا أداة مفتوحة المصدر لكتابة القصص التفاعلية بالعربية. تملكها شركة المصير لبرامج وأنظمة الحاسوب ذ.م.م، المسجّلة في الأردن.</p>
+<p>هذه السياسة تشرح ما نجمعه عنك. الجواب المختصر: لا شيء.</p>
+<hr>
+<h2 id="لا-حسابات-ولا-تسجيل-دخول">لا حسابات ولا تسجيل دخول</h2>
+<p>لا نطلب بريدًا إلكترونيًّا ولا كلمة مرور ولا أيّ بيانات شخصية. لا يوجد تسجيل دخول من أيّ نوع.</p>
+<h2 id="لا-خادم-لنا">لا خادم لنا</h2>
+<p>المحرّر موقع ثابت (static site). لا قاعدة بيانات ولا خادم خلفي ولا تخزين من جانبنا. قصصك لا تصلنا لأنها لا تغادر جهازك.</p>
+<h2 id="قصصك-على-جهازك-فقط">قصصك على جهازك فقط</h2>
+<p>القصص تُخزَّن في المتصفّح (IndexedDB) على جهازك أنت. إذا مسحتَ بيانات المتصفّح تُحذف القصص. لا نحتفظ بنسخة منها.</p>
+<h2 id="لا-تتب-ع-ولا-إعلانات">لا تتبّع ولا إعلانات</h2>
+<p>لا نستخدم ملفّات تتبّع (cookies)، ولا أدوات تحليل زيارات، ولا متتبّعات طرف ثالث، ولا إعلانات.</p>
+<h2 id="ميزات-الذكاء-الاصطناعي">ميزات الذكاء الاصطناعي</h2>
+<p>ميزات الذكاء الاصطناعي اختيارية ومعطّلة تلقائيًّا. الكاتب يُدخل مفتاح API الخاصّ به (&quot;أحضر مفتاحك&quot;) ويختار مزوّد الخدمة بنفسه.</p>
+<p>عندما يضغط الكاتب زرّ ذكاء اصطناعي — وفقط عندها — يُرسَل إلى المزوّد الذي اختاره:</p>
+<ul><li>موجّه نظام يحتوي قواعد كتابة عربية</li><li>نصّ القصة التي يعمل عليها</li><li>أسماء المقاطع والمتغيّرات في تلك القصة</li></ul>
+<p>لا يُرسَل شيء إلى شركة المصير. لا يُرسَل شيء عندما لا تُستخدم أزرار الذكاء الاصطناعي.</p>
+<h3 id="المزو-دون-المدعومون">المزوّدون المدعومون</h3>
+<p>DeepSeek، OpenAI، Groq، Together AI، Mistral، Venice، OpenRouter، Anthropic، Google Gemini، Ollama، LM Studio، وأيّ نقطة اتصال متوافقة مع OpenAI.</p>
+<p>بمجرّد وصول النصّ إلى المزوّد، تحكمه سياسة خصوصية ذلك المزوّد. اقرأها قبل الاستخدام.</p>
+<p><strong>الخيار الأكثر خصوصية:</strong> Ollama وLM Studio يعملان على حاسوبك. اختيارهما يعني أنّ نصّ القصة لا يغادر جهازك.</p>
+<h3 id="تخزين-مفتاح-API">تخزين مفتاح API</h3>
+<p>المفتاح يُخزَّن في localStorage بالمتصفّح، لكلّ مزوّد على حدة. المفتاح غير محميّ بتقنية تعمية — صفحة الويب لا تستطيع حمايته حماية حقيقية. المفتاح يُرسَل فقط إلى المزوّد الذي اخترته، ولا يُرسَل إلينا.</p>
+<h2 id="خدمة-العامل-Service-Worker">خدمة العامل (Service Worker)</h2>
+<p>خدمة عامل تحفظ ملفّات التطبيق ليعمل المحرّر دون اتصال. لا تحفظ طلبات الذكاء الاصطناعي ولا ردوده.</p>
+<h2 id="ملف-ات-القصص-المصد-رة">ملفّات القصص المصدَّرة</h2>
+<p>الملفّ المصدَّر (HTML) لا يحتوي متتبّعات ولا يُرسل طلبات شبكة. من يفتحه لا يُرسل بيانات لأحد.</p>
+<h2 id="الاستضافة">الاستضافة</h2>
+<p>الموقع مستضاف على Cloudflare Pages. كأيّ مستضيف ويب، يعالج Cloudflare بيانات تقنية — عنوان IP، نوع المتصفّح، الطوابع الزمنية — لتقديم الموقع والحماية من سوء الاستخدام.</p>
+<h2 id="الأطفال">الأطفال</h2>
+<p>أقلامنا لا تجمع بيانات شخصية من أحد، بمن فيهم الأطفال. لا توجد ميزات تتبّع للطلاب أو الفصول الدراسية. إذا استخدم معلّم أقلامنا مع تلاميذه، فلا بيانات تلاميذ تصلنا ولا يخزّنها البرنامج.</p>
+<h2 id="التواصل">التواصل</h2>
+<p>admin@almaseer.co</p>
+<h2 id="القانون-الحاكم">القانون الحاكم</h2>
+<p>تخضع هذه السياسة لقوانين المملكة الأردنية الهاشمية.</p>
+<hr>
+<blockquote>هذا المستند ليس استشارة قانونية. ينبغي مراجعته من محامٍ مختصّ قبل إضافة حسابات مستخدمين أو مدفوعات أو أيّ ميزة تخزّن بيانات عن الطلاب.</blockquote>
     </div>
 
     <div class="english-link">
@@ -135,7 +98,7 @@
       <a href="https://github.com/humammalhas/aqlamna/issues/new?template=idea.yml" target="_blank" rel="noopener">اقترح فكرة</a>
       <a href="https://github.com/humammalhas/aqlamna/discussions" target="_blank" rel="noopener">ناقش</a>
       <a href="mailto:admin@almaseer.co">راسلنا</a>
-      <a href="https://github.com/humammalhas/aqlamna">GPL-3.0</a>
+      <a href="https://github.com/humammalhas/aqlamna" target="_blank" rel="noopener">GPL-3.0</a>
       <a href="/privacy">الخصوصية</a>
       <a href="/terms">الشروط</a>
     </nav>
