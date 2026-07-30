@@ -66,7 +66,7 @@ describe("Engine — fixture 03 (الرحيق)", () => {
     // choice_1 is sticky — still available
     expect(afterFirst.choices.map((c) => c.label)).toContain("اجمع الرحيق");
     // Not in consumed
-    expect(engine.getState().consumed).not.toContain("choice_1");
+    expect(engine.getState().consumed["البداية"] ?? []).not.toContain("choice_1");
   });
 
   it("consumable * choice (تحدثي مع النحلة الحكيمة) disappears after being taken", () => {
@@ -79,7 +79,7 @@ describe("Engine — fixture 03 (الرحيق)", () => {
     // choice_2 is consumable — gone
     expect(afterTalk.choices.map((c) => c.label)).not.toContain("تحدثي مع النحلة الحكيمة");
     // In consumed list
-    expect(engine.getState().consumed).toContain("choice_2");
+    expect(engine.getState().consumed["البداية"] ?? []).toContain("choice_2");
   });
 
   it("conditional choice «عودي إلى الخلية» appears after collecting twice (الرحيق >= 4)", () => {
@@ -107,7 +107,7 @@ describe("Engine — fixture 03 (الرحيق)", () => {
     expect(scene.ended).toBe(true);
 
     // choice_3 is sticky — should NOT be in consumed list
-    expect(engine.getState().consumed).not.toContain("choice_3");
+    expect(engine.getState().consumed["البداية"] ?? []).not.toContain("choice_3");
   });
 
   it("choosing عودي إلى الخلية diverts to END", () => {
@@ -145,7 +145,7 @@ describe("Engine — fixture 02 (الباب) — consumable vs sticky", () => {
     expect(afterWait.choices.map((c) => c.label)).toContain("انتظر");
 
     // Not in consumed list
-    expect(engine.getState().consumed).not.toContain("choice_2");
+    expect(engine.getState().consumed["البداية"] ?? []).not.toContain("choice_2");
   });
 
   it("consumable * choice (افتح الباب) disappears after being taken", () => {
@@ -157,7 +157,7 @@ describe("Engine — fixture 02 (الباب) — consumable vs sticky", () => {
     expect(afterOpen.ended).toBe(true);
 
     // Consumed list has it
-    expect(engine.getState().consumed).toContain("choice_1");
+    expect(engine.getState().consumed["البداية"] ?? []).toContain("choice_1");
   });
 
   it("consumable choice stays gone on revisit", () => {
@@ -172,7 +172,7 @@ describe("Engine — fixture 02 (الباب) — consumable vs sticky", () => {
     // Now take consumable
     const afterOpen = engine.choose("choice_1");
     expect(afterOpen.ended).toBe(true);
-    expect(engine.getState().consumed).toContain("choice_1");
+    expect(engine.getState().consumed["البداية"] ?? []).toContain("choice_1");
   });
 });
 
@@ -192,9 +192,9 @@ describe("Engine — save/restore", () => {
     expect(state.passage).toBe("البداية");
     expect(state.variables["الرحيق"]).toBe(4);
     // choice_2 is consumable, should be in consumed
-    expect(state.consumed).toContain("choice_2");
+    expect(state.consumed["البداية"] ?? []).toContain("choice_2");
     // choice_1 is sticky, should NOT be in consumed
-    expect(state.consumed).not.toContain("choice_1");
+    expect(state.consumed["البداية"] ?? []).not.toContain("choice_1");
     expect(state.ended).toBe(false);
 
     // Round-trip through JSON
@@ -206,8 +206,8 @@ describe("Engine — save/restore", () => {
 
     expect(engine2.getState().passage).toBe("البداية");
     expect(engine2.getState().variables["الرحيق"]).toBe(4);
-    expect(engine2.getState().consumed).toContain("choice_2");
-    expect(engine2.getState().consumed).not.toContain("choice_1");
+    expect(engine2.getState().consumed["البداية"] ?? []).toContain("choice_2");
+    expect(engine2.getState().consumed["البداية"] ?? []).not.toContain("choice_1");
 
     // Continue playing — choice_3 should be visible (الرحيق >= 4)
     // choice_1 (sticky) still available, choice_2 (consumable) gone

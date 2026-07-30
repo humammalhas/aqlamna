@@ -44,6 +44,26 @@ All other targets keep their name as written, with tashkeel stripped.
 
 `choice_1`, `choice_2`, … numbered sequentially from 1, per passage, in source order.
 Sticky (`+`) and consumable (`*`) choices share one counter.
+Nested choices extend the parent: `choice_1_1`, `choice_1_2` (§1.13).
+
+**IDs are unique WITHIN a passage, not across the story. Therefore the runtime MUST
+key its consumed-choice set by (passage, choiceId) — never by choiceId alone.**
+
+This was originally unspecified and caused a severe bug: taking `choice_1` in one
+passage marked `choice_1` consumed in *every* passage, so a reader arriving at the
+next scene found no choices at all and the story dead-ended. Reproduced with:
+
+```
+=== أ ===
+* [خيار في أ] نص أ.
+  -> ب
+=== ب ===
+* [خيار في ب] نص ب.
+  -> نهاية
+```
+
+Fixtures 01-04 never caught it because none of them has consumable choices in more
+than one passage. Any multi-scene story does.
 
 ### 1.5 Interpolation splits a text line
 

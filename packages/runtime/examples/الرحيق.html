@@ -155,7 +155,7 @@
 <body>
 <div id="qalam-player"></div>
 <script id="qalam-story" type="application/json">
-{"qalam_version":"0.1","title":"الرحيق","author":null,"language":"ar","direction":"rtl","start":"البداية","variables":{"الرحيق":{"type":"number","initial":0},"وجد_الخريطة":{"type":"boolean","initial":false},"اسم_البطل":{"type":"string","initial":"نحلة"}},"lists":{},"passages":{"البداية":{"tags":[],"content":[{"type":"conditional","condition":{"var":"وجد_الخريطة"},"then":[{"type":"text","value":"الخريطة معك."}],"else":[]},{"type":"text","value":"جمعتِ "},{"type":"interpolation","var":"الرحيق"},{"type":"text","value":" قطرة."},{"type":"choices","items":[{"id":"choice_1","label":"اجمع الرحيق","sticky":true,"condition":null,"content":[{"type":"set","var":"الرحيق","op":"+=","value":2}],"divert":"البداية"},{"id":"choice_2","label":"تحدثي مع النحلة الحكيمة","sticky":false,"condition":null,"content":[{"type":"set","var":"وجد_الخريطة","op":"=","value":true}],"divert":"البداية"},{"id":"choice_3","label":"عودي إلى الخلية","sticky":true,"condition":{"var":"الرحيق","op":">=","value":4},"content":[],"divert":"END"}]}]}},"metadata":{"created":"2026-07-30T11:59:52.467Z","modified":"2026-07-30T11:59:52.467Z","passage_count":1,"word_count":4}}
+{"qalam_version":"0.1","title":"الرحيق","author":null,"language":"ar","direction":"rtl","start":"البداية","variables":{"الرحيق":{"type":"number","initial":0},"وجد_الخريطة":{"type":"boolean","initial":false},"اسم_البطل":{"type":"string","initial":"نحلة"}},"lists":{},"passages":{"البداية":{"tags":[],"content":[{"type":"conditional","condition":{"var":"وجد_الخريطة"},"then":[{"type":"text","value":"الخريطة معك."}],"else":[]},{"type":"text","value":"جمعتِ "},{"type":"interpolation","var":"الرحيق"},{"type":"text","value":" قطرة."},{"type":"choices","items":[{"id":"choice_1","label":"اجمع الرحيق","sticky":true,"condition":null,"content":[{"type":"set","var":"الرحيق","op":"+=","value":2}],"divert":"البداية"},{"id":"choice_2","label":"تحدثي مع النحلة الحكيمة","sticky":false,"condition":null,"content":[{"type":"set","var":"وجد_الخريطة","op":"=","value":true}],"divert":"البداية"},{"id":"choice_3","label":"عودي إلى الخلية","sticky":true,"condition":{"var":"الرحيق","op":">=","value":4},"content":[],"divert":"END"}]}]}},"metadata":{"created":"2026-07-30T12:14:47.495Z","modified":"2026-07-30T12:14:47.495Z","passage_count":1,"word_count":4}}
 </script>
 <script>
 (function () {
@@ -187,7 +187,7 @@ class Engine {
             variables,
             lists,
             visited: {},
-            consumed: [],
+            consumed: {},
             ended: false,
         };
     }
@@ -218,9 +218,14 @@ class Engine {
         if (!item) {
             return this.makeScene([], []);
         }
-        // Consume the choice (sticky choices are never consumed)
-        if (!item.sticky && !this.state.consumed.includes(choiceId)) {
-            this.state.consumed.push(choiceId);
+        // Consume the choice (sticky choices are never consumed).
+        // Keyed by (passage, choiceId) per PHASE1_SPEC.md §1.4.
+        if (!item.sticky) {
+            const passageConsumed = this.state.consumed[this.state.passage] ?? [];
+            if (!passageConsumed.includes(choiceId)) {
+                passageConsumed.push(choiceId);
+                this.state.consumed[this.state.passage] = passageConsumed;
+            }
         }
         // Process the choice's content
         const choiceOutput = [];
@@ -250,22 +255,35 @@ class Engine {
     /** Return a serialisable snapshot of the current engine state. */
     getState() {
         return {
+            save_version: 2,
             passage: this.state.passage,
             variables: { ...this.state.variables },
             lists: { ...this.state.lists },
             visited: { ...this.state.visited },
-            consumed: [...this.state.consumed],
+            consumed: deepCloneConsumed(this.state.consumed),
             ended: this.state.ended,
         };
     }
     /** Restore the engine from a previously saved state. */
     loadState(state) {
+        // Handle old v1 format: consumed was a flat string[].
+        // Discard it gracefully — no real users yet.
+        let consumed;
+        if (Array.isArray(state.consumed)) {
+            console.warn("تنسيق الحفظ قديم — جارٍ تجاهل الخيارات المستهلكة." +
+                " القديم: مصفوفة، الجديد: لكل مقطع خياراته.");
+            consumed = {};
+        }
+        else {
+            consumed = deepCloneConsumed(state.consumed ?? {});
+        }
         this.state = {
+            save_version: 2,
             passage: state.passage,
             variables: { ...state.variables },
             lists: { ...state.lists },
             visited: { ...state.visited },
-            consumed: [...state.consumed],
+            consumed,
             ended: state.ended,
         };
     }
@@ -381,8 +399,12 @@ class Engine {
     }
     // ---- condition evaluation ------------------------------------------------
     isChoiceAvailable(item) {
-        if (!item.sticky && this.state.consumed.includes(item.id)) {
-            return false;
+        // Per-passage consumed check: look up consumed IDs for the current passage
+        if (!item.sticky) {
+            const passageConsumed = this.state.consumed[this.state.passage] ?? [];
+            if (passageConsumed.includes(item.id)) {
+                return false;
+            }
         }
         if (item.condition !== null && !this.evalCondition(item.condition)) {
             return false;
@@ -484,14 +506,33 @@ class Engine {
                 }
             }
             if (node.type === "conditional") {
-                const found = this.findChoice(node.then, choiceId) ??
-                    this.findChoice(node.else, choiceId);
-                if (found)
-                    return found;
+                const inThen = this.findChoice(node.then, choiceId);
+                if (inThen)
+                    return inThen;
+                const inElse = this.findChoice(node.else, choiceId);
+                if (inElse)
+                    return inElse;
+            }
+            if (node.type === "thread") {
+                const tp = this.story.passages[node.target];
+                if (tp) {
+                    const inThread = this.findChoice(tp.content, choiceId);
+                    if (inThread)
+                        return inThread;
+                }
             }
         }
         return null;
     }
+}
+// ---- helpers (module-level) ------------------------------------------------
+/** Deep-clone the per-passage consumed map. */
+function deepCloneConsumed(consumed) {
+    const clone = {};
+    for (const [key, ids] of Object.entries(consumed)) {
+        clone[key] = [...ids];
+    }
+    return clone;
 }
 // ---------------------------------------------------------------------------
 // Aqlamna runtime renderer — DOM rendering, RTL-first
@@ -637,8 +678,14 @@ function loadFromLocalStorage(storyTitle) {
         // Basic validation
         if (typeof parsed.passage !== "string" ||
             typeof parsed.variables !== "object" ||
-            !Array.isArray(parsed.consumed)) {
+            typeof parsed.consumed !== "object") {
             return null;
+        }
+        // Handle old v1 format: consumed was a flat string[].
+        if (Array.isArray(parsed.consumed)) {
+            console.warn("تنسيق الحفظ قديم — جارٍ تجاهل الخيارات المستهلكة." +
+                " القديم: مصفوفة، الجديد: لكل مقطع خياراته.");
+            parsed.consumed = {};
         }
         return parsed;
     }
@@ -682,9 +729,14 @@ function uploadSave() {
                     const parsed = JSON.parse(reader.result);
                     if (typeof parsed.passage !== "string" ||
                         typeof parsed.variables !== "object" ||
-                        !Array.isArray(parsed.consumed)) {
+                        typeof parsed.consumed !== "object") {
                         resolve(null);
                         return;
+                    }
+                    if (Array.isArray(parsed.consumed)) {
+                        console.warn("تنسيق الحفظ قديم — جارٍ تجاهل الخيارات المستهلكة." +
+                            " القديم: مصفوفة، الجديد: لكل مقطع خياراته.");
+                        parsed.consumed = {};
                     }
                     resolve(parsed);
                 }

@@ -52,7 +52,7 @@ export class Engine {
       variables,
       lists,
       visited: {},
-      consumed: [],
+      consumed: {},
       ended: false,
     };
   }
@@ -89,9 +89,14 @@ export class Engine {
       return this.makeScene([], []);
     }
 
-    // Consume the choice (sticky choices are never consumed)
-    if (!item.sticky && !this.state.consumed.includes(choiceId)) {
-      this.state.consumed.push(choiceId);
+    // Consume the choice (sticky choices are never consumed).
+    // Keyed by (passage, choiceId) per PHASE1_SPEC.md §1.4.
+    if (!item.sticky) {
+      const passageConsumed = this.state.consumed[this.state.passage] ?? [];
+      if (!passageConsumed.includes(choiceId)) {
+        passageConsumed.push(choiceId);
+        this.state.consumed[this.state.passage] = passageConsumed;
+      }
     }
 
     // Process the choice's content
@@ -124,23 +129,40 @@ export class Engine {
   /** Return a serialisable snapshot of the current engine state. */
   getState(): StoryState {
     return {
+      save_version: 2,
       passage: this.state.passage,
       variables: { ...this.state.variables },
       lists: { ...this.state.lists },
       visited: { ...this.state.visited },
-      consumed: [...this.state.consumed],
+      consumed: deepCloneConsumed(this.state.consumed),
       ended: this.state.ended,
     };
   }
 
   /** Restore the engine from a previously saved state. */
   loadState(state: StoryState): void {
+    // Handle old v1 format: consumed was a flat string[].
+    // Discard it gracefully — no real users yet.
+    let consumed: Record<string, string[]>;
+    if (Array.isArray(state.consumed)) {
+      console.warn(
+        "تنسيق الحفظ قديم — جارٍ تجاهل الخيارات المستهلكة." +
+        " القديم: مصفوفة، الجديد: لكل مقطع خياراته.",
+      );
+      consumed = {};
+    } else {
+      consumed = deepCloneConsumed(
+        (state.consumed as Record<string, string[]>) ?? {},
+      );
+    }
+
     this.state = {
+      save_version: 2,
       passage: state.passage,
       variables: { ...state.variables },
       lists: { ...state.lists },
       visited: { ...state.visited },
-      consumed: [...state.consumed],
+      consumed,
       ended: state.ended,
     };
   }
@@ -280,8 +302,12 @@ export class Engine {
   // ---- condition evaluation ------------------------------------------------
 
   private isChoiceAvailable(item: ChoiceItem): boolean {
-    if (!item.sticky && this.state.consumed.includes(item.id)) {
-      return false;
+    // Per-passage consumed check: look up consumed IDs for the current passage
+    if (!item.sticky) {
+      const passageConsumed = this.state.consumed[this.state.passage] ?? [];
+      if (passageConsumed.includes(item.id)) {
+        return false;
+      }
     }
     if (item.condition !== null && !this.evalCondition(item.condition)) {
       return false;
@@ -401,12 +427,32 @@ export class Engine {
         }
       }
       if (node.type === "conditional") {
-        const found =
-          this.findChoice(node.then, choiceId) ??
-          this.findChoice(node.else, choiceId);
-        if (found) return found;
+        const inThen = this.findChoice(node.then, choiceId);
+        if (inThen) return inThen;
+        const inElse = this.findChoice(node.else, choiceId);
+        if (inElse) return inElse;
+      }
+      if (node.type === "thread") {
+        const tp = this.story.passages[node.target];
+        if (tp) {
+          const inThread = this.findChoice(tp.content, choiceId);
+          if (inThread) return inThread;
+        }
       }
     }
     return null;
   }
+}
+
+// ---- helpers (module-level) ------------------------------------------------
+
+/** Deep-clone the per-passage consumed map. */
+function deepCloneConsumed(
+  consumed: Record<string, string[]>,
+): Record<string, string[]> {
+  const clone: Record<string, string[]> = {};
+  for (const [key, ids] of Object.entries(consumed)) {
+    clone[key] = [...ids];
+  }
+  return clone;
 }

@@ -590,12 +590,14 @@ class ParserState {
       }
       return { var: varName.value, op: actualOp as Condition["op"], value: val.value };
     }
+    if (negated) return { var: varName.value, negated: true };
     return { var: varName.value };
   }
 
   /** Parses a condition from a token slice starting at ti (does NOT consume {). */
   parseConditionFromSlice(buf: Token[], ti: number): Condition {
-    if (buf[ti]!.kind === K.KEYWORD_NOT) ti++;
+    let negated = false;
+    if (buf[ti]!.kind === K.KEYWORD_NOT) { ti++; negated = true; }
     const varTok = buf[ti]!;
     if (ti + 1 < buf.length && buf[ti + 1]!.kind === K.OPERATOR) {
       const op = buf[ti + 1]!.value;
@@ -605,9 +607,11 @@ class ParserState {
         if (valTok.kind === K.NUMBER) value = numValue(valTok);
         else if (valTok.kind === K.KEYWORD_TRUE || valTok.kind === K.KEYWORD_FALSE) value = boolValue(valTok);
         else value = valTok.value;
-        return { var: varTok.value, op: op as Condition["op"], value };
+        const actualOp = negated ? ({ "==": "!=", "!=": "==", "<": ">=", ">": "<=", "<=": ">", ">=": "<" } as Record<string, string>)[op] ?? op : op;
+        return { var: varTok.value, op: actualOp as Condition["op"], value };
       }
     }
+    if (negated) return { var: varTok.value, negated: true };
     return { var: varTok.value };
   }
 

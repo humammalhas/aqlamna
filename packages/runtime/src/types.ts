@@ -130,11 +130,14 @@ export type Condition = VarCondition | NotCondition | AndCondition | OrCondition
 
 /** Full story state — can be serialised to JSON for save/restore. */
 export interface StoryState {
+  /** Save format version. v1 had consumed: string[] (global). v2 uses per-passage map. */
+  save_version?: number;
   passage: string;
   variables: Record<string, number | string | boolean>;
   lists: Record<string, string>;
   visited: Record<string, number>;
-  consumed: string[];
+  /** Per-passage consumed choice IDs. Key is passage name, value is array of choice IDs consumed in that passage. */
+  consumed: Record<string, string[]>;
   ended: boolean;
 }
 

@@ -18,11 +18,14 @@ function normalizeDivertTarget(target: string): string {
 // ---- condition -------------------------------------------------------------
 
 function compileCondition(cond: Condition): Record<string, unknown> {
-  if (cond.op !== undefined && cond.value !== undefined) {
-    return { var: cond.var, op: cond.op, value: cond.value };
+  const inner: Record<string, unknown> = cond.op !== undefined && cond.value !== undefined
+    ? { var: cond.var, op: cond.op, value: cond.value }
+    : { var: cond.var };
+
+  if (cond.negated) {
+    return { not: inner };
   }
-  // truthiness form (§1.7): no op, no value
-  return { var: cond.var };
+  return inner;
 }
 
 // ---- content nodes ---------------------------------------------------------

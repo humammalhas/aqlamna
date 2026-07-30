@@ -38,9 +38,17 @@ export function loadFromLocalStorage(
     if (
       typeof parsed.passage !== "string" ||
       typeof parsed.variables !== "object" ||
-      !Array.isArray(parsed.consumed)
+      typeof parsed.consumed !== "object"
     ) {
       return null;
+    }
+    // Handle old v1 format: consumed was a flat string[].
+    if (Array.isArray(parsed.consumed)) {
+      console.warn(
+        "تنسيق الحفظ قديم — جارٍ تجاهل الخيارات المستهلكة." +
+        " القديم: مصفوفة، الجديد: لكل مقطع خياراته.",
+      );
+      parsed.consumed = {};
     }
     return parsed;
   } catch {
@@ -92,10 +100,17 @@ export function uploadSave(): Promise<StoryState | null> {
           if (
             typeof parsed.passage !== "string" ||
             typeof parsed.variables !== "object" ||
-            !Array.isArray(parsed.consumed)
+            typeof parsed.consumed !== "object"
           ) {
             resolve(null);
             return;
+          }
+          if (Array.isArray(parsed.consumed)) {
+            console.warn(
+              "تنسيق الحفظ قديم — جارٍ تجاهل الخيارات المستهلكة." +
+              " القديم: مصفوفة، الجديد: لكل مقطع خياراته.",
+            );
+            parsed.consumed = {};
           }
           resolve(parsed);
         } catch {

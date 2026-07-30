@@ -131,4 +131,6 @@ export interface Condition {
   /** Absent for truthiness checks (e.g. `{وجد: ...}`). */
   op?: "==" | "!=" | "<" | ">" | "<=" | ">=";
   value?: number | string | boolean;
+  /** True when the condition is negated with لا (e.g. `{لا وجد}`). */
+  negated?: boolean;
 }
