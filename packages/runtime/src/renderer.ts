@@ -40,20 +40,38 @@ export function renderScene(
     wrapper.appendChild(titleEl);
   }
 
-  // Output area
+  // Output area — group consecutive text and linebreak nodes into paragraphs.
+  // Text nodes arising from text + interpolation + text must render inline
+  // as a single paragraph.  Linebreaks become <br> inside the paragraph.
   const outputEl = document.createElement("div");
   outputEl.className = "aq-output";
 
+  // null sentinel means <br>; string means a text run
+  const run: Array<string | null> = [];
+
+  function flushRun(): void {
+    if (run.length === 0) return;
+    const p = document.createElement("p");
+    p.className = "aq-text";
+    for (const item of run) {
+      if (item === null) {
+        p.appendChild(document.createElement("br"));
+      } else {
+        p.appendChild(document.createTextNode(item));
+      }
+    }
+    outputEl.appendChild(p);
+    run.length = 0;
+  }
+
   for (const node of scene.output) {
     if (node.type === "text") {
-      const p = document.createElement("p");
-      p.className = "aq-text";
-      p.textContent = node.value;
-      outputEl.appendChild(p);
+      run.push(node.value);
     } else if (node.type === "linebreak") {
-      outputEl.appendChild(document.createElement("br"));
+      run.push(null);
     }
   }
+  flushRun();
 
   wrapper.appendChild(outputEl);
 

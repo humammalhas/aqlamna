@@ -51,6 +51,20 @@ interface FakeNode {
   click(): void;
 }
 
+function fakeCreateTextNode(text) {
+  return {
+    _tag: "#text",
+    className: "",
+    textContent: text,
+    innerHTML: "",
+    children: [],
+    _listeners: {},
+    appendChild() {},
+    addEventListener() {},
+    click() {},
+  };
+}
+
 function fakeCreateElement(tag: string): FakeNode {
   const el: FakeNode = {
     _tag: tag,
@@ -182,6 +196,7 @@ describe("exportStandalone", () => {
         return null;
       },
       createElement: fakeCreateElement,
+      createTextNode: fakeCreateTextNode,
     };
 
     const ls = (() => {
@@ -207,6 +222,15 @@ describe("exportStandalone", () => {
     expect(allText).toContain("جمعتِ");
     expect(allText).toContain("0");
     expect(allText).toContain("قطرة");
+
+    // Rendering: consecutive text+interpolation+text → ONE <p>
+    const story = player.children[0]!;                 // div.aq-story
+    const output = story.children[1]!;                 // div.aq-output (child 0=title, 1=output)
+    expect(output.className).toBe("aq-output");
+    expect(output.children.length).toBe(1);            // exactly one paragraph
+    const para = output.children[0]!;
+    expect(para._tag).toBe("p");
+    expect(collectText(para)).toBe("جمعتِ 0 قطرة.");    // inline, not block-stacked
 
     // Two choices: "اجمع الرحيق" and "تحدثي مع النحلة الحكيمة"
     const btn1 = findButton(player, "اجمع الرحيق");
