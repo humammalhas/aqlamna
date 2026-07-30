@@ -304,6 +304,36 @@ implementing the language. Smell test at step 4 — write a fourth story yoursel
 Arabic, using only syntax from the design doc, and see whether it compiles. If it only
 ever works on the fixtures, you'll know immediately.
 
+### 1.16 Paragraph breaks between prose lines
+
+Found on 30 Jul 2026 by looking at the deployed demo. §1.10 says every prose line is
+trimmed, but it never said how two consecutive lines join. The compiler joined them with
+the **empty string**, so this source:
+
+```
+فتح ثلاث جرارٍ ووضعها في الضوء.
+
+"زهر النارنج،" قال، ورفع أولاها.
+```
+
+compiled to one text node reading `...في الضوء."زهر النارنج،" قال...` — sentences welded
+together with no space, no break, and no paragraph. Valid JSON, no error, unreadable prose.
+This was a spec gap, not an implementation whim. The rule is now explicit:
+
+- **Consecutive non-blank prose lines belong to ONE paragraph** and are joined by a line
+  break, not by the empty string and not by a space. In the compiled JSON this is the
+  existing `null` sentinel that the renderer turns into `<br>`.
+- **One or more blank lines close the paragraph.** The next prose line opens a new one,
+  rendered as a separate `<p>`.
+- **Two source lines are never concatenated with the empty string.** If a future change
+  makes that happen again it is a bug by definition, regardless of what the tests say.
+- Interpolation splitting inside a single line is unchanged — §1.10 still governs it.
+
+Fixture `05_paragraphs` is the contract for this rule: a passage with two paragraphs, the
+first of three lines and the second of one, plus one paragraph containing an interpolation,
+so a regression in either direction fails a fixture rather than a human's reading.
+
+
 ---
 
 *Phase 1 spec — 2026-07-30. Fixtures and acceptance criteria are the contract; the

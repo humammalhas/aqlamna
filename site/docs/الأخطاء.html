@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1a1713">
+<meta name="description" content="الأخطاء — توثيق أقلامنا، محرك القصص التفاعلية بالعربية.">
+<link rel="icon" href="/assets/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="512x512" href="/assets/icon-512.png">
+<title>الأخطاء — أقلامنا</title>
+<style>*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-family:"IBM Plex Sans Arabic","Noto Sans Arabic","Amiri","Tajawal",system-ui,sans-serif;
+  font-size:1.0625rem;line-height:1.9;color:#e0d6c2;background:#1a1713;scroll-behavior:smooth}
+body{direction:rtl;min-block-size:100dvb}
+.wrap{max-inline-size:46rem;margin-inline:auto;padding-inline:1.25rem;padding-block:1.5rem 4rem}
+nav.top{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;
+  padding-block:1rem;border-block-end:1px solid #34302a;margin-block-end:2rem}
+nav.top a{color:#b8a88a;text-decoration:none;font-size:.9375rem;
+  padding:.35rem .85rem;border:1px solid #34302a;border-radius:.5rem}
+nav.top a:hover{color:#e0d6c2;border-color:#4a443c}
+nav.top a.here{color:#1a1713;background:#d4a843;border-color:#d4a843}
+nav.top .home{margin-inline-end:auto;color:#d4a843;font-weight:700;border:0;padding-inline:0}
+h1{font-size:1.875rem;color:#d4a843;margin-block:1.5rem 1rem;line-height:1.4}
+h2{font-size:1.375rem;color:#d4a843;margin-block:2.25rem .75rem;line-height:1.5;
+  padding-block-end:.4rem;border-block-end:1px solid #2a2621}
+h3{font-size:1.125rem;color:#e0d6c2;margin-block:1.75rem .5rem}
+h4{font-size:1rem;color:#b8a88a;margin-block:1.25rem .5rem}
+p{margin-block:.85rem}
+ul,ol{margin-block:.85rem;padding-inline-start:1.5rem}
+li{margin-block:.35rem}
+a{color:#d4a843}
+strong{color:#f0e6d2}
+hr{border:0;border-block-start:1px solid #2a2621;margin-block:2.5rem}
+code{font-family:"Courier New",monospace;font-size:.9em;background:#242019;
+  color:#e8c877;padding:.1em .35em;border-radius:.25rem;unicode-bidi:isolate}
+pre{background:#141210;border:1px solid #2a2621;border-radius:.5rem;
+  padding:1rem 1.15rem;margin-block:1rem;overflow-x:auto;direction:rtl;text-align:start}
+pre code{background:none;color:#d8cdb6;padding:0;font-size:.9375rem;line-height:1.8;
+  white-space:pre-wrap;unicode-bidi:plaintext;display:block}
+blockquote{border-inline-start:3px solid #d4a843;background:#211d18;
+  padding:.75rem 1rem;margin-block:1rem;border-radius:0 .35rem .35rem 0;color:#cfc3aa}
+blockquote code{background:#141210}
+table{inline-size:100%;border-collapse:collapse;margin-block:1.25rem;font-size:.9375rem}
+th,td{border:1px solid #2a2621;padding:.55rem .75rem;text-align:start;vertical-align:top}
+th{background:#211d18;color:#d4a843;font-weight:700}
+footer{margin-block-start:3.5rem;padding-block-start:1.25rem;border-block-start:1px solid #2a2621;
+  color:#8a7f6d;font-size:.875rem;display:flex;flex-wrap:wrap;gap:.75rem 1.25rem}
+footer a{color:#8a7f6d}
+@media(max-width:34rem){html{font-size:1rem}nav.top .home{inline-size:100%;margin-block-end:.5rem}}</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="top">
+  <a class="home" href="/">أقلامنا</a>
+  <a href="/docs/%D8%A7%D9%84%D8%A8%D8%AF%D8%A7%D9%8A%D8%A9.html">البداية</a>
+  <a href="/docs/%D8%A7%D9%84%D9%85%D8%B1%D8%AC%D8%B9.html">المرجع</a>
+  <a href="/docs/%D8%A7%D9%84%D8%A3%D8%AE%D8%B7%D8%A7%D8%A1.html" class="here">الأخطاء</a>
+  <a href="/editor/">المحرّر</a>
+</nav>
+<main>
+<h1 id="الأخطاء-رموز-الخطأ-وطريقة-إصلاحها">الأخطاء — رموز الخطأ وطريقة إصلاحها</h1>
+<p>كل خطأ في محرك أقلامنا له رمز ثابت (مثل E101) ورسالة عربية. هذا المرجع يشرح كل رمز: ما سببه، وكيف تصلحه.</p>
+<hr>
+<h2 id="أخطاء-التحليل-الأخطاء-التركيبية">أخطاء التحليل — الأخطاء التركيبية</h2>
+<p>هذه الأخطاء تظهر قبل أن تعمل القصة. سببها خطأ في كتابة الرموز.</p>
+<hr>
+<h3 id="E101-مقطع-غير-موجود">E101 — مقطع غير موجود</h3>
+<blockquote><strong>الرسالة:</strong> <code>لا يوجد مقطع بهذا الاسم: {name}</code></blockquote>
+<p><strong>السبب:</strong> أحلت إلى مقطع (<code>-&gt; اسم</code>) لكن هذا المقطع غير موجود في الملف.</p>
+<p><strong>مثال الخطأ:</strong></p>
+<pre><code>=== البداية ===
+
+-&gt; القصر</code></pre>
+<p>لا يوجد <code>=== القصر ===</code> في الملف.</p>
+<p><strong>الحل:</strong> تأكد أن اسم المقطع مكتوب بشكل مطابق. تذكر أن التشكيل يُنزع تلقائيًا.</p>
+<hr>
+<h3 id="E102-اسم-مقطع-مكرر">E102 — اسم مقطع مكرر</h3>
+<blockquote><strong>الرسالة:</strong> <code>اسم المقطع مكرّر: {name}</code></blockquote>
+<p><strong>السبب:</strong> عرّفت مقطعين أو أكثر بنفس الاسم.</p>
+<p><strong>مثال الخطأ:</strong></p>
+<pre><code>=== الغابة ===
+الأشجار كثيفة.
+
+=== الغابة ===
+نفس الاسم مرة أخرى.</code></pre>
+<p><strong>الحل:</strong> غيّر اسم أحد المقاطع. كل مقطع يحتاج اسمًا فريدًا.</p>
+<hr>
+<h3 id="E103-ترويسة-مقطع-غير-مغلقة">E103 — ترويسة مقطع غير مغلقة</h3>
+<blockquote><strong>الرسالة:</strong> <code>ترويسة المقطع غير مغلقة؛ أضف === في نهاية السطر.</code></blockquote>
+<p><strong>السبب:</strong> بدأت سطرًا بـ <code>===</code> لكن لم تغلقه بـ <code>===</code>.</p>
+<p><strong>مثال الخطأ:</strong></p>
+<pre><code>=== البداية</code></pre>
+<p><strong>الحل:</strong> أضف <code>===</code> في نهاية السطر:</p>
+<pre class="lang-qalam"><code>=== البداية ===</code></pre>
+<hr>
+<h3 id="E104-خيار-خارج-أي-مقطع">E104 — خيار خارج أي مقطع</h3>
+<blockquote><strong>الرسالة:</strong> <code>خيار خارج أيّ مقطع؛ ابدأ مقطعًا بـ === قبل كتابة الخيارات.</code></blockquote>
+<p><strong>السبب:</strong> كتبت <code>*</code> أو <code>+</code> قبل أن تفتح مقطعًا بـ <code>===</code>.</p>
+<p><strong>مثال الخطأ:</strong></p>
+<pre><code>* [افتح الباب]
+  -&gt; الممر</code></pre>
+<p><strong>الحل:</strong> افتح مقطعًا أولاً:</p>
+<pre class="lang-qalam"><code>=== البداية ===
+
+* [افتح الباب]
+  -&gt; تابع</code></pre>
+<hr>
+<h3 id="E105-شرط-غير-مكتمل">E105 — شرط غير مكتمل</h3>
+<blockquote><strong>الرسالة:</strong> <code>شرط غير مكتمل؛ القوس { لم يُغلق.</code></blockquote>
+<p><strong>السبب:</strong> فتحت <code>{</code> لكن لم تغلقه بـ <code>}</code>.</p>
+<p><strong>مثال الخطأ:</strong></p>
+<pre><code>{نقاط &gt; ٥: أحسنت!</code></pre>
+<p><strong>الحل:</strong> أضف <code>}</code> في نهاية الشرط:</p>
+<pre class="lang-qalam"><code>{نقاط &gt; ٥: أحسنت!}</code></pre>
+<hr>
+<h2 id="أخطاء-التجميع-أخطاء-المعنى">أخطاء التجميع — أخطاء المعنى</h2>
+<p>هذه الأخطاء تظهر بعد التحليل. سببها مشكلة في المنطق أو المتغيرات.</p>
+<hr>
+<h3 id="E201-تعبير-غير-مدعوم-في-الإسناد">E201 — تعبير غير مدعوم في الإسناد</h3>
+<blockquote><strong>الرسالة:</strong> <code>تعبير غير مدعوم في الإسناد: {expr}. المدعوم: رقم أو نصّ أو صح/خطأ أو قيمة من قائمة.</code></blockquote>
+<p><strong>السبب:</strong> حاولت إسناد قيمة معقدة إلى متغير.</p>
+<p><strong>مثال الخطأ:</strong></p>
+<pre><code>متغير س = ٠
+~ س = ص + ع</code></pre>
+<p><strong>الحل:</strong> استخدم قيمة بسيطة:</p>
+<pre class="lang-qalam"><code>متغير س = ٠
+~ س = ٥</code></pre>
+<hr>
+<h3 id="E202-متغير-غير-معرف">E202 — متغير غير معرف</h3>
+<blockquote><strong>الرسالة:</strong> <code>متغير غير معرّف: {name}. أعلنه بـ متغير قبل استخدامه.</code></blockquote>
+<p><strong>السبب:</strong> استخدمت متغيرًا لم تعلن عنه بـ <code>متغير</code>.</p>
+<p><strong>مثال الخطأ:</strong></p>
+<pre><code>=== البداية ===
+
+لديك {نقاط} نقطة.</code></pre>
+<p><strong>الحل:</strong> أضف تعريف المتغير قبل المقاطع:</p>
+<pre class="lang-qalam"><code>متغير نقاط = ٠
+
+=== البداية ===
+
+لديك {نقاط} نقطة.</code></pre>
+<hr>
+<h3 id="E203-نوع-غير-متطابق">E203 — نوع غير متطابق</h3>
+<blockquote><strong>الرسالة:</strong> <code>نوع غير متطابق: المتغير {name} نوعه {expected}، والقيمة المسندة {got}.</code></blockquote>
+<p><strong>السبب:</strong> حاولت إسناد قيمة من نوع مختلف عن النوع الذي عرّفت به المتغير.</p>
+<p><strong>مثال الخطأ:</strong></p>
+<pre><code>متغير نقاط = ٠
+~ نقاط = &quot;كثير&quot;</code></pre>
+<p><strong>الحل:</strong> أسند قيمة من نفس النوع:</p>
+<pre class="lang-qalam"><code>متغير نقاط = ٠
+~ نقاط = ١٠</code></pre>
+<hr>
+<h2 id="ملخص-سريع">ملخص سريع</h2>
+<table><thead><tr><th>الرمز</th><th>المشكلة</th><th>أين تبحث</th></tr></thead><tbody>
+<tr><td>E101</td><td>مقطع غير موجود</td><td>تأكد من كتابة <code>=== الاسم ===</code></td></tr>
+<tr><td>E102</td><td>اسم مقطع مكرر</td><td>تأكد من فرادة أسماء المقاطع</td></tr>
+<tr><td>E103</td><td>ترويسة غير مغلقة</td><td>أضف <code>===</code> في نهاية السطر</td></tr>
+<tr><td>E104</td><td>خيار خارج مقطع</td><td>افتح مقطعًا بـ <code>===</code> أولاً</td></tr>
+<tr><td>E105</td><td>قوس غير مغلق</td><td>أضف <code>}</code> لإغلاق الشرط</td></tr>
+<tr><td>E201</td><td>تعبير غير مدعوم</td><td>استخدم قيمة بسيطة</td></tr>
+<tr><td>E202</td><td>متغير غير معرف</td><td>أعلن بـ <code>متغير</code> أولاً</td></tr>
+<tr><td>E203</td><td>نوع غير متطابق</td><td>أسند قيمة من نفس النوع</td></tr>
+</tbody></table>
+</main>
+<footer>
+  <a href="/">الصفحة الرئيسية</a>
+  <a href="/editor/">المحرّر</a>
+  <a href="/privacy.html">الخصوصية</a>
+  <a href="/terms.html">الشروط</a>
+  <a href="https://github.com/humammalhas/aqlamna" target="_blank" rel="noopener">GitHub</a>
+  <a href="https://github.com/humammalhas/aqlamna/discussions" target="_blank" rel="noopener">النقاشات</a>
+</footer>
+</div>
+</body>
+</html>

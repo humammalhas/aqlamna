@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1a1713">
+<meta name="description" content="المرجع — توثيق أقلامنا، محرك القصص التفاعلية بالعربية.">
+<link rel="icon" href="/assets/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="512x512" href="/assets/icon-512.png">
+<title>المرجع — أقلامنا</title>
+<style>*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-family:"IBM Plex Sans Arabic","Noto Sans Arabic","Amiri","Tajawal",system-ui,sans-serif;
+  font-size:1.0625rem;line-height:1.9;color:#e0d6c2;background:#1a1713;scroll-behavior:smooth}
+body{direction:rtl;min-block-size:100dvb}
+.wrap{max-inline-size:46rem;margin-inline:auto;padding-inline:1.25rem;padding-block:1.5rem 4rem}
+nav.top{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;
+  padding-block:1rem;border-block-end:1px solid #34302a;margin-block-end:2rem}
+nav.top a{color:#b8a88a;text-decoration:none;font-size:.9375rem;
+  padding:.35rem .85rem;border:1px solid #34302a;border-radius:.5rem}
+nav.top a:hover{color:#e0d6c2;border-color:#4a443c}
+nav.top a.here{color:#1a1713;background:#d4a843;border-color:#d4a843}
+nav.top .home{margin-inline-end:auto;color:#d4a843;font-weight:700;border:0;padding-inline:0}
+h1{font-size:1.875rem;color:#d4a843;margin-block:1.5rem 1rem;line-height:1.4}
+h2{font-size:1.375rem;color:#d4a843;margin-block:2.25rem .75rem;line-height:1.5;
+  padding-block-end:.4rem;border-block-end:1px solid #2a2621}
+h3{font-size:1.125rem;color:#e0d6c2;margin-block:1.75rem .5rem}
+h4{font-size:1rem;color:#b8a88a;margin-block:1.25rem .5rem}
+p{margin-block:.85rem}
+ul,ol{margin-block:.85rem;padding-inline-start:1.5rem}
+li{margin-block:.35rem}
+a{color:#d4a843}
+strong{color:#f0e6d2}
+hr{border:0;border-block-start:1px solid #2a2621;margin-block:2.5rem}
+code{font-family:"Courier New",monospace;font-size:.9em;background:#242019;
+  color:#e8c877;padding:.1em .35em;border-radius:.25rem;unicode-bidi:isolate}
+pre{background:#141210;border:1px solid #2a2621;border-radius:.5rem;
+  padding:1rem 1.15rem;margin-block:1rem;overflow-x:auto;direction:rtl;text-align:start}
+pre code{background:none;color:#d8cdb6;padding:0;font-size:.9375rem;line-height:1.8;
+  white-space:pre-wrap;unicode-bidi:plaintext;display:block}
+blockquote{border-inline-start:3px solid #d4a843;background:#211d18;
+  padding:.75rem 1rem;margin-block:1rem;border-radius:0 .35rem .35rem 0;color:#cfc3aa}
+blockquote code{background:#141210}
+table{inline-size:100%;border-collapse:collapse;margin-block:1.25rem;font-size:.9375rem}
+th,td{border:1px solid #2a2621;padding:.55rem .75rem;text-align:start;vertical-align:top}
+th{background:#211d18;color:#d4a843;font-weight:700}
+footer{margin-block-start:3.5rem;padding-block-start:1.25rem;border-block-start:1px solid #2a2621;
+  color:#8a7f6d;font-size:.875rem;display:flex;flex-wrap:wrap;gap:.75rem 1.25rem}
+footer a{color:#8a7f6d}
+@media(max-width:34rem){html{font-size:1rem}nav.top .home{inline-size:100%;margin-block-end:.5rem}}</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="top">
+  <a class="home" href="/">أقلامنا</a>
+  <a href="/docs/%D8%A7%D9%84%D8%A8%D8%AF%D8%A7%D9%8A%D8%A9.html">البداية</a>
+  <a href="/docs/%D8%A7%D9%84%D9%85%D8%B1%D8%AC%D8%B9.html" class="here">المرجع</a>
+  <a href="/docs/%D8%A7%D9%84%D8%A3%D8%AE%D8%B7%D8%A7%D8%A1.html">الأخطاء</a>
+  <a href="/editor/">المحرّر</a>
+</nav>
+<main>
+<h1 id="المرجع-دليل-لغة-قلم-الكامل">المرجع — دليل لغة قلم الكامل</h1>
+<p>هذا المرجع يغطي كل كلمة مفتاحية وكل تركيب في لغة قلم (<code>.qalam</code>). كل معلومة مصحوبة بمثال قصير يعمل.</p>
+<hr>
+<h2 id="محتويات-الملف">محتويات الملف</h2>
+<p>يمكن أن يبدأ الملف ببيانات اختيارية تُكتب قبل أول <code>===</code>:</p>
+<pre class="lang-qalam"><code>عنوان: &quot;لص القصر&quot;
+مؤلف: &quot;سارة أحمد&quot;
+لغة: &quot;ar&quot;</code></pre>
+<p><strong>الأسماء الإنجليزية:</strong> <code>TITLE:</code>, <code>AUTHOR:</code>, <code>LANGUAGE:</code></p>
+<p>إذا لم تُكتب، العنوان الافتراضي هو اسم الملف.</p>
+<hr>
+<h2 id="المقاطع">المقاطع</h2>
+<p>المقطع هو الوحدة الأساسية — ما يراه القارئ دفعة واحدة.</p>
+<pre><code>=== اسم_المقطع ===</code></pre>
+<p>كل ما يلي العنوان حتى المقطع التالي هو محتوى هذا المقطع.</p>
+<p>المقطع الأول في الملف هو مقطع البداية (أول ما يراه القارئ).</p>
+<h3 id="المقاطع-الفرعية">المقاطع الفرعية</h3>
+<p>داخل المقطع، يمكن تعريف مقاطع فرعية بعلامة <code>=</code>:</p>
+<pre class="lang-qalam"><code>=== المنزل ===
+
+= غرفة_النوم
+تستيقظ في غرفة مظلمة.
+
+= المطبخ
+رائحة القهوة تملأ المكان.</code></pre>
+<p>للإشارة إلى مقطع فرعي: <code>المنزل.غرفة_النوم</code> — اسم المقطع متبوعًا بنقطة ثم اسم المقطع الفرعي.</p>
+<hr>
+<h2 id="الخيارات">الخيارات</h2>
+<h3 id="خيار-عادي">خيار عادي <code>*</code></h3>
+<p>يختفي بعد أن يختاره القارئ مرة واحدة:</p>
+<pre class="lang-qalam"><code>=== مقطع ===
+
+* [نص الزر]
+  النص الذي يظهر بعد الاختيار.
+  -&gt; تابع</code></pre>
+<h3 id="خيار-دائم">خيار دائم <code>+</code></h3>
+<p>يبقى متاحًا مهما استخدمه القارئ:</p>
+<pre class="lang-qalam"><code>+ [عد للخلف]
+  تعود أدراجك.
+  -&gt; البداية</code></pre>
+<h3 id="خيار-بدون-نص-منفصل">خيار بدون نص منفصل</h3>
+<p>إذا لم تكتب <code>[ ]</code>، السطر كله هو نص الزر والنص الظاهر:</p>
+<pre class="lang-qalam"><code>* افتح الباب
+  -&gt; الممر</code></pre>
+<h3 id="خيارات-متداخلة">خيارات متداخلة</h3>
+<p>داخل الخيار يمكن أن يكون هناك خيارات فرعية بالعلامة <code>**</code>:</p>
+<pre class="lang-qalam"><code>* [افتح الباب]
+  الباب مقفل.
+  ** [ابحث عن المفتاح]
+     وجدت المفتاح تحت السجادة.
+     -&gt; الممر
+  ** [حاول كسر الباب]
+     الباب متين جدًا.
+     -&gt; البداية</code></pre>
+<p><strong>ملاحظة:</strong> النص بعد <code>[ ]</code> في الخيار الأساسي يظهر كله قبل الخيارات المتداخلة.</p>
+<hr>
+<h2 id="الانتقالات">الانتقالات</h2>
+<h3 id="اذهب-إلى-مقطع"><code>-&gt;</code> اذهب إلى مقطع</h3>
+<pre class="lang-qalam"><code>-&gt; اسم_المقطع</code></pre>
+<p>ينهي المشهد الحالي وينتقل فورًا.</p>
+<h3 id="العودة-من-نفق"><code>-&gt;-&gt;</code> العودة من نفق</h3>
+<p>يُستخدم داخل مقطع نفق للعودة إلى المكان الذي استُدعي منه:</p>
+<pre class="lang-qalam"><code>=== وصف_الغرفة ===
+الغرفة واسعة. الجدران مزينة بنقوش عربية.
+-&gt;-&gt;</code></pre>
+<h3 id="نهاية-و-END"><code>نهاية</code> و <code>END</code></h3>
+<p>ينهي القصة:</p>
+<pre class="lang-qalam"><code>-&gt; نهاية
+-&gt; END</code></pre>
+<h3 id="تابع-و-DONE"><code>تابع</code> و <code>DONE</code></h3>
+<p>لا يغير المقطع — يُبقي القارئ في نفس المكان (مفيد مع الخيارات التي لا تنتقل):</p>
+<pre class="lang-qalam"><code>* [انظر حولك]
+  لا ترى شيئًا جديدًا.
+  -&gt; تابع</code></pre>
+<hr>
+<h2 id="المتغيرات">المتغيرات</h2>
+<h3 id="تعريف-متغير">تعريف متغير</h3>
+<pre class="lang-qalam"><code>متغير نقاط = ٠
+متغير اسم_البطل = &quot;سيف&quot;
+متغير وجد_الكنز = خطأ</code></pre>
+<p><strong>الأسماء الإنجليزية:</strong> <code>VAR</code></p>
+<p>الأنواع المدعومة: أعداد، نصوص، قيم منطقية (<code>صح</code>/<code>خطأ</code>)</p>
+<h3 id="تغيير-قيمة-متغير">تغيير قيمة متغير</h3>
+<pre class="lang-qalam"><code>~ نقاط = نقاط + ٥
+~ اسم_البطل = &quot;ليلى&quot;
+~ وجد_الكنز = صح</code></pre>
+<h3 id="إدراج-قيمة-متغير-في-النص">إدراج قيمة متغير في النص</h3>
+<p>الأقواس دون نقطتين تطبع قيمة المتغير:</p>
+<pre class="lang-qalam"><code>لديك {نقاط} نقطة.
+اسمك {اسم_البطل}.</code></pre>
+<p><strong>مهم:</strong> النقطتان <code>:</code> تفرقان بين الإدراج والشرط. <code>{س}</code> إدراج، <code>{س:}</code> شرط.</p>
+<hr>
+<h2 id="الشروط">الشروط</h2>
+<h3 id="شرط-بسيط">شرط بسيط</h3>
+<pre class="lang-qalam"><code>{وجد_المفتاح: المفتاح في جيبك.}</code></pre>
+<p>إذا كان المتغير <code>صح</code> (أو قيمته لا تساوي صفرًا)، يظهر النص.</p>
+<h3 id="شرط-بمقارنة">شرط بمقارنة</h3>
+<pre class="lang-qalam"><code>{نقاط &gt; ٥: أحسنت! لقد جمعت نقاطًا كثيرة.}</code></pre>
+<p><strong>عمليات المقارنة:</strong> <code>==</code>, <code>!=</code> (أو <code>≠</code>), <code>&lt;</code>, <code>&gt;</code>, <code>&lt;=</code> (أو <code>≤</code>), <code>&gt;=</code> (أو <code>≥</code>)</p>
+<h3 id="شرط-متعدد-الفروع">شرط متعدد الفروع</h3>
+<pre class="lang-qalam"><code>{الشجاعة:
+  - الشجاعة &lt; ٣: ترتجف من الخوف.
+  - الشجاعة &lt; ٧: تتردد قليلاً.
+  - غير_ذلك: تتقدم بثبات.
+}</code></pre>
+<p><code>غير_ذلك</code> هي الفرع الافتراضي. يمكن استخدام <code>ELSE</code> كبديل إنجليزي.</p>
+<h3 id="نفي">نفي</h3>
+<pre class="lang-qalam"><code>{لا وجد_المفتاح: ليس معك مفتاح.}</code></pre>
+<p><strong>الأسماء الإنجليزية:</strong> <code>not</code></p>
+<h3 id="روابط-منطقية">روابط منطقية</h3>
+<pre class="lang-qalam"><code>{نقاط &gt; ٠ و نقاط &lt; ١٠: في منتصف الطريق.}
+{س &gt; ٥ أو ص &lt; ٣: الشرط متحقق.}</code></pre>
+<p><strong>الأسماء الإنجليزية:</strong> <code>and</code>, <code>or</code></p>
+<hr>
+<h2 id="القوائم">القوائم</h2>
+<p>لتتبع حالات متعددة (مثل العتاد):</p>
+<pre class="lang-qalam"><code>قائمة حالة_الباب = (مغلق)، مفتوح، مكسور
+قائمة المخزون = (لا_شيء)، مفتاح، مصباح</code></pre>
+<p>القيمة الأولى بين قوسين <code>( )</code> هي القيمة الابتدائية.</p>
+<p><strong>الأسماء الإنجليزية:</strong> <code>LIST</code></p>
+<p>استخدام القوائم:</p>
+<pre class="lang-qalam"><code>~ حالة_الباب = مفتوح
+~ المخزون = مفتاح
+
+{حالة_الباب == مفتوح: الباب مفتوح.}</code></pre>
+<hr>
+<h2 id="الأنفاق">الأنفاق</h2>
+<p>مقطع يُستدعى ثم يعود تلقائيًا:</p>
+<pre class="lang-qalam"><code>-&gt; وصف_الغرفة -&gt;
+
+=== وصف_الغرفة ===
+الغرفة واسعة. السقف مرتفع.
+-&gt;-&gt;</code></pre>
+<p>الاستدعاء: <code>-&gt; اسم_النفق -&gt;</code> (السهم مزدوج) العودة: <code>-&gt;-&gt;</code> داخل النفق</p>
+<hr>
+<h2 id="الخيوط">الخيوط</h2>
+<p>دمج محتوى من مقاطع متعددة في مقطع واحد:</p>
+<pre><code>=== السوق ===
+
+الأصوات تملأ المكان.
+
+&lt;- بائع_الفاكهة
+&lt;- بائع_التوابل</code></pre>
+<p>العلامة <code>&lt;-</code> تسحب محتوى مقطع آخر إلى هذا الموضع. (هذه الخاصية قيد التطوير.)</p>
+<hr>
+<h2 id="التعابير-الحسابية">التعابير الحسابية</h2>
+<pre class="lang-qalam"><code>~ المجموع = س + ص
+~ الناتج = س * ٢
+~ الباقي = س ٪ ٣</code></pre>
+<p><strong>العمليات:</strong> <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>%</code> (أو <code>٪</code>)</p>
+<hr>
+<h2 id="الدوال-المدمجة">الدوال المدمجة</h2>
+<h3 id="عشوائي-أ-ب-رقم-عشوائي"><code>عشوائي(أ, ب)</code> — رقم عشوائي</h3>
+<pre class="lang-qalam"><code>~ الضرر = عشوائي(١, ٦)</code></pre>
+<p><strong>الإنجليزية:</strong> <code>RANDOM(1, 6)</code></p>
+<h3 id="زار-مقطع-هل-زار-القارئ-هذا-المقطع"><code>زار(مقطع)</code> — هل زار القارئ هذا المقطع؟</h3>
+<pre class="lang-qalam"><code>{زار(الغرفة_السرية): تعرف الطريق.}</code></pre>
+<p><strong>الإنجليزية:</strong> <code>VISITED</code></p>
+<h3 id="عدد-الزيارات-مقطع-كم-مرة-زار-المقطع"><code>عدد_الزيارات(مقطع)</code> — كم مرة زار المقطع</h3>
+<pre class="lang-qalam"><code>{عدد_الزيارات(المكتبة) &gt; ٢: حفظت مكان كل كتاب.}</code></pre>
+<p><strong>الإنجليزية:</strong> <code>VISIT_COUNT</code></p>
+<h3 id="طول-نص-عدد-حروف-النص"><code>طول(نص)</code> — عدد حروف النص</h3>
+<pre class="lang-qalam"><code>~ عدد_الحروف = طول(اسم_البطل)</code></pre>
+<p><strong>الإنجليزية:</strong> <code>LEN</code></p>
+<hr>
+<h2 id="الكلمات-المفتاحية-عربي-وإنجليزي">الكلمات المفتاحية — عربي وإنجليزي</h2>
+<table><thead><tr><th>العربي</th><th>الإنجليزي</th></tr></thead><tbody>
+<tr><td><code>متغير</code></td><td><code>VAR</code></td></tr>
+<tr><td><code>قائمة</code></td><td><code>LIST</code></td></tr>
+<tr><td><code>صح</code></td><td><code>true</code></td></tr>
+<tr><td><code>خطأ</code></td><td><code>false</code></td></tr>
+<tr><td><code>و</code></td><td><code>and</code></td></tr>
+<tr><td><code>أو</code></td><td><code>or</code></td></tr>
+<tr><td><code>لا</code></td><td><code>not</code></td></tr>
+<tr><td><code>نهاية</code></td><td><code>END</code></td></tr>
+<tr><td><code>تابع</code></td><td><code>DONE</code></td></tr>
+<tr><td><code>غير_ذلك</code></td><td><code>ELSE</code></td></tr>
+<tr><td><code>عشوائي</code></td><td><code>RANDOM</code></td></tr>
+<tr><td><code>زار</code></td><td><code>VISITED</code></td></tr>
+<tr><td><code>عدد_الزيارات</code></td><td><code>VISIT_COUNT</code></td></tr>
+<tr><td><code>طول</code></td><td><code>LEN</code></td></tr>
+<tr><td><code>عنوان</code></td><td><code>TITLE</code></td></tr>
+<tr><td><code>مؤلف</code></td><td><code>AUTHOR</code></td></tr>
+<tr><td><code>لغة</code></td><td><code>LANGUAGE</code></td></tr>
+</tbody></table>
+<hr>
+<h2 id="ملاحظات-مهمة">ملاحظات مهمة</h2>
+<ul><li><strong>التشكيل في أسماء المتغيرات:</strong> <code>كَلْب</code> و <code>كلب</code> يعاملان معاملة واحدة. يُنزع التشكيل تلقائيًا في أسماء المتغيرات والمقاطع. النص العادي يحتفظ بالتشكيل.</li><li><strong>الأرقام:</strong> تقبل العربية (٠١٢٣) والغربية (0123).</li><li><strong>المسافات:</strong> المسافة بعد <code>]</code> في الخيارات فاصلة وليست جزءًا من النص. المسافات حول <code>{ }</code> في النص محفوظة.</li><li><strong>الترميز:</strong> الملفات بصيغة UTF-8.</li></ul>
+</main>
+<footer>
+  <a href="/">الصفحة الرئيسية</a>
+  <a href="/editor/">المحرّر</a>
+  <a href="/privacy.html">الخصوصية</a>
+  <a href="/terms.html">الشروط</a>
+  <a href="https://github.com/humammalhas/aqlamna" target="_blank" rel="noopener">GitHub</a>
+  <a href="https://github.com/humammalhas/aqlamna/discussions" target="_blank" rel="noopener">النقاشات</a>
+</footer>
+</div>
+</body>
+</html>

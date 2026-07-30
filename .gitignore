@@ -29,3 +29,6 @@ site/العطر_المفقود.html
 test-results/
 playwright-report/
 .playwright/
+
+# fuse artifacts from mounted filesystems
+.fuse_hidden*

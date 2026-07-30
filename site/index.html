@@ -307,6 +307,16 @@
     .english-link a {
       color: #8a7d66;
     }
+
+    /* --- Docs ---------------------------------------------------------------- */
+    .docs-section { margin-block: 3rem 1rem; }
+    .docs-title { font-size: 1.375rem; color: #d4a843; margin-block-end: 1rem; text-align: center; }
+    .docs-grid { display: grid; gap: 0.75rem; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); }
+    .docs-card { display: flex; flex-direction: column; gap: 0.35rem; padding: 1rem 1.15rem;
+      text-decoration: none; background: #211d18; border: 1px solid #2a2621; border-radius: 0.5rem; }
+    .docs-card:hover { border-color: #d4a843; }
+    .docs-card-title { color: #d4a843; font-weight: 700; font-size: 1.0625rem; }
+    .docs-card-note { color: #b8a88a; font-size: 0.9375rem; line-height: 1.7; }
   </style>
 </head>
 <body>
@@ -377,6 +387,25 @@
       </p>
     </aside>
 
+    <!-- Docs -->
+    <section class="docs-section">
+      <h2 class="docs-title">التوثيق</h2>
+      <div class="docs-grid">
+        <a class="docs-card" href="/docs/%D8%A7%D9%84%D8%A8%D8%AF%D8%A7%D9%8A%D8%A9.html">
+          <span class="docs-card-title">البداية</span>
+          <span class="docs-card-note">من أول سطر إلى قصة كاملة في خمس خطوات.</span>
+        </a>
+        <a class="docs-card" href="/docs/%D8%A7%D9%84%D9%85%D8%B1%D8%AC%D8%B9.html">
+          <span class="docs-card-title">المرجع</span>
+          <span class="docs-card-note">كل رمز في لغة قلم وما يفعله بالضبط.</span>
+        </a>
+        <a class="docs-card" href="/docs/%D8%A7%D9%84%D8%A3%D8%AE%D8%B7%D8%A7%D8%A1.html">
+          <span class="docs-card-title">الأخطاء</span>
+          <span class="docs-card-note">رموز الأخطاء وطريقة إصلاح كل واحد منها.</span>
+        </a>
+      </div>
+    </section>
+
     <!-- Footer -->
     <footer class="site-footer">
       <nav>
@@ -385,10 +414,11 @@
         <a href="https://github.com/humammalhas/aqlamna/discussions" target="_blank" rel="noopener">ناقش</a>
         <a href="mailto:admin@almaseer.co">راسلنا</a>
         <a href="https://github.com/humammalhas/aqlamna">GPL-3.0</a>
+        <a href="/docs/%D8%A7%D9%84%D8%A8%D8%AF%D8%A7%D9%8A%D8%A9.html">التوثيق</a>
         <a href="/privacy">الخصوصية</a>
         <a href="/terms">الشروط</a>
       </nav>
-      <p class="company">المسير لبرمجيات وأنظمة الحاسوب</p>
+      <p class="company">المصير لبرامج وأنظمة الحاسوب</p>
     </footer>
   </main>
 </body>

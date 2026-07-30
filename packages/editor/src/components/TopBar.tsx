@@ -154,9 +154,9 @@ export default function TopBar() {
                     minInlineSize: "180px",
                   }}
                 >
-                  <HelpLink href="/docs/البداية.md">📖 البداية — الدليل التعليمي</HelpLink>
-                  <HelpLink href="/docs/المرجع.md">📚 المرجع — دليل اللغة</HelpLink>
-                  <HelpLink href="/docs/الأخطاء.md">⚠️ الأخطاء — رموز الخطأ</HelpLink>
+                  <HelpLink href="/docs/البداية.html">📖 البداية — الدليل التعليمي</HelpLink>
+                  <HelpLink href="/docs/المرجع.html">📚 المرجع — دليل اللغة</HelpLink>
+                  <HelpLink href="/docs/الأخطاء.html">⚠️ الأخطاء — رموز الخطأ</HelpLink>
                 </div>
               )}
             </div>
