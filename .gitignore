@@ -6,3 +6,12 @@ Thumbs.db
 *.log
 .env
 .env.*
+
+# secrets / local-only
+npm_recovery_codes.txt
+*recovery_codes*
+*.key
+*.pem
+
+# codewhale local state
+.codewhale/state/
