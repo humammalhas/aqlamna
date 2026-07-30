@@ -6,6 +6,7 @@ Thumbs.db
 *.log
 .env
 .env.*
+.env.local
 
 # secrets / local-only
 npm_recovery_codes.txt

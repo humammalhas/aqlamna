@@ -6,8 +6,8 @@
   "license": "GPL-3.0-only",
   "type": "module",
   "scripts": {
-    "dev": "npm run build -w @aqlamna/runtime && node scripts/copy-runtime.mjs && npm run build -w @aqlamna/core && vite",
-    "build": "npm run build -w @aqlamna/runtime && node scripts/copy-runtime.mjs && npm run build -w @aqlamna/core && vite build",
+    "dev": "npm run build -w @aqlamna/runtime && node scripts/copy-runtime.mjs && node scripts/build-mastery-prompt.mjs && npm run build -w @aqlamna/core && vite",
+    "build": "npm run build -w @aqlamna/runtime && node scripts/copy-runtime.mjs && node scripts/build-mastery-prompt.mjs && npm run build -w @aqlamna/core && vite build",
     "preview": "vite preview",
     "test": "vitest run",
     "test:visual": "playwright test"
