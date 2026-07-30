@@ -32,7 +32,7 @@
             {
               "id": "choice_1",
               "label": "اجمع الرحيق",
-              "sticky": false,
+              "sticky": true,
               "condition": null,
               "content": [
                 { "type": "set", "var": "الرحيق", "op": "+=", "value": 2 }

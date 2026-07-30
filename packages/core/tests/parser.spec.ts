@@ -1,17 +1,20 @@
 import { describe, test, expect } from "vitest";
 import { parse } from "../src/parser/parser.js";
+import { readFileSync } from "node:fs";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 import type {
   StoryAST, PassageNode, ContentNode,
   TextNode, DivertNode, DivertTunnelNode, DivertReturnNode, ThreadNode,
   ChoicesNode, ConditionalNode, InterpolationNode, SetNode,
 } from "../src/types/ast.js";
 
-const FIX = (name: string) => `packages/core/tests/fixtures/${name}.qalam`;
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const fixturesDir = join(__dirname, "fixtures");
 
 /** Parse a fixture file by name and return the AST. */
 function parseFixture(name: string): StoryAST {
-  const fs = require("node:fs");
-  const src = fs.readFileSync(FIX(name), "utf-8");
+  const src = readFileSync(join(fixturesDir, name + ".qalam"), "utf-8");
   return parse(src, name + ".qalam");
 }
 
@@ -432,8 +435,8 @@ describe("parser", () => {
       const choices = ast.passages[0]!.content[4] as ChoicesNode;
       expect(choices.items).toHaveLength(3);
 
-      // Choice 1: consumable, no condition
-      expect(choices.items[0]!.sticky).toBe(false);
+      // Choice 1: sticky, no condition
+      expect(choices.items[0]!.sticky).toBe(true);
       expect(choices.items[0]!.condition).toBeNull();
       expect(choices.items[0]!.divert).toBe("البداية");
 

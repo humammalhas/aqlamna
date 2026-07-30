@@ -1,0 +1,144 @@
+/* ---------------------------------------------------------------------------
+   Aqlamna dark theme — RTL-first, CSS logical properties only
+   Font stack per design §7.4 (self-hosted only, no Google Fonts link)
+   --------------------------------------------------------------------------- */
+
+/* --- Container ------------------------------------------------------------ */
+
+.aq-story {
+  direction: rtl;
+  text-align: start;
+  font-family:
+    "IBM Plex Sans Arabic",
+    "Noto Sans Arabic",
+    "Amiri",
+    "Tajawal",
+    system-ui,
+    sans-serif;
+  font-size: 1.125rem;
+  line-height: 1.85;
+  color: #e0d6c2;
+  background: #1a1814;
+  max-inline-size: 42rem;
+  margin-inline: auto;
+  padding: 2rem 1.5rem;
+}
+
+/* --- Title ---------------------------------------------------------------- */
+
+.aq-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #d4a843;
+  text-align: center;
+  margin-block-end: 2rem;
+  border-block-end: 1px solid #3a3528;
+  padding-block-end: 0.75rem;
+}
+
+/* --- Output / prose ------------------------------------------------------- */
+
+.aq-output {
+  margin-block-end: 1.5rem;
+}
+
+.aq-text {
+  margin-block: 0.75rem;
+  text-indent: 0;
+}
+
+/* --- Choices -------------------------------------------------------------- */
+
+.aq-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-block: 2rem;
+}
+
+.aq-choice-btn {
+  display: block;
+  inline-size: 100%;
+  padding-block: 0.75rem;
+  padding-inline: 1.25rem;
+  font-family: inherit;
+  font-size: 1.0625rem;
+  text-align: start;
+  color: #e0d6c2;
+  background: #2a2620;
+  border: 1px solid #4a4030;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.aq-choice-btn:hover {
+  background: #3a3528;
+  border-color: #8a7040;
+}
+
+.aq-choice-btn:focus-visible {
+  outline: 2px solid #d4a843;
+  outline-offset: 2px;
+}
+
+/* --- End state ------------------------------------------------------------ */
+
+.aq-end {
+  text-align: center;
+  margin-block: 3rem;
+}
+
+.aq-end-text {
+  font-size: 1.25rem;
+  color: #d4a843;
+  font-weight: 600;
+  margin-block-end: 1.5rem;
+}
+
+/* --- Toolbar -------------------------------------------------------------- */
+
+.aq-toolbar {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-block-start: 3rem;
+  padding-block-start: 1.5rem;
+  border-block-start: 1px solid #3a3528;
+}
+
+.aq-btn {
+  padding-block: 0.5rem;
+  padding-inline: 1rem;
+  font-family: inherit;
+  font-size: 0.875rem;
+  color: #9a8c70;
+  background: transparent;
+  border: 1px solid #3a3528;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.aq-btn:hover {
+  color: #d4a843;
+  border-color: #5a4a30;
+}
+
+.aq-btn:focus-visible {
+  outline: 2px solid #d4a843;
+  outline-offset: 2px;
+}
+
+/* --- Responsive ----------------------------------------------------------- */
+
+@media (max-width: 480px) {
+  .aq-story {
+    padding: 1rem;
+    font-size: 1rem;
+  }
+
+  .aq-title {
+    font-size: 1.375rem;
+  }
+}
