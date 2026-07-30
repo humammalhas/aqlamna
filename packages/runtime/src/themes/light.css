@@ -1,6 +1,6 @@
 /* ---------------------------------------------------------------------------
-   Aqlamna light theme — clean, high-contrast for classroom projectors & daylight
-   RTL-first, CSS logical properties only
+   Aqlamna light theme — cream + ink blue.
+   Values match site/assets/aqlamna.css :root.
    --------------------------------------------------------------------------- */
 
 /* --- Container ------------------------------------------------------------ */
@@ -17,8 +17,8 @@
     sans-serif;
   font-size: 1.125rem;
   line-height: 1.85;
-  color: #1a1a1a;
-  background: #fafaf9;
+  color: #2B2721;
+  background: #F6F1E7;
   max-inline-size: 42rem;
   margin-inline: auto;
   padding: 2rem 1.5rem;
@@ -29,116 +29,66 @@
 .aq-title {
   font-size: 1.75rem;
   font-weight: 700;
-  color: #1a1a1a;
+  color: #1F3A5F;
   text-align: center;
   margin-block-end: 2rem;
-  border-block-end: 1px solid #d4d4d4;
+  border-block-end: 1px solid #D8CEBB;
   padding-block-end: 0.75rem;
 }
 
 /* --- Output / prose ------------------------------------------------------- */
 
-.aq-output {
-  margin-block-end: 1.5rem;
-}
-
-.aq-text {
-  margin-block: 0.75rem;
-  text-indent: 0;
-}
+.aq-output { margin-block-end: 1.5rem; }
+.aq-text { margin-block: 0.75rem; text-indent: 0; }
 
 /* --- Choices -------------------------------------------------------------- */
 
-.aq-choices {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin-block: 2rem;
-}
+.aq-choices { display: flex; flex-direction: column; gap: 0.5rem; margin-block: 2rem; }
 
 .aq-choice-btn {
-  display: block;
-  inline-size: 100%;
-  padding-block: 0.75rem;
-  padding-inline: 1.25rem;
-  font-family: inherit;
-  font-size: 1.0625rem;
-  text-align: start;
-  color: #1a1a1a;
-  background: #ffffff;
-  border: 1px solid #a3a3a3;
-  border-radius: 6px;
+  display: block; inline-size: 100%;
+  padding-block: 0.75rem; padding-inline: 1.25rem;
+  font-family: inherit; font-size: 1.0625rem; text-align: start;
+  color: #2B2721; background: #EFE8DA;
+  border: 1px solid #D8CEBB; border-radius: 6px;
   cursor: pointer;
   transition: background 0.15s ease, border-color 0.15s ease;
 }
 
-.aq-choice-btn:hover {
-  background: #f0f0f0;
-  border-color: #525252;
-}
-
-.aq-choice-btn:focus-visible {
-  outline: 2px solid #2563eb;
-  outline-offset: 2px;
-}
+.aq-choice-btn:hover { background: #E8E0CF; border-color: #5A5346; }
+.aq-choice-btn:focus-visible { outline: 2px solid #1F3A5F; outline-offset: 2px; }
 
 /* --- End state ------------------------------------------------------------ */
 
-.aq-end {
-  text-align: center;
-  margin-block: 3rem;
-}
-
-.aq-end-text {
-  font-size: 1.25rem;
-  color: #374151;
-  font-weight: 600;
-  margin-block-end: 1.5rem;
-}
+.aq-end { text-align: center; margin-block: 3rem; }
+.aq-end-text { font-size: 1.25rem; color: #1F3A5F; font-weight: 600; margin-block-end: 1.5rem; }
 
 /* --- Toolbar -------------------------------------------------------------- */
 
 .aq-toolbar {
-  display: flex;
-  justify-content: center;
-  gap: 0.5rem;
-  margin-block-start: 3rem;
-  padding-block-start: 1.5rem;
-  border-block-start: 1px solid #d4d4d4;
+  display: flex; justify-content: center; gap: 0.5rem;
+  margin-block-start: 3rem; padding-block-start: 1.5rem;
+  border-block-start: 1px solid #D8CEBB;
 }
 
 .aq-btn {
-  padding-block: 0.5rem;
-  padding-inline: 1rem;
-  font-family: inherit;
-  font-size: 0.875rem;
-  color: #525252;
-  background: transparent;
-  border: 1px solid #d4d4d4;
-  border-radius: 4px;
+  padding-block: 0.5rem; padding-inline: 1rem;
+  font-family: inherit; font-size: 0.875rem;
+  color: #5A5346; background: transparent;
+  border: 1px solid #D8CEBB; border-radius: 4px;
   cursor: pointer;
   transition: color 0.15s ease, border-color 0.15s ease;
 }
 
-.aq-btn:hover {
-  color: #1a1a1a;
-  border-color: #a3a3a3;
-}
+.aq-btn:hover { color: #2B2721; border-color: #2B2721; }
+.aq-btn:focus-visible { outline: 2px solid #1F3A5F; outline-offset: 2px; }
 
-.aq-btn:focus-visible {
-  outline: 2px solid #2563eb;
-  outline-offset: 2px;
-}
+/* --- Feedback ------------------------------------------------------------- */
+.aq-feedback { font-size: 0.8125rem; color: #5A5346; margin-inline-start: 0.5rem; align-self: center; }
 
 /* --- Responsive ----------------------------------------------------------- */
 
 @media (max-width: 480px) {
-  .aq-story {
-    padding: 1rem;
-    font-size: 1rem;
-  }
-
-  .aq-title {
-    font-size: 1.375rem;
-  }
+  .aq-story { padding: 1rem; font-size: 1rem; }
+  .aq-title { font-size: 1.375rem; }
 }

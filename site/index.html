@@ -12,380 +12,46 @@
   <link rel="icon" href="/assets/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" sizes="512x512" href="/assets/icon-512.png">
   <title>أقلامنا — محرك القصص التفاعلية بالعربية</title>
+  <link rel="stylesheet" href="/assets/aqlamna.css">
   <style>
-    /* -------------------------------------------------------------------------
-       أقلامنا landing page — RTL-first, CSS logical properties only
-       Dark palette matching the editor and runtime.
-       TODO: self-host IBM Plex Sans Arabic + Noto Sans Arabic for production.
-       ------------------------------------------------------------------------- */
-
-    /* --- Reset --------------------------------------------------------------- */
-    *, *::before, *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    /* --- Base ---------------------------------------------------------------- */
-    html {
-      font-family:
-        "IBM Plex Sans Arabic",
-        "Noto Sans Arabic",
-        "Amiri",
-        "Tajawal",
-        system-ui,
-        sans-serif;
-      font-size: 1.125rem;
-      line-height: 1.85;
-      color: #e0d6c2;
-      background: #1a1713;
-      scroll-behavior: smooth;
-    }
-
-    body {
-      direction: rtl;
-      min-block-size: 100dvb;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    /* --- Layout -------------------------------------------------------------- */
-    .page {
-      inline-size: 100%;
-      max-inline-size: 48rem;
-      padding-inline: 1.5rem;
-      padding-block: 2rem;
-    }
-
-    /* --- Hero ---------------------------------------------------------------- */
-    .hero {
-      text-align: center;
-      padding-block: 3rem 1.5rem;
-    }
-
-    .hero-logo {
-      display: block;
-      max-inline-size: 180px;
-      margin-inline: auto;
-      margin-block-end: 1.5rem;
-    }
-
-    .hero-title {
-      font-size: 2.25rem;
-      font-weight: 700;
-      color: #d4a843;
-      margin-block-end: 0.75rem;
-    }
-
-    .hero-subtitle {
-      font-size: 1.125rem;
-      color: #b8a88a;
-      max-inline-size: 32rem;
-      margin-inline: auto;
-    }
-
-    /* --- Source/result loop -------------------------------------------------- */
-    .loop-section {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-      margin-block: 2rem;
-    }
-
-    @media (max-inline-size: 600px) {
-      .loop-section { grid-template-columns: 1fr; }
-    }
-
-    .loop-card {
-      background: #1a1814;
-      border: 1px solid #3a3528;
-      border-radius: 8px;
-      overflow: hidden;
-    }
-
-    .loop-card h3 {
-      font-size: 0.8125rem;
-      font-weight: 700;
-      color: #d4a843;
-      padding: 0.625rem 0.875rem;
-      background: #141210;
-      border-block-end: 1px solid #3a3528;
-      margin: 0;
-    }
-
-    .loop-source {
-      padding: 0.75rem;
-      margin: 0;
-      font-size: 0.8125rem;
-      line-height: 1.7;
-      color: #b8a88a;
-      background: #0e0d0b;
-      overflow-x: auto;
-      direction: rtl;
-      text-align: start;
-      font-family: "Courier New", monospace;
-      white-space: pre;
-    }
-
-    .loop-result {
-      padding: 0.75rem;
-    }
-
-    .loop-prose {
-      font-size: 0.9375rem;
-      color: #e0d6c2;
-      margin-block-end: 0.75rem;
-      line-height: 1.75;
-    }
-
-    .loop-choices button {
-      display: block;
-      inline-size: 100%;
-      padding: 0.5rem 0.75rem;
-      margin-block-end: 0.375rem;
-      font-size: 0.875rem;
-      font-family: inherit;
-      color: #8a8070;
-      background: #2a2620;
-      border: 1px solid #3a3528;
-      border-radius: 6px;
-      cursor: default;
-    }
-
-    /* --- Demo ---------------------------------------------------------------- */
-    .demo-section {
-      margin-block: 2rem;
-    }
-
-    .demo-label {
-      font-size: 0.875rem;
-      color: #8a7d66;
-      margin-block-end: 0.75rem;
-      text-align: center;
-    }
-
-    .demo-frame {
-      inline-size: 100%;
-      block-size: 520px;
-      border: 1px solid #3a3528;
-      border-radius: 8px;
-      background: #1a1814;
-      overflow: hidden;
-    }
-
-    /* Tighten on phones */
-    @media (max-inline-size: 480px) {
-      .demo-frame {
-        block-size: 480px;
-      }
-    }
-
-    /* --- CTA ----------------------------------------------------------------- */
-    .cta-wrap {
-      text-align: center;
-      margin-block: 2rem;
-    }
-
-    .cta-button {
-      display: inline-block;
-      background: #d4a843;
-      color: #1a1713;
-      font-size: 1.125rem;
-      font-weight: 700;
-      padding-inline: 2.5rem;
-      padding-block: 0.875rem;
-      border-radius: 8px;
-      text-decoration: none;
-      transition: background 0.2s;
-    }
-
-    .cta-button:hover {
-      background: #c49a38;
-    }
-
-    /* --- Feature sections ---------------------------------------------------- */
-    .features {
-      margin-block: 3rem;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
-      gap: 2rem;
-    }
-
-    .feature h2 {
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: #d4a843;
-      margin-block-end: 0.5rem;
-    }
-
-    .feature p {
-      color: #b8a88a;
-      font-size: 1rem;
-      line-height: 1.75;
-    }
-
-    /* --- Privacy line -------------------------------------------------------- */
-    .privacy-line {
-      margin-block: 3rem 2rem;
-      padding: 1.5rem;
-      background: #211e18;
-      border-radius: 8px;
-      border: 1px solid #3a3528;
-      text-align: center;
-    }
-
-    .privacy-line p {
-      color: #8a7d66;
-      font-size: 0.9375rem;
-      line-height: 1.75;
-    }
-
-    .privacy-line strong {
-      color: #b8a88a;
-    }
-
-    /* --- Footer -------------------------------------------------------------- */
-    .site-footer {
-      margin-block-start: auto;
-      padding-block: 2rem;
-      text-align: center;
-      font-size: 0.8125rem;
-      color: #6b604e;
-    }
-
-    .site-footer nav {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 1.5rem;
-      margin-block-end: 1rem;
-    }
-
-    .site-footer a {
-      color: #8a7d66;
-      text-decoration: none;
-    }
-
-    .site-footer a:hover {
-      color: #d4a843;
-    }
-
-    .site-footer .company {
-      margin-block-start: 0.5rem;
-      color: #5a5040;
-    }
-
-    /* --- Reading page (privacy / terms) ------------------------------------- */
-    .reading-page .hero {
-      padding-block: 2rem 1rem;
-    }
-
-    .reading-page .hero-logo {
-      max-inline-size: 100px;
-    }
-
-    .reading-page h1 {
-      font-size: 1.5rem;
-      color: #d4a843;
-      margin-block-end: 0.5rem;
-    }
-
-    .reading-page .version {
-      font-size: 0.875rem;
-      color: #6b604e;
-      margin-block-end: 2rem;
-    }
-
-    .prose {
-      max-inline-size: 40rem;
-      margin-inline: auto;
-    }
-
-    .prose h2 {
-      font-size: 1.125rem;
-      font-weight: 700;
-      color: #d4a843;
-      margin-block: 2rem 0.5rem;
-      padding-block-end: 0.375rem;
-      border-block-end: 1px solid #3a3528;
-    }
-
-    .prose p {
-      margin-block: 0.75rem;
-      line-height: 1.85;
-    }
-
-    .prose ul {
-      margin-block: 0.75rem;
-      padding-inline-start: 1.5rem;
-    }
-
-    .prose li {
-      margin-block: 0.375rem;
-    }
-
-    .prose strong {
-      color: #e0d6c2;
-    }
-
-    .prose a {
-      color: #d4a843;
-      text-decoration: underline;
-    }
-
-    .prose blockquote {
-      margin-block: 2rem;
-      padding: 1rem 1.25rem;
-      background: #211e18;
-      border-inline-start: 3px solid #d4a843;
-      border-radius: 0 6px 6px 0;
-      color: #8a7d66;
-      font-size: 0.9375rem;
-    }
-
-    .prose hr {
-      border: none;
-      border-block-start: 1px solid #3a3528;
-      margin-block: 2rem;
-    }
-
-    .back-link {
-      text-align: center;
-      margin-block: 3rem 2rem;
-    }
-
-    .back-link a {
-      color: #8a7d66;
-      text-decoration: none;
-      font-size: 0.9375rem;
-    }
-
-    .back-link a:hover {
-      color: #d4a843;
-    }
-
-    .english-link {
-      text-align: center;
-      margin-block-start: 3rem;
-      font-size: 0.8125rem;
-      color: #6b604e;
-    }
-
-    .english-link a {
-      color: #8a7d66;
-    }
-
-    /* --- Docs ---------------------------------------------------------------- */
-    .docs-section { margin-block: 3rem 1rem; }
-    .docs-title { font-size: 1.375rem; color: #d4a843; margin-block-end: 1rem; text-align: center; }
-    .docs-grid { display: grid; gap: 0.75rem; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); }
-    .docs-card { display: flex; flex-direction: column; gap: 0.35rem; padding: 1rem 1.15rem;
-      text-decoration: none; background: #211d18; border: 1px solid #2a2621; border-radius: 0.5rem; }
-    .docs-card:hover { border-color: #d4a843; }
-    .docs-card-title { color: #d4a843; font-weight: 700; font-size: 1.0625rem; }
-    .docs-card-note { color: #b8a88a; font-size: 0.9375rem; line-height: 1.7; }
-  </style>
+.page{inline-size:100%;max-inline-size:48rem;padding-inline:1.5rem;padding-block:2rem}
+.hero{text-align:center;padding-block:3rem 1.5rem}
+.hero-logo{display:block;max-inline-size:180px;margin-inline:auto;margin-block-end:1.5rem}
+.hero-title{font-size:2.25rem;font-weight:700}
+.hero-subtitle{font-size:1.125rem;max-inline-size:32rem;margin-inline:auto}
+.demo-section{margin-block:2rem}
+.demo-heading{font-size:1.125rem;font-weight:700;margin-block-end:.75rem;text-align:center}
+.demo-label{font-size:.875rem;margin-block-end:.75rem;text-align:center}
+.demo-frame{inline-size:100%;block-size:520px;border-radius:8px;overflow:hidden}
+@media(max-inline-size:480px){.demo-frame{block-size:480px}}
+.cta-wrap{text-align:center;margin-block:2rem}
+.cta-button{display:inline-block;font-size:1.125rem;font-weight:700;padding-inline:2.5rem;padding-block:.875rem;border-radius:8px;text-decoration:none;transition:background .2s}
+.loop-section{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-block:2rem}
+@media(max-inline-size:600px){.loop-section{grid-template-columns:1fr}}
+.loop-card{border-radius:8px;overflow:hidden}
+.loop-card h3{font-size:.8125rem;font-weight:700;padding:.625rem .875rem;margin:0}
+.loop-source{padding:.75rem;margin:0;font-size:.8125rem;line-height:1.7;overflow-x:auto;direction:rtl;text-align:start;font-family:"Courier New",monospace;white-space:pre}
+.loop-result{padding:.75rem}
+.loop-prose{font-size:.9375rem;margin-block-end:.75rem;line-height:1.75}
+.loop-choices button{display:block;inline-size:100%;padding:.5rem .75rem;margin-block-end:.375rem;font-size:.875rem;font-family:inherit;border-radius:6px;cursor:default}
+.features{margin-block:3rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:2rem}
+.feature h2{font-size:1.25rem;font-weight:700;margin-block-end:.5rem}
+.feature p{font-size:1rem;line-height:1.75}
+.privacy-line{margin-block:3rem 2rem;padding:1.5rem;border-radius:8px;text-align:center}
+.privacy-line p{font-size:.9375rem;line-height:1.75}
+.site-footer{margin-block-start:auto;padding-block:2rem;text-align:center;font-size:.8125rem}
+.site-footer nav{display:flex;flex-wrap:wrap;justify-content:center;gap:1.5rem;margin-block-end:1rem}
+.site-footer a{text-decoration:none}
+.back-link{text-align:center;margin-block:3rem 2rem}
+.back-link a{text-decoration:none;font-size:.9375rem}
+.english-link{text-align:center;margin-block-start:3rem;font-size:.8125rem}
+.prose{max-inline-size:40rem;margin-inline:auto}
+.docs-section{margin-block:2rem;text-align:center}
+.docs-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(8rem,1fr));gap:.75rem;margin-block-start:1rem}
+.docs-card{padding:1rem;border-radius:8px;text-decoration:none}
+.docs-card h3{font-size:1rem;font-weight:700;margin-block-end:.25rem}
+.docs-card-note{font-size:.75rem;margin:0}
+  
 </head>
 <body>
   <main class="page">

@@ -212,7 +212,7 @@ function page(title, navHtml, body) {
 <link rel="icon" href="/assets/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="512x512" href="/assets/icon-512.png">
 <title>${esc(title)} — أقلامنا</title>
-<style>${STYLE}</style>
+<link rel="stylesheet" href="/assets/aqlamna.css"><style>${STYLE}</style>
 </head>
 <body>
 <div class="wrap">

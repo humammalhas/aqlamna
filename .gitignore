@@ -22,7 +22,8 @@ packages/editor/src/generated/
 
 # site build artifacts
 site/editor/
-site/assets/
+site/assets/*
+!site/assets/aqlamna.css
 site/العطر_المفقود.html
 
 # playwright artifacts

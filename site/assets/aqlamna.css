@@ -1,0 +1,105 @@
+/* ---------------------------------------------------------------------------
+   Aqlamna site stylesheet — one source of colour for the whole site.
+   Shared by site/index.html, site/privacy.html, site/terms.html,
+   and scripts/build-docs.mjs (via link).
+
+   Light (default): cream + ink blue
+   Dark: [data-theme="dark"] brown + gold
+   --------------------------------------------------------------------------- */
+
+:root {
+  --aq-bg:        #F6F1E7;
+  --aq-surface:   #EFE8DA;
+  --aq-border:    #D8CEBB;
+  --aq-text:      #2B2721;
+  --aq-muted:     #5A5346;
+  --aq-dim:       #8A7D6B;
+  --aq-accent:    #1F3A5F;
+  --aq-accent-hi: #2E5687;
+  --aq-on-accent: #F6F1E7;
+  --aq-code-bg:   #EDE6D9;
+  --aq-code-border:#D8CEBB;
+  --aq-highlight: #E8E0CF;
+}
+
+[data-theme="dark"] {
+  --aq-bg:        #1a1713;
+  --aq-surface:   #1c1917;
+  --aq-border:    #3a3528;
+  --aq-text:      #e0d6c2;
+  --aq-muted:     #8a7d66;
+  --aq-dim:       #5a5040;
+  --aq-accent:    #d4a843;
+  --aq-accent-hi: #c49a38;
+  --aq-on-accent: #1a1713;
+  --aq-code-bg:   #141210;
+  --aq-code-border:#3a3528;
+  --aq-highlight: #211e18;
+}
+
+/* ---- Reset & base ---- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  font-family: "IBM Plex Sans Arabic", "Noto Sans Arabic", "Amiri", "Tajawal", system-ui, sans-serif;
+  font-size: 1.125rem;
+  line-height: 1.85;
+  color: var(--aq-text);
+  background: var(--aq-bg);
+  scroll-behavior: smooth;
+}
+
+body {
+  direction: rtl;
+  min-block-size: 100dvb;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--aq-bg);
+}
+
+/* ---- Headings ---- */
+h1 { font-size: 1.875rem; color: var(--aq-accent); margin-block: 1.5rem 1rem; line-height: 1.4; }
+h2 { font-size: 1.25rem; color: var(--aq-accent); margin-block: 2rem 0.5rem; padding-block-end: 0.375rem; border-block-end: 1px solid var(--aq-border); }
+h3 { font-size: 1.0625rem; color: var(--aq-text); margin-block: 1.5rem 0.5rem; }
+h4 { font-size: 1rem; color: var(--aq-muted); margin-block: 1.25rem 0.5rem; }
+h5, h6 { color: var(--aq-muted); }
+
+/* ---- Links ---- */
+a { color: var(--aq-accent); text-decoration: underline; }
+a:hover { color: var(--aq-accent-hi); }
+
+/* ---- Paragraphs & lists ---- */
+p { margin-block: 0.75rem; }
+ul, ol { margin-block: 0.75rem; padding-inline-start: 1.5rem; }
+li { margin-block: 0.35rem; }
+
+/* ---- Inline ---- */
+strong { color: var(--aq-text); }
+code { background: var(--aq-code-bg); color: var(--aq-accent); padding: 0.1em 0.35em; border-radius: 0.25rem; font-family: "Courier New", monospace; font-size: 0.9em; }
+pre { background: var(--aq-code-bg); border: 1px solid var(--aq-code-border); border-radius: 0.5rem; padding: 1rem 1.15rem; margin-block: 1rem; overflow-x: auto; direction: rtl; text-align: start; }
+pre code { background: none; color: var(--aq-text); padding: 0; font-size: 0.9375rem; line-height: 1.8; white-space: pre-wrap; display: block; }
+
+/* ---- Tables ---- */
+table { inline-size: 100%; border-collapse: collapse; margin-block: 1.25rem; font-size: 0.9375rem; }
+th, td { border: 1px solid var(--aq-border); padding: 0.55rem 0.75rem; text-align: start; vertical-align: top; }
+th { background: var(--aq-surface); color: var(--aq-accent); font-weight: 700; }
+
+/* ---- Blockquote ---- */
+blockquote { border-inline-start: 3px solid var(--aq-accent); background: var(--aq-highlight); padding: 0.75rem 1rem; margin-block: 1rem; border-radius: 0 0.35rem 0.35rem 0; color: var(--aq-muted); }
+
+/* ---- HR ---- */
+hr { border: none; border-block-start: 1px solid var(--aq-border); margin-block: 2rem; }
+
+/* ---- Navigation ---- */
+nav { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; padding-block: 1rem; border-block-end: 1px solid var(--aq-border); margin-block-end: 2rem; }
+nav a { color: var(--aq-muted); text-decoration: none; font-size: 0.9375rem; padding: 0.35rem 0.85rem; border: 1px solid var(--aq-border); border-radius: 0.375rem; }
+nav a:hover, nav a.here { background: var(--aq-accent); color: var(--aq-on-accent); border-color: var(--aq-accent); }
+
+/* ---- Footer ---- */
+footer { margin-block-start: 3.5rem; padding-block-start: 1.25rem; border-block-start: 1px solid var(--aq-border); color: var(--aq-muted); font-size: 0.875rem; display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; }
+footer a { color: var(--aq-muted); text-decoration: none; }
+footer a:hover { color: var(--aq-accent); }
+
+/* ---- Cards ---- */
+.card { background: var(--aq-surface); border: 1px solid var(--aq-border); border-radius: 0.5rem; padding: 1.25rem; }
