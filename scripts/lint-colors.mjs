@@ -65,10 +65,19 @@ for (const f of walkEditor(editorDir)) {
   allViolations.push(...checkFile(f));
 }
 
-// 2. Site HTML pages
+// 2. Site HTML pages — ALL of them, including generated docs
 const siteDir = resolve(root, "site");
 for (const f of walk(siteDir, new Set(["html"]))) {
   allViolations.push(...checkFile(f));
+}
+// Verify: exit if site/docs/*.html are missing (build-docs not run)
+const docsDir = resolve(root, "site", "docs");
+if (existsSync(docsDir)) {
+  const docFiles = walk(docsDir, new Set(["html"]));
+  if (docFiles.length === 0) {
+    console.error("lint-colors: site/docs/ is empty. Run npm run build:docs first.");
+    process.exit(1);
+  }
 }
 
 // 3. Build scripts

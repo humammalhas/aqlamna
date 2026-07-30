@@ -159,47 +159,124 @@ function toHtml(md) {
   return out.join("\n");
 }
 
+// STYLE contains ONLY layout rules (fonts, sizing, spacing, flex, grid).
+// All colours come from the linked /assets/aqlamna.css stylesheet.
+// If you add a hex/rgb/named colour here, lint-colors will fail the build.
 const STYLE = `
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{font-family:"IBM Plex Sans Arabic","Noto Sans Arabic","Amiri","Tajawal",system-ui,sans-serif;
-  font-size:1.0625rem;line-height:1.9;color:#e0d6c2;background:#1a1713;scroll-behavior:smooth}
-body{direction:rtl;min-block-size:100dvb}
-.wrap{max-inline-size:46rem;margin-inline:auto;padding-inline:1.25rem;padding-block:1.5rem 4rem}
-nav.top{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;
-  padding-block:1rem;border-block-end:1px solid #34302a;margin-block-end:2rem}
-nav.top a{color:#b8a88a;text-decoration:none;font-size:.9375rem;
-  padding:.35rem .85rem;border:1px solid #34302a;border-radius:.5rem}
-nav.top a:hover{color:#e0d6c2;border-color:#4a443c}
-nav.top a.here{color:#1a1713;background:#d4a843;border-color:#d4a843}
-nav.top .home{margin-inline-end:auto;color:#d4a843;font-weight:700;border:0;padding-inline:0}
-h1{font-size:1.875rem;color:#d4a843;margin-block:1.5rem 1rem;line-height:1.4}
-h2{font-size:1.375rem;color:#d4a843;margin-block:2.25rem .75rem;line-height:1.5;
-  padding-block-end:.4rem;border-block-end:1px solid #2a2621}
-h3{font-size:1.125rem;color:#e0d6c2;margin-block:1.75rem .5rem}
-h4{font-size:1rem;color:#b8a88a;margin-block:1.25rem .5rem}
-p{margin-block:.85rem}
-ul,ol{margin-block:.85rem;padding-inline-start:1.5rem}
-li{margin-block:.35rem}
-a{color:#d4a843}
-strong{color:#f0e6d2}
-hr{border:0;border-block-start:1px solid #2a2621;margin-block:2.5rem}
-code{font-family:"Courier New",monospace;font-size:.9em;background:#242019;
-  color:#e8c877;padding:.1em .35em;border-radius:.25rem;unicode-bidi:isolate}
-pre{background:#141210;border:1px solid #2a2621;border-radius:.5rem;
-  padding:1rem 1.15rem;margin-block:1rem;overflow-x:auto;direction:rtl;text-align:start}
-pre code{background:none;color:#d8cdb6;padding:0;font-size:.9375rem;line-height:1.8;
-  white-space:pre-wrap;unicode-bidi:plaintext;display:block}
-blockquote{border-inline-start:3px solid #d4a843;background:#211d18;
-  padding:.75rem 1rem;margin-block:1rem;border-radius:0 .35rem .35rem 0;color:#cfc3aa}
-blockquote code{background:#141210}
-table{inline-size:100%;border-collapse:collapse;margin-block:1.25rem;font-size:.9375rem}
-th,td{border:1px solid #2a2621;padding:.55rem .75rem;text-align:start;vertical-align:top}
-th{background:#211d18;color:#d4a843;font-weight:700}
-footer{margin-block-start:3.5rem;padding-block-start:1.25rem;border-block-start:1px solid #2a2621;
-  color:#8a7f6d;font-size:.875rem;display:flex;flex-wrap:wrap;gap:.75rem 1.25rem}
-footer a{color:#8a7f6d}
-@media(max-width:34rem){html{font-size:1rem}nav.top .home{inline-size:100%;margin-block-end:.5rem}}
+ *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+ html{font-family:"IBM Plex Sans Arabic","Noto Sans Arabic","Amiri","Tajawal",system-ui,sans-serif;
+   font-size:1.0625rem;line-height:1.9;scroll-behavior:smooth}
+ body{direction:rtl;min-block-size:100dvb}
+ .wrap{max-inline-size:46rem;margin-inline:auto;padding-inline:1.25rem;padding-block:1.5rem 4rem}
+ nav.top{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;
+   padding-block:1rem;border-block-end:1px solid;margin-block-end:2rem}
+ nav.top a{text-decoration:none;font-size:.9375rem;
+   padding:.35rem .85rem;border:1px solid;border-radius:.5rem}
+ nav.top .home{margin-inline-end:auto;font-weight:700;border:0;padding-inline:0}
+ h1{font-size:1.875rem;margin-block:1.5rem 1rem;line-height:1.4}
+ h2{font-size:1.375rem;margin-block:2.25rem .75rem;line-height:1.5;
+   padding-block-end:.4rem;border-block-end:1px solid}
+ h3{font-size:1.125rem;margin-block:1.75rem .5rem}
+ h4{font-size:1rem;margin-block:1.25rem .5rem}
+ p{margin-block:.85rem}
+ ul,ol{margin-block:.85rem;padding-inline-start:1.5rem}
+ li{margin-block:.35rem}
+ strong{font-weight:700}
+ hr{border:0;border-block-start:1px solid;margin-block:2.5rem}
+ code{font-family:"Courier New",monospace;font-size:.9em;
+   padding:.1em .35em;border-radius:.25rem;unicode-bidi:isolate}
+ pre{border:1px solid;border-radius:.5rem;
+   padding:1rem 1.15rem;margin-block:1rem;overflow-x:auto;direction:rtl;text-align:start}
+ pre code{background:none;padding:0;font-size:.9375rem;line-height:1.8;
+   white-space:pre-wrap;unicode-bidi:plaintext;display:block}
+ blockquote{border-inline-start:3px solid;
+   padding:.75rem 1rem;margin-block:1rem;border-radius:0 .35rem .35rem 0}
+ table{inline-size:100%;border-collapse:collapse;margin-block:1.25rem;font-size:.9375rem}
+ th,td{padding:.55rem .75rem;text-align:start;vertical-align:top}
+ th{font-weight:700}
+ footer{margin-block-start:3.5rem;padding-block-start:1.25rem;border-block-start:1px solid;
+   font-size:.875rem;display:flex;flex-wrap:wrap;gap:.75rem 1.25rem}
+ @media(max-width:34rem){html{font-size:1rem}nav.top .home{inline-size:100%;margin-block-end:.5rem}}
 `.trim();
+
+/** Site-level legal page — matches site/index.html look, not the dark docs theme. */
+function legalPage(title, body) {
+  const engLink = title.includes("خصوصية") ? "PRIVACY.md" : "TERMS.md";
+  const engLabel = title.includes("خصوصية")
+    ? "English version (PRIVACY.md)"
+    : "English version (TERMS.md)";
+  return "<!DOCTYPE html>\n" +
+"<html lang=\"ar\" dir=\"rtl\">\n" +
+"<head>\n" +
+"  <meta charset=\"UTF-8\">\n" +
+"  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n" +
+"  <meta name=\"theme-color\" content=\"#1a1713\">\n" +
+"  <meta name=\"description\" content=\"" + esc(title) + " — أقلامنا\">\n" +
+"  <link rel=\"icon\" href=\"/assets/favicon.ico\" sizes=\"any\">\n" +
+"  <link rel=\"icon\" type=\"image/png\" sizes=\"512x512\" href=\"/assets/icon-512.png\">\n" +
+"  <title>" + esc(title) + " — أقلامنا</title>\n" +
+"  <link rel=\"stylesheet\" href=\"/assets/aqlamna.css\">\n" +
+"  <style>\n" +
+".page{inline-size:100%;max-inline-size:48rem;padding-inline:1.5rem;padding-block:2rem}\n" +
+".hero{text-align:center;padding-block:3rem 1.5rem}\n" +
+".hero-logo{display:block;max-inline-size:100px;margin-inline:auto;margin-block-end:1.5rem}\n" +
+".hero-title{font-size:2.25rem;font-weight:700}\n" +
+".prose{max-inline-size:40rem;margin-inline:auto}\n" +
+".prose p{line-height:1.85;margin-block:.85rem;font-size:1.0625rem}\n" +
+".prose h2{font-size:1.375rem;font-weight:700;margin-block:2.25rem .75rem}\n" +
+".prose h3{font-size:1.125rem;font-weight:700;margin-block:1.5rem .5rem}\n" +
+".prose ul,.prose ol{margin-block:.85rem;padding-inline-start:1.5rem}\n" +
+".prose li{margin-block:.35rem}\n" +
+".prose hr{margin-block:2rem}\n" +
+".prose blockquote{padding:.75rem 1rem;margin-block:1rem;border-radius:0 .35rem .35rem 0}\n" +
+".prose a{text-decoration:underline}\n" +
+".back-link{text-align:center;margin-block:3rem 2rem}\n" +
+".back-link a{text-decoration:none;font-size:.9375rem}\n" +
+".english-link{text-align:center;margin-block-start:3rem;font-size:.8125rem}\n" +
+".site-footer{margin-block-start:auto;padding-block:2rem;text-align:center;font-size:.8125rem}\n" +
+".site-footer nav{display:flex;flex-wrap:wrap;justify-content:center;gap:1.5rem;margin-block-end:1rem}\n" +
+".site-footer a{text-decoration:none}\n" +
+".version{text-align:center;font-size:.9375rem;margin-block-end:2rem}\n" +
+"  <\/style>\n" +
+"</head>\n" +
+"<body>\n" +
+"  <main class=\"page reading-page\">\n" +
+"    <header class=\"hero\">\n" +
+"      <a href=\"/\"><img class=\"hero-logo\" src=\"/assets/logo-transparent.png\" alt=\"شعار أقلامنا\" width=\"100\" height=\"100\"><\/a>\n" +
+"      <h1 class=\"hero-title\">" + esc(title) + "<\/h1>\n" +
+"      <p class=\"version\">الإصدار 1.0 — 30 تموز 2026<\/p>\n" +
+"    <\/header>\n" +
+"\n" +
+"    <div class=\"prose\">\n" +
+body + "\n" +
+"    <\/div>\n" +
+"\n" +
+"    <div class=\"english-link\">\n" +
+"      <a href=\"https://github.com/humammalhas/aqlamna/blob/main/docs/" + engLink + "\">\n" +
+"        " + engLabel + "\n" +
+"      <\/a>\n" +
+"    <\/div>\n" +
+"\n" +
+"    <div class=\"back-link\">\n" +
+"      <a href=\"/\">← العودة إلى أقلامنا<\/a>\n" +
+"    <\/div>\n" +
+"  <\/main>\n" +
+"\n" +
+"  <footer class=\"site-footer\">\n" +
+"    <nav>\n" +
+"      <a href=\"https://github.com/humammalhas/aqlamna/issues/new?template=bug.yml\" target=\"_blank\" rel=\"noopener\">أبلغ عن خطأ<\/a>\n" +
+"      <a href=\"https://github.com/humammalhas/aqlamna/issues/new?template=idea.yml\" target=\"_blank\" rel=\"noopener\">اقترح فكرة<\/a>\n" +
+"      <a href=\"https://github.com/humammalhas/aqlamna/discussions\" target=\"_blank\" rel=\"noopener\">ناقش<\/a>\n" +
+"      <a href=\"mailto:admin@almaseer.co\">راسلنا<\/a>\n" +
+"      <a href=\"https://github.com/humammalhas/aqlamna\" target=\"_blank\" rel=\"noopener\">GPL-3.0<\/a>\n" +
+"      <a href=\"/privacy\">الخصوصية<\/a>\n" +
+"      <a href=\"/terms\">الشروط<\/a>\n" +
+"    <\/nav>\n" +
+"    <p class=\"company\">المصير لبرامج وأنظمة الحاسوب<\/p>\n" +
+"  <\/footer>\n" +
+"</body>\n" +
+"</html>\n";
+}
 
 function page(title, navHtml, body) {
   return `<!DOCTYPE html>
@@ -207,7 +284,7 @@ function page(title, navHtml, body) {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#1a1713">
+<meta name="theme-color" content="#F6F1E7">
 <meta name="description" content="${esc(title)} — توثيق أقلامنا، محرك القصص التفاعلية بالعربية.">
 <link rel="icon" href="/assets/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="512x512" href="/assets/icon-512.png">
@@ -240,9 +317,8 @@ ${body}
 
 mkdirSync(outDir, { recursive: true });
 
-// الخصوصية.md / الشروط.md are already published as hand-written pages at
-// /privacy.html and /terms.html. Emit a redirect rather than a second copy —
-// two URLs for the same legal text is a liability, not a convenience.
+// الخصوصية.md / الشروط.md — generated at site/ level (one source per document).
+// Also emit redirects at site/docs/ for anyone who lands there.
 const REDIRECTS = { "الخصوصية.md": "/privacy.html", "الشروط.md": "/terms.html" };
 
 const sources = readdirSync(srcDir).filter((f) => f.endsWith(".md") && !/^(README|PRIVACY|TERMS)\.md$/.test(f));
@@ -251,6 +327,7 @@ let count = 0;
 for (const file of sources) {
   if (REDIRECTS[file]) {
     const to = REDIRECTS[file];
+    // Redirect stub at site/docs/
     writeFileSync(
       resolve(outDir, file.replace(/\.md$/, ".html")),
       `<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8">` +
@@ -259,6 +336,17 @@ for (const file of sources) {
       "utf8",
     );
     console.log(`  docs → site/docs/${file.replace(/\.md$/, ".html")}  (redirect → ${to})`);
+
+    // Generate the real page at site/
+    const md = readFileSync(resolve(srcDir, file), "utf8");
+    const title = (md.match(/^#\s+(.*)$/m)?.[1] ?? basename(file, ".md")).split("—")[0].trim();
+    const outFile = resolve(root, "site", file.replace(/\.md$/, ".html").replace(/^ال/, ""));
+    // Map: الخصوصية.md → privacy.html, الشروط.md → terms.html
+    const engFile = { "الخصوصية.md": "privacy.html", "الشروط.md": "terms.html" }[file];
+    const actualOut = resolve(root, "site", engFile);
+    const html = legalPage(title, toHtml(md));
+    writeFileSync(actualOut, html, "utf8");
+    console.log(`  docs → site/${engFile}  (${html.length} bytes)`);
     count++;
     continue;
   }
@@ -276,4 +364,4 @@ for (const file of sources) {
   console.log(`  docs → site/docs/${basename(outFile)}  (${html.length} bytes)`);
 }
 
-console.log(`build-docs: ${count} page(s) written to site/docs/`);
+console.log(`build-docs: ${count} page(s) written`);
