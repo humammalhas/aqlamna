@@ -3,6 +3,7 @@
 // ---------------------------------------------------------------------------
 
 import { tokenize, TokenKind, type Token } from "./tokenizer.js";
+import { qalamError } from "./errors.js";
 import type {
   StoryAST, VariableDecl, ListDecl,
   PassageNode, SubsectionNode, ContentNode,
@@ -41,6 +42,8 @@ class ParserState {
   variables: Record<string, VariableDecl> = {};
   lists: Record<string, ListDecl> = {};
   passages: PassageNode[] = [];
+  passageNames: Set<string> = new Set();
+  inPassage: boolean = false;
 
   constructor(tokens: Token[]) {
     this.tokens = tokens;
@@ -58,9 +61,9 @@ class ParserState {
   expect(kind: string): Token {
     const t = this.advance();
     if (t.kind !== kind) {
-      throw new Error(
-        "Expected " + kind + " but got " + t.kind + " at " + t.line + ":" + t.column
-      );
+      throw qalamError("E000", t.line, t.column, {
+        _msg: `Expected ${kind} but got ${t.kind} at ${t.line}:${t.column}`,
+      });
     }
     return t;
   }
@@ -80,6 +83,8 @@ class ParserState {
         this.parseFrontMatter();
       } else if (t.kind === K.KEYWORD_VAR || t.kind === K.KEYWORD_LIST) {
         this.parseDeclaration();
+      } else if (t.kind === K.CHOICE_STAR || t.kind === K.CHOICE_PLUS) {
+        throw qalamError("E104", t.line, t.column, {});
       } else {
         this.advance(); // skip unexpected
       }
@@ -89,6 +94,9 @@ class ParserState {
     while (!this.isEOF()) {
       if (this.is(K.PASSAGE_MARKER)) {
         this.passages.push(this.parsePassage());
+      } else if (this.is(K.CHOICE_STAR) || this.is(K.CHOICE_PLUS)) {
+        const t = this.cur();
+        throw qalamError("E104", t.line, t.column, {});
       } else {
         this.advance();
       }
@@ -157,25 +165,49 @@ class ParserState {
 
   parsePassage(): PassageNode {
     this.expect(K.PASSAGE_MARKER);
-    const name = this.expect(K.IDENTIFIER);
-    this.expect(K.PASSAGE_MARKER);
+    const nameTok = this.cur();
+    if (nameTok.kind !== K.IDENTIFIER) {
+      // Missing passage name — the header is malformed.
+      // But the closing === is the real issue: E103.
+      throw qalamError("E103", nameTok.line, nameTok.column, {});
+    }
+    this.advance(); // consume IDENTIFIER
+
+    // E102: duplicate passage name
+    if (this.passageNames.has(nameTok.value)) {
+      throw qalamError("E102", nameTok.line, nameTok.column, { name: nameTok.value });
+    }
+    this.passageNames.add(nameTok.value);
+
+    // E103: expect closing ===
+    const closeTok = this.cur();
+    if (closeTok.kind !== K.PASSAGE_MARKER) {
+      if (this.isEOF()) {
+        throw qalamError("E103", nameTok.line, nameTok.column, {});
+      }
+      throw qalamError("E103", closeTok.line, closeTok.column, {});
+    }
+    this.advance(); // consume ===
 
     const tags: string[] = [];
-    while (!this.isEOF() && this.cur().line === name.line && this.is(K.TAG)) {
+    while (!this.isEOF() && this.cur().line === nameTok.line && this.is(K.TAG)) {
       tags.push(this.advance().value);
     }
 
+    this.inPassage = true;
     const subsections: SubsectionNode[] = [];
     const content: ContentNode[] = [];
     this.parseBody(content, subsections);
+    this.inPassage = false;
 
-    return { name: name.value, tags, subsections, content };
+    return { name: nameTok.value, tags, subsections, content };
   }
 
-  parseBody(content: ContentNode[], subsections: SubsectionNode[]): void {
+  parseBody(content: ContentNode[], subsections: SubsectionNode[], allowSubsections = true): void {
     while (!this.isEOF()) {
       if (this.is(K.PASSAGE_MARKER)) break;
-      if (this.is(K.SUBSECTION_MARKER)) { subsections.push(this.parseSubsection()); continue; }
+      if (!allowSubsections && this.is(K.SUBSECTION_MARKER)) break;
+      if (allowSubsections && this.is(K.SUBSECTION_MARKER)) { subsections.push(this.parseSubsection()); continue; }
 
       const t = this.cur();
 
@@ -200,17 +232,24 @@ class ParserState {
     const name = this.expect(K.IDENTIFIER);
     const subsections: SubsectionNode[] = [];
     const content: ContentNode[] = [];
-    this.parseBody(content, subsections);
+    this.parseBody(content, subsections, false);
     return { name: name.value, content };
   }
 
   // ---- choices ------------------------------------------------------------
 
-  parseChoices(): ChoicesNode {
+  parseChoices(expectedDepth = 1): ChoicesNode {
     const items: ChoiceItem[] = [];
 
-    while (!this.isEOF() && (this.is(K.CHOICE_STAR) || this.is(K.CHOICE_PLUS))) {
-      const sticky = this.is(K.CHOICE_PLUS);
+    while (!this.isEOF()) {
+      const head = this.cur();
+      if (head.kind === K.CHOICE_STAR) {
+        if (head.value.length < expectedDepth) break;
+        if (head.value.length > expectedDepth) break;
+      } else if (head.kind === K.CHOICE_PLUS) {
+        if (expectedDepth > 1) break;
+      } else { break; }
+      const sticky = head.kind === K.CHOICE_PLUS;
       this.advance();
 
       // Optional condition
@@ -233,7 +272,13 @@ class ParserState {
 
       while (!this.isEOF()) {
         const c = this.cur();
-        if (c.kind === K.CHOICE_STAR || c.kind === K.CHOICE_PLUS ||
+        if (c.kind === K.CHOICE_STAR) {
+          if (c.value.length <= expectedDepth) break;
+          // Nested choices: depth > expectedDepth → parse recursively (§1.13)
+          body.push(this.parseChoices(c.value.length));
+          continue;
+        }
+        if (c.kind === K.CHOICE_PLUS ||
             c.kind === K.PASSAGE_MARKER || c.kind === K.SUBSECTION_MARKER) break;
 
         if (c.kind === K.DIVERT) {
@@ -310,11 +355,51 @@ class ParserState {
         const val = this.parseLiteral();
         return { type: "set", var: varName.value, op: (opTok.value + "=") as SetNode["op"], value: val.value };
       }
+      // Same-name ident without valid operator — fall through to E201 below
     }
 
-    // Plain assignment
-    const val = this.parseLiteral();
-    return { type: "set", var: varName.value, op: "=", value: val.value };
+    // List value assignment: ~ حالة_الباب = مكسور (§1.6b)
+    // Peek first — don't consume yet, so we can use the token for E201 if needed
+    if (this.is(K.IDENTIFIER)) {
+      const peeked = this.cur();
+      const list = this.lists[varName.value];
+      if (list && list.entries.includes(peeked.value)) {
+        this.advance(); // consume the list value identifier
+        return { type: "set", var: varName.value, op: "=", value: peeked.value };
+      }
+      // Not a valid list value — E201
+      const expr = this.collectExpr(peeked);
+      throw qalamError("E201", peeked.line, peeked.column, { expr });
+    }
+
+    // Plain assignment: must be a literal
+    const rhsToken = this.cur();
+    if (rhsToken.kind === K.NUMBER || rhsToken.kind === K.KEYWORD_TRUE ||
+        rhsToken.kind === K.KEYWORD_FALSE || rhsToken.kind === K.STRING) {
+      const val = this.parseLiteral();
+      return { type: "set", var: varName.value, op: "=", value: val.value };
+    }
+
+    // E201: unsupported expression
+    const expr = this.collectExpr(rhsToken);
+    throw qalamError("E201", rhsToken.line, rhsToken.column, { expr });
+  }
+
+  /** Collect a few tokens for an E201 error expression string. */
+  collectExpr(startToken: Token): string {
+    let expr = startToken.value;
+    let p = this.pos + 1;
+    const endLine = startToken.line;
+    while (p < this.tokens.length) {
+      const t = this.tokens[p]!;
+      if (t.line !== endLine) break;
+      if (t.kind === K.PASSAGE_MARKER || t.kind === K.DIVERT || t.kind === K.THREAD ||
+          t.kind === K.ASSIGN || t.kind === K.CHOICE_STAR || t.kind === K.CHOICE_PLUS ||
+          t.kind === K.BRACE_OPEN || t.kind === K.BRACE_CLOSE || t.kind === K.SUBSECTION_MARKER) break;
+      expr += " " + t.value;
+      p++;
+    }
+    return expr;
   }
 
   // ---- text / conditional / interpolation ---------------------------------
@@ -328,6 +413,8 @@ class ParserState {
     let braceDepth = 0;
     let i = this.pos;
     let seenInterpolation = false;
+    let firstBraceOpenLine = 0;
+    let firstBraceOpenCol = 0;
 
     collect:
     while (i < this.tokens.length) {
@@ -339,7 +426,10 @@ class ParserState {
         t.kind === K.ASSIGN || t.kind === K.SUBSECTION_MARKER
       )) break collect;
 
-      if (t.kind === K.BRACE_OPEN) braceDepth++;
+      if (t.kind === K.BRACE_OPEN) {
+        if (braceDepth === 0) { firstBraceOpenLine = t.line; firstBraceOpenCol = t.column; }
+        braceDepth++;
+      }
       if (t.kind === K.BRACE_CLOSE) braceDepth--;
 
       // Detect interpolation patterns: BRACE_OPEN IDENTIFIER BRACE_CLOSE (no colon)
@@ -371,6 +461,11 @@ class ParserState {
       }
     }
 
+    // E105: unclosed brace in conditional
+    if (braceDepth > 0) {
+      throw qalamError("E105", firstBraceOpenLine || startLine, firstBraceOpenCol || 1, {});
+    }
+
     // Process the buffer
     let ti = 0;
     let textBuf = "";
@@ -400,33 +495,46 @@ class ParserState {
         }
 
         if (hasColon) {
-          // Conditional: { cond: text }
+          // Conditional: { cond: text } or multi-branch (§1.12)
           ti++; // skip {
           const cond = this.parseConditionFromSlice(buf, ti);
           while (ti < buf.length && buf[ti]!.kind !== K.COLON) ti++;
+          const colonLine = buf[ti]!.line; // save COLON line for multi-branch check
           ti++; // skip :
 
-          // Collect body until matching }
-          let bodyText = "";
+          // Collect body TEXT tokens individually to detect branch patterns
+          const bodyTexts: string[] = [];
+          let firstBodyTextLine: number | undefined;
           let bodyDepth = 1;
           while (ti < buf.length && bodyDepth > 0) {
             const ct = buf[ti]!;
             if (ct.kind === K.BRACE_OPEN) bodyDepth++;
             if (ct.kind === K.BRACE_CLOSE) { bodyDepth--; if (bodyDepth === 0) { ti++; break; } }
-            if (ct.kind === K.TEXT) bodyText += ct.value;
+            if (ct.kind === K.TEXT) { bodyTexts.push(ct.value); if (firstBodyTextLine === undefined) firstBodyTextLine = ct.line; }
             ti++;
           }
 
-          const thenContent: ContentNode[] = [];
-          const trimmedBody = bodyText.trim(); // §1.10: trim conditional body
-          if (trimmedBody.length > 0) thenContent.push({ type: "text", value: trimmedBody } as TextNode);
+          // Multi-branch: must be on a new line after the colon, and every TEXT starts with "- " (§1.12)
+          const allBranches = bodyTexts.length > 0 &&
+            firstBodyTextLine !== undefined && firstBodyTextLine !== colonLine &&
+            bodyTexts.every(t => t.trimStart().startsWith("- "));
 
-          result.push({
-            type: "conditional",
-            condition: cond,
-            then: thenContent,
-            else: [],
-          } as ConditionalNode);
+          if (allBranches) {
+            result.push(...this.compileMultiBranch(bodyTexts));
+          } else {
+            // Single-branch conditional (original behaviour)
+            const bodyText = bodyTexts.join("");
+            const thenContent: ContentNode[] = [];
+            const trimmedBody = bodyText.trim(); // §1.10: trim conditional body
+            if (trimmedBody.length > 0) thenContent.push({ type: "text", value: trimmedBody } as TextNode);
+
+            result.push({
+              type: "conditional",
+              condition: cond,
+              then: thenContent,
+              else: [],
+            } as ConditionalNode);
+          }
         } else {
           // Interpolation: { var }
           ti++; // skip {
@@ -494,6 +602,72 @@ class ParserState {
     return { var: varTok.value };
   }
 
+  // ---- multi-branch conditional (§1.12) ------------------------------------
+
+  /** Parse an inline condition expression (e.g. "الشجاعة < 3") into a Condition object. */
+  parseInlineCondition(condExpr: string): Condition {
+    const match = condExpr.match(/^(\S+)\s+([<>=!]+)\s+(.+)$/);
+    if (match) {
+      const varName = match[1]!;
+      const op = match[2]!;
+      const valueStr = match[3]!;
+      let value: number | string | boolean;
+      if (/^\d+$/.test(valueStr)) {
+        value = Number(valueStr);
+      } else if (valueStr === "صح" || valueStr === "true") {
+        value = true;
+      } else if (valueStr === "خطأ" || valueStr === "false") {
+        value = false;
+      } else {
+        value = valueStr;
+      }
+      return { var: varName, op: op as Condition["op"], value };
+    }
+    return { var: condExpr };
+  }
+
+  /**
+   * Compile multi-branch conditional body texts into a chain of nested
+   * ConditionalNodes. Each branch text is a line like `- cond: body`.
+   * The last branch may be `- غير_ذلك: body` (the else).
+   */
+  compileMultiBranch(bodyTexts: string[]): ContentNode[] {
+    // Parse each branch: strip "- ", split at first ":", trim both sides
+    const branches = bodyTexts.map((t) => {
+      const trimmed = t.trimStart().substring(2); // strip "- "
+      const colonIdx = trimmed.indexOf(":");
+      if (colonIdx === -1) {
+        return { condPart: trimmed.trim(), bodyPart: "" };
+      }
+      return {
+        condPart: trimmed.substring(0, colonIdx).trim(),
+        bodyPart: trimmed.substring(colonIdx + 1).trim(),
+      };
+    });
+
+    // Build nested chain from bottom up
+    let elseContent: ContentNode[] = [];
+
+    for (let i = branches.length - 1; i >= 0; i--) {
+      const br = branches[i]!;
+      const thenContent: ContentNode[] =
+        br.bodyPart.length > 0
+          ? [{ type: "text", value: br.bodyPart } as TextNode]
+          : [];
+
+      if (br.condPart === "غير_ذلك" || br.condPart === "else") {
+        elseContent = thenContent;
+      } else {
+        const cond = this.parseInlineCondition(br.condPart);
+        elseContent = [
+          { type: "conditional", condition: cond, then: thenContent, else: elseContent } as ConditionalNode,
+        ];
+      }
+    }
+
+    return elseContent;
+  }
+
   skipToBraceClose(): void {
     while (!this.isEOF() && !this.is(K.BRACE_CLOSE)) this.advance();
   }
@@ -510,7 +684,9 @@ class ParserState {
       else value = t.value;
       return { kind: t.kind, value, line: t.line, column: t.column } as Token;
     }
-    throw new Error("Expected literal at " + t.line + ":" + t.column);
+    throw qalamError("E000", t.line, t.column, {
+      _msg: `Expected literal at ${t.line}:${t.column}`,
+    });
   }
 
   // ---- helpers ------------------------------------------------------------
@@ -518,7 +694,9 @@ class ParserState {
   expectTokenKind(kinds: string[]): Token {
     const t = this.advance();
     if (!kinds.includes(t.kind)) {
-      throw new Error("Expected one of " + kinds.join(",") + " but got " + t.kind + " at " + t.line + ":" + t.column);
+      throw qalamError("E000", t.line, t.column, {
+        _msg: `Expected one of ${kinds.join(",")} but got ${t.kind} at ${t.line}:${t.column}`,
+      });
     }
     return t;
   }
