@@ -12,29 +12,8 @@ import EditorPane from "./components/EditorPane.js";
 import PlayerPane from "./components/PlayerPane.js";
 import CanvasPane from "./components/CanvasPane.js";
 import ErrorStrip from "./components/ErrorStrip.js";
-
-const FIXTURE_03 = `عنوان: "الرحيق"
-
-متغير الرحيق = 0
-متغير وجد_الخريطة = خطأ
-متغير اسم_البطل = "نحلة"
-
-=== البداية ===
-
-{وجد_الخريطة: الخريطة معك.}
-جمعتِ {الرحيق} قطرة.
-
-+ [اجمع الرحيق]
-  ~ الرحيق = الرحيق + 2
-  -> البداية
-
-* [تحدثي مع النحلة الحكيمة]
-  ~ وجد_الخريطة = صح
-  -> البداية
-
-+ {الرحيق >= 4} [عودي إلى الخلية]
-  -> نهاية
-`;
+import OnboardingOverlay from "./components/OnboardingOverlay.js";
+import { SEED_STORY } from "./generated/seed-story.js";
 
 export default function App() {
   const storyJson = useStore((s) => s.storyJson);
@@ -54,7 +33,7 @@ export default function App() {
       if (saved && saved.trim().length > 0) {
         loadSourceAction(saved);
       } else {
-        loadSourceAction(FIXTURE_03);
+        loadSourceAction(SEED_STORY);
       }
     });
   }, [loadSourceAction]);
@@ -126,6 +105,9 @@ export default function App() {
 
       {/* Error strip */}
       <ErrorStrip error={error} onDismiss={clearError} />
+
+      {/* Onboarding overlay — first visit only */}
+      <OnboardingOverlay />
     </div>
   );
 }

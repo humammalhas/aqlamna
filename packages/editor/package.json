@@ -6,9 +6,9 @@
   "license": "GPL-3.0-only",
   "type": "module",
   "scripts": {
-    "dev": "npm run build -w @aqlamna/runtime && node scripts/copy-runtime.mjs && node scripts/build-mastery-prompt.mjs && npm run build -w @aqlamna/core && vite",
-    "build": "npm run build -w @aqlamna/runtime && node scripts/copy-runtime.mjs && node scripts/build-mastery-prompt.mjs && npm run build -w @aqlamna/core && vite build",
-    "build:site": "npm run build -w @aqlamna/runtime && node scripts/copy-runtime.mjs && node scripts/build-mastery-prompt.mjs && npm run build -w @aqlamna/core && vite build --base /editor/",
+    "dev": "npm run build -w @aqlamna/runtime && node scripts/copy-runtime.mjs && node scripts/build-mastery-prompt.mjs && node scripts/copy-seed.mjs && npm run build -w @aqlamna/core && vite",
+    "build": "npm run build -w @aqlamna/runtime && node scripts/copy-runtime.mjs && node scripts/build-mastery-prompt.mjs && node scripts/copy-seed.mjs && npm run build -w @aqlamna/core && vite build",
+    "build:site": "npm run build -w @aqlamna/runtime && node scripts/copy-runtime.mjs && node scripts/build-mastery-prompt.mjs && node scripts/copy-seed.mjs && npm run build -w @aqlamna/core && vite build --base /editor/",
     "typecheck": "tsc --noEmit",
     "preview": "vite preview",
     "test": "vitest run",

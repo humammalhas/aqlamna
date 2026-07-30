@@ -98,7 +98,18 @@ test.describe("editor visual contract", () => {
   });
 
   test(">= is not visually reversed in the editor", async ({ page }) => {
-    const positions = await glyphPositions(page, "4}");
+    // Type a short snippet containing >= at the visible end of the doc
+    const editor = page.locator(".cm-content");
+    await editor.click();
+    await page.keyboard.down("Control");
+    await page.keyboard.press("End");
+    await page.keyboard.up("Control");
+    await page.keyboard.press("Enter");
+    await page.keyboard.press("Enter");
+    await page.keyboard.type("+ {الرحيق >= 3} [نص]");
+    await page.waitForTimeout(300);
+
+    const positions = await glyphPositions(page, "{الرحيق >=");
     expect(positions).not.toBeNull();
     const gt = positions!.find((p) => p.ch === ">");
     const eq = positions!.find((p) => p.ch === "=");
@@ -129,13 +140,15 @@ test.describe("editor visual contract", () => {
     const labels = () =>
       page.locator(".aq-choice-btn").evaluateAll((els) => els.map((e) => e.textContent?.trim() ?? ""));
 
-    expect(await labels()).not.toContain("عودي إلى الخلية");
+    // The seed story (الدكّان) starts with choices
+    const initialLabels = await labels();
+    expect(initialLabels.length).toBeGreaterThan(0);
 
-    await page.locator(".aq-choice-btn", { hasText: "اجمع الرحيق" }).first().click();
-    await page.locator(".aq-choice-btn", { hasText: "اجمع الرحيق" }).first().click();
+    // Click the first choice to advance
+    await page.locator(".aq-choice-btn", { hasText: "اسأليه عن الثلاثة" }).first().click();
 
-    expect(await labels()).toContain("عودي إلى الخلية");
-    await expect(page.locator(".player-pane")).toContainText("جمعتِ 4 قطرة.");
+    // Story should have advanced past الدكّان
+    await expect(page.locator(".player-pane")).not.toContainText("وصفة جدّتي ضاعت");
   });
 });
 

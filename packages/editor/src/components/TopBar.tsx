@@ -177,7 +177,7 @@ export default function TopBar() {
                 cursor: "pointer",
               }}
             >
-              ⚙️
+              ⚙️ الإعدادات
             </button>
 
             {/* Play button */}
@@ -227,7 +227,7 @@ export default function TopBar() {
             borderBlockStart: "1px solid #2a2620",
           }}
         >
-          <AIActions />
+          <AIActions onOpenSettings={toggleSettings} />
         </div>
       </header>
 

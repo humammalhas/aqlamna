@@ -23,7 +23,7 @@ import {
 
 // ---- Component -------------------------------------------------------------
 
-export default function AIActions() {
+export default function AIActions({ onOpenSettings }: { onOpenSettings: () => void }) {
   const source = useStore((s) => s.source);
   const setSource = useStore((s) => s.setSource);
 
@@ -122,11 +122,26 @@ export default function AIActions() {
             marginBlockStart: "0.5rem",
             fontSize: "0.75rem",
             color: "#8a7060",
-            lineHeight: 1.5,
+            lineHeight: 1.6,
           }}
         >
-          ⚠️ لم يُضبط مفتاح API. أزرار الذكاء الاصطناعي معطّلة. افتح
-          الإعدادات (⚙️) واختر مزوّداً وأدخل مفتاحك.
+          أضف مفتاح الذكاء الاصطناعي من{" "}
+          <button
+            onClick={onOpenSettings}
+            style={{
+              fontSize: "inherit",
+              fontFamily: "inherit",
+              color: "#d4a843",
+              background: "none",
+              border: "none",
+              textDecoration: "underline",
+              cursor: "pointer",
+              padding: 0,
+            }}
+          >
+            الإعدادات
+          </button>{" "}
+          لتفعيل هذه الأزرار
         </div>
       )}
 

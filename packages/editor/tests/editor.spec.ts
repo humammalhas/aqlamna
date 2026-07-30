@@ -1,6 +1,5 @@
 // ---------------------------------------------------------------------------
-// Editor smoke tests — compile-then-mount works for fixture 03, and a broken
-// source surfaces an Arabic error message rather than throwing.
+// Editor smoke tests — compile-then-mount, error messages, player mounting.
 // ---------------------------------------------------------------------------
 
 import { describe, it, expect } from "vitest";
@@ -9,28 +8,31 @@ import { mount } from "@aqlamna/runtime";
 import type { StoryJSON } from "@aqlamna/runtime";
 
 describe("editor compilation", () => {
-  it("compiles fixture 03 (variables story) without error", () => {
-    const src = `عنوان: "الرحيق"
+  it("compiles demo story without error", () => {
+    const src = `عنوان: "العطر المفقود"
 
-متغير الرحيق = 0
-متغير وجد_الخريطة = خطأ
-متغير اسم_البطل = "نحلة"
+متغير المكوّنات = 0
 
-=== البداية ===
+=== الدكّان ===
 
-{وجد_الخريطة: الخريطة معك.}
-جمعتِ {الرحيق} قطرة.
+"وصفة جدّتي ضاعت،" قال.
 
-+ [اجمع الرحيق]
-  ~ الرحيق = الرحيق + 2
-  -> البداية
+* [اسأليه عن الثلاثة]
+  -> الجرار
 
-* [تحدثي مع النحلة الحكيمة]
-  ~ وجد_الخريطة = صح
-  -> البداية
+=== الجرار ===
 
-+ {الرحيق >= 4} [عودي إلى الخلية]
-  -> نهاية
+فتح ثلاث جرارٍ.
+
+* [اجمع المكوّنات]
+  ~ المكوّنات = المكوّنات + 1
+  -> الدكّان
+
++ {المكوّنات >= 3} [اخلطي العطر]
+  -> الخلط
+
+=== الخلط ===
+قطرتان من ماء الورد.
 `;
 
     const result = compile(src, "test.qalam");
@@ -39,9 +41,9 @@ describe("editor compilation", () => {
     expect(result.qalam_version).toBe("0.1");
     expect(result.passages).toBeDefined();
 
-    // The story has 2 passages (البداية and its auto-generated نهاية)
+    // The story has multiple passages
     const passages = result.passages as Record<string, unknown>;
-    expect(Object.keys(passages).length).toBeGreaterThanOrEqual(1);
+    expect(Object.keys(passages).length).toBeGreaterThanOrEqual(3);
   });
 
   it("surfaces Arabic error message for broken source", () => {
@@ -93,7 +95,7 @@ describe("editor compilation", () => {
 });
 
 describe("player mounting", () => {
-  it("renders choices as styled buttons after mounting fixture 03", () => {
+  it("renders choices as styled buttons after mounting a story", () => {
     const src = `عنوان: "اختبار"
 
 متغير س = 0
@@ -106,18 +108,12 @@ describe("player mounting", () => {
     const storyJson = compile(src, "test.qalam") as unknown as StoryJSON;
     const container = document.createElement("div");
 
-    // Mount the player (no styles injected by the test — the component handles that;
-    // here we test that the runtime renders the correct DOM structure)
     mount(storyJson, container, { showToolbar: false });
 
-    // Verify choice buttons exist
     const buttons = container.querySelectorAll("button.aq-choice-btn");
     expect(buttons.length).toBeGreaterThanOrEqual(1);
-
-    // Verify the first button has the expected text
     expect(buttons[0]!.textContent).toContain("اختر هذا");
 
-    // Verify buttons are inside the choices wrapper
     const choicesWrapper = container.querySelector(".aq-choices");
     expect(choicesWrapper).not.toBeNull();
     expect(choicesWrapper!.querySelectorAll("button.aq-choice-btn").length).toBe(
