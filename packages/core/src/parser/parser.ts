@@ -5,11 +5,11 @@
 import { tokenize, TokenKind, stripTashkeel, type Token } from "./tokenizer.js";
 import { qalamError } from "./errors.js";
 import type {
-  StoryAST, VariableDecl, ListDecl,
+  StoryAST, VariableDecl, ListDecl, ImageDecl,
   PassageNode, SubsectionNode, ContentNode,
   TextNode, DivertNode, DivertTunnelNode, DivertReturnNode, ThreadNode,
   ChoicesNode, ChoiceItem, ConditionalNode, InterpolationNode, SetNode,
-  Condition,
+  ImageNode, Condition,
 } from "../types/ast.js";
 
 const K = TokenKind;
@@ -41,6 +41,8 @@ class ParserState {
   language: string = "ar";
   variables: Record<string, VariableDecl> = {};
   lists: Record<string, ListDecl> = {};
+  images: Record<string, ImageDecl> = {};
+  imageNames: Set<string> = new Set();
   passages: PassageNode[] = [];
   passageNames: Set<string> = new Set();
   inPassage: boolean = false;
@@ -83,6 +85,8 @@ class ParserState {
         this.parseFrontMatter();
       } else if (t.kind === K.KEYWORD_VAR || t.kind === K.KEYWORD_LIST) {
         this.parseDeclaration();
+      } else if (t.kind === K.KEYWORD_IMAGE) {
+        this.parseImageDeclaration();
       } else if (t.kind === K.CHOICE_STAR || t.kind === K.CHOICE_PLUS) {
         throw qalamError("E104", t.line, t.column, {});
       } else {
@@ -114,6 +118,7 @@ class ParserState {
       start,
       variables: this.variables,
       lists: this.lists,
+      images: this.images,
       passages: this.passages,
     };
   }
@@ -159,6 +164,40 @@ class ParserState {
       if (initial) entries.unshift(initial);
       this.lists[name.value] = { entries, initial };
     }
+  }
+
+  parseImageDeclaration(): void {
+    this.advance(); // consume KEYWORD_IMAGE
+    const nameTok = this.cur();
+
+    // E108: if next token is not an IDENTIFIER (e.g. operator or EOF),
+    // the declaration is malformed -- needs a description in quotes.
+    if (nameTok.kind !== K.IDENTIFIER) {
+      throw qalamError("E108", nameTok.line, nameTok.column, {});
+    }
+    this.advance(); // consume IDENTIFIER
+
+    // E107: duplicate image name
+    if (this.imageNames.has(nameTok.value)) {
+      throw qalamError("E107", nameTok.line, nameTok.column, { name: nameTok.value });
+    }
+
+    // Expect = then STRING
+    const eqTok = this.cur();
+    if (eqTok.kind !== K.OPERATOR || eqTok.value !== "=") {
+      throw qalamError("E108", eqTok.line, eqTok.column, {});
+    }
+    this.advance(); // consume =
+
+    const strTok = this.cur();
+    if (strTok.kind !== K.STRING) {
+      throw qalamError("E108", strTok.line, strTok.column, {});
+    }
+    this.advance(); // consume STRING
+
+    const alt = strTok.value;
+    this.images[nameTok.value] = { alt };
+    this.imageNames.add(nameTok.value);
   }
 
   // ---- passage ------------------------------------------------------------
@@ -221,6 +260,11 @@ class ParserState {
         content.push({ type: "thread", target: tgt.value, line: tgt.line, column: tgt.column } as ThreadNode);
       } else if (t.kind === K.ASSIGN) {
         content.push(this.parseAssignment());
+      } else if (t.kind === K.KEYWORD_IMAGE) {
+        this.advance(); // consume KEYWORD_IMAGE
+        this.expect(K.COLON); // consume :
+        const nameTok = this.expect(K.IDENTIFIER);
+        content.push({ type: "image", name: nameTok.value } as ImageNode);
       } else {
         content.push(...this.parseTextOrConditional());
       }

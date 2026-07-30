@@ -52,6 +52,18 @@ const TEMPLATES: ErrorMessages = {
     ar: "نوع غير متطابق: المتغير {name} نوعه {expected}، والقيمة المسندة {got}.",
     en: "Type mismatch: {name} is {expected}, assigned value is {got}.",
   },
+  E106: {
+    ar: "لا توجد صورة بهذا الاسم: {name}",
+    en: "No image with this name: {name}",
+  },
+  E107: {
+    ar: "اسم الصورة مكرّر: {name}",
+    en: "Duplicate image name: {name}",
+  },
+  E108: {
+    ar: "تصريح الصورة يحتاج وصفًا بين علامتَي اقتباس.",
+    en: "An image declaration needs a description in quotes.",
+  },
 };
 
 // ---- Error factory ---------------------------------------------------------
@@ -107,6 +119,7 @@ interface ValidationCtx {
   subsectionMap: Map<string, string[]>; // passage → subsection names
   variables: Map<string, "number" | "string" | "boolean" | "list">;
   listEntries: Map<string, Set<string>>; // list name → entry values
+  imageNames: Set<string>;
 }
 
 /** Return all validation errors in the AST. Empty array = valid. */
@@ -119,6 +132,7 @@ export function validateStory(ast: StoryAST): QalamError[] {
     subsectionMap: new Map(),
     variables: new Map(),
     listEntries: new Map(),
+    imageNames: new Set(Object.keys(ast.images)),
   };
 
   // Collect passages and subsections
@@ -232,6 +246,12 @@ function validateContent(
               errors.push(qalamError("E101", item.line, item.column, { name: item.divert }));
             }
           }
+        }
+        break;
+
+      case "image":
+        if (!ctx.imageNames.has(node.name)) {
+          errors.push(qalamError("E106", 0, 0, { name: node.name }));
         }
         break;
 

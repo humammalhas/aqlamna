@@ -12,6 +12,7 @@ export interface StoryAST {
   start: string | null;
   variables: Record<string, VariableDecl>;
   lists: Record<string, ListDecl>;
+  images: Record<string, ImageDecl>;
   passages: PassageNode[];
 }
 
@@ -52,7 +53,8 @@ export type ContentNode =
   | ChoicesNode
   | ConditionalNode
   | InterpolationNode
-  | SetNode;
+  | SetNode
+  | ImageNode;
 
 export interface TextNode {
   type: "text";
@@ -123,6 +125,18 @@ export interface SetNode {
   line: number;
   column: number;
   value: number | string | boolean;
+}
+
+export interface ImageNode {
+  type: "image";
+  name: string;
+}
+
+// ---- Images ---------------------------------------------------------------
+
+export interface ImageDecl {
+  alt: string;
+  data?: string; // absent when not yet generated
 }
 
 // ---- Condition ------------------------------------------------------------

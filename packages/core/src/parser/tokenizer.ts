@@ -10,6 +10,7 @@ export const TokenKind = {
   LANGUAGE_KEY: "LANGUAGE_KEY",
   KEYWORD_VAR: "KEYWORD_VAR",
   KEYWORD_LIST: "KEYWORD_LIST",
+  KEYWORD_IMAGE: "KEYWORD_IMAGE",
   KEYWORD_TRUE: "KEYWORD_TRUE",
   KEYWORD_FALSE: "KEYWORD_FALSE",
   KEYWORD_NOT: "KEYWORD_NOT",
@@ -126,6 +127,10 @@ const DECL_KEYWORDS: Record<string, TokenKind> = {
   "قائمة": TokenKind.KEYWORD_LIST, "LIST": TokenKind.KEYWORD_LIST,
 };
 
+const IMAGE_KEYWORDS: Record<string, TokenKind> = {
+  "صورة": TokenKind.KEYWORD_IMAGE, "image": TokenKind.KEYWORD_IMAGE,
+};
+
 const BOOL_KEYWORDS: Record<string, TokenKind> = {
   "صح": TokenKind.KEYWORD_TRUE, "true": TokenKind.KEYWORD_TRUE,
   "خطأ": TokenKind.KEYWORD_FALSE, "false": TokenKind.KEYWORD_FALSE,
@@ -235,6 +240,7 @@ export function tokenize(source: string): Token[] {
     let k: TokenKind | undefined;
     k = FRONT_MATTER_KEYS[clean]; if (k) { emit(k, clean, startLine, startCol); return; }
     k = DECL_KEYWORDS[clean]; if (k) { emit(k, clean, startLine, startCol); return; }
+    k = IMAGE_KEYWORDS[clean]; if (k) { emit(k, clean, startLine, startCol); return; }
     k = BOOL_KEYWORDS[clean]; if (k) { emit(k, clean, startLine, startCol); return; }
     k = DIVERT_END_KEYWORDS[clean]; if (k) { emit(k, clean, startLine, startCol); return; }
     if (braceDepth > 0) { k = LOGICAL_KEYWORDS[clean]; if (k) { emit(k, clean, startLine, startCol); return; } }
@@ -289,7 +295,7 @@ export function tokenize(source: string): Token[] {
         wp++;
       }
       const clean = stripTashkeel(word);
-      if (FRONT_MATTER_KEYS[clean] || DECL_KEYWORDS[clean]) return "CODE";
+      if (FRONT_MATTER_KEYS[clean] || DECL_KEYWORDS[clean] || IMAGE_KEYWORDS[clean]) return "CODE";
     }
 
     return "TEXT";

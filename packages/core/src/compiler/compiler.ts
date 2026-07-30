@@ -50,6 +50,8 @@ function compileContent(
         return { type: "interpolation", var: node.var };
       case "set":
         return { type: "set", var: node.var, op: node.op, value: node.value };
+      case "image":
+        return { type: "image", name: node.name };
       case "conditional":
         return {
           type: "conditional",
@@ -151,7 +153,9 @@ export function compileStory(ast: StoryAST, _filename: string): Record<string, u
 
   const now = new Date().toISOString();
 
-  return {
+  const hasImages = Object.keys(ast.images).length > 0;
+
+  const result: Record<string, unknown> = {
     qalam_version: ast.version,
     title: ast.title,
     author: ast.author,
@@ -168,4 +172,10 @@ export function compileStory(ast: StoryAST, _filename: string): Record<string, u
       word_count: totalWords,
     },
   };
+
+  if (hasImages) {
+    result.images = ast.images;
+  }
+
+  return result;
 }

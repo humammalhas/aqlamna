@@ -187,3 +187,63 @@ describe("tashkeel normalisation", () => {
     );
   });
 });
+
+// ---- Image errors (IMAGES_SPEC section 1.3) ----------------------------------
+
+describe("image errors (E106/E107/E108)", () => {
+  test("E106 -- image reference to undeclared name", () => {
+    assertError(
+      "=== بداية ===\nصورة: غير_موجود\n-> نهاية",
+      "E106",
+      (err) => {
+        expect(err.message_ar).toContain("غير_موجود");
+        expect(err.message_en).toContain("غير_موجود");
+      },
+    );
+  });
+
+  test("E106 -- image reference to undeclared name (English alias)", () => {
+    assertError(
+      "=== بداية ===\nimage: nowhere\n-> نهاية",
+      "E106",
+      (err) => {
+        expect(err.message_en).toContain("nowhere");
+      },
+    );
+  });
+
+  test("E107 -- duplicate image name", () => {
+    assertError(
+      'صورة بوابة = "وصف"\nصورة بوابة = "وصف آخر"',
+      "E107",
+      (err) => {
+        expect(err.message_ar).toContain("بوابة");
+        expect(err.message_en).toContain("بوابة");
+      },
+    );
+  });
+
+  test("E107 -- duplicate image name (English alias)", () => {
+    assertError(
+      'image gate = "desc"\nimage gate = "other"',
+      "E107",
+      (err) => {
+        expect(err.message_en).toContain("gate");
+      },
+    );
+  });
+
+  test("E108 -- image declaration missing the description string", () => {
+    assertError(
+      "صورة بوابة =",
+      "E108",
+    );
+  });
+
+  test("E108 -- image declaration with no equals or string", () => {
+    assertError(
+      "صورة بوابة",
+      "E108",
+    );
+  });
+});
