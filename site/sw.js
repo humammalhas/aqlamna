@@ -13,23 +13,33 @@
 //   cache-first   fingerprinted assets only (/editor/assets/*, /assets/*).
 //                 Their filenames change with their bytes, so a hit is never
 //                 stale.
-//   network-first  the editor document. Its URL never changes, so caching it
-//                 first would pin a returning visitor to the build they first
-//                 loaded. Cache is the OFFLINE fallback, not the default.
-//   never         every content page — /, /docs/*, /privacy, /terms, the
-//                 exported stories. Those must always be fresh; privacy and
-//                 terms are legal documents.
+//   network-first  the editor document AND the home page. Their URLs never
+//                 change, so caching them first would pin a returning visitor
+//                 to the build they first loaded. Cache is the OFFLINE
+//                 fallback, not the default.
+//   never         the rest of the content pages — /docs/*, /privacy, /terms,
+//                 the exported stories. Those must always be fresh; privacy
+//                 and terms are legal documents, and an exported story is
+//                 someone's work, where a stale copy is a corruption.
 //   never         AI provider API calls. A cached AI response is a bug.
+//
+// WHY "/" IS HERE. The editor's أقلامنا wordmark links to "/", and in the
+// installed app (start_url "/editor/", display "standalone") there is no
+// address bar and no back button. Without a cached copy, tapping it offline
+// reached Chrome's error page, escapable only by the phone's back gesture.
+// It is network-first like the editor document, so it is never a stale home
+// page for anyone online — the cache only answers when the network does not.
 //
 // Bump CACHE_VERSION on every deploy to replace the old cache.
 // ---------------------------------------------------------------------------
 
-const CACHE_VERSION = "aqlamna-v7";
+const CACHE_VERSION = "aqlamna-v8";
 const CACHE_NAME = `aqlamna-app-${CACHE_VERSION}`;
 
 // ---- Resources to precache on install --------------------------------------
 
 const APP_SHELL = [
+  "/",
   "/editor/",
   "/editor/index.html",
   "/manifest.webmanifest",
@@ -90,13 +100,23 @@ function isImmutableAsset(url) {
 }
 
 /**
- * The editor document itself. Its filename never changes, so serving it
- * cache-first would pin a returning visitor to whatever build they first
- * loaded — a second, worse copy of the four-hour edge cache this project
- * already got bitten by. Network-first, cache only as the offline fallback.
+ * The two documents whose URLs never change: the editor and the home page.
+ * Serving either cache-first would pin a returning visitor to whatever build
+ * they first loaded — a second, worse copy of the four-hour edge cache this
+ * project already got bitten by. Network-first, cache only as the offline
+ * fallback.
+ *
+ * "/" MUST be listed here and not merely in APP_SHELL. The guard further down
+ * lets any APP_SHELL path through to the CACHE-FIRST branch, so adding "/" to
+ * that list alone would have frozen the landing page at whatever bytes the
+ * visitor's install first fetched — the opposite of the reason it is cached.
  */
 function isAppDocument(url) {
-  return url.pathname === "/editor/" || url.pathname === "/editor/index.html";
+  return (
+    url.pathname === "/" ||
+    url.pathname === "/editor/" ||
+    url.pathname === "/editor/index.html"
+  );
 }
 
 self.addEventListener("fetch", (event) => {

@@ -409,4 +409,85 @@ test.describe("installability", () => {
     expect(scope, "no service worker registered").not.toBeNull();
     expect(new URL(scope!).pathname).toBe("/");
   });
+
+  // -------------------------------------------------------------------------
+  // The editor's أقلامنا wordmark links to "/". In the installed app there is
+  // no address bar and no back button, so if "/" is not in the cache, tapping
+  // it offline reaches Chrome's error page and the only way out is the phone's
+  // back gesture. This asserts the landing page survives the network going
+  // away — and that it is still the LIVE page while the network is there.
+  // -------------------------------------------------------------------------
+  test("the home page is precached and still served with no network", async ({
+    page,
+    context,
+  }) => {
+    // freshEditor, not a bare goto: the onboarding dialog covers the whole
+    // editor on a first visit and swallows the click on the wordmark.
+    await freshEditor(page);
+    await page.evaluate(async () => {
+      await navigator.serviceWorker.ready;
+    });
+    // Precaching happens in the install handler's waitUntil, which resolves
+    // after `ready`. Poll the cache rather than sleeping on a guess.
+    await expect
+      .poll(
+        () =>
+          page.evaluate(async () => {
+            for (const name of await caches.keys()) {
+              const keys = await (await caches.open(name)).keys();
+              if (keys.some((r) => new URL(r.url).pathname === "/")) return true;
+            }
+            return false;
+          }),
+        { message: '"/" was never precached', timeout: 10000 },
+      )
+      .toBe(true);
+
+    // Exactly one worker, at the site root, from /sw.js.
+    const regs = await page.evaluate(async () =>
+      (await navigator.serviceWorker.getRegistrations()).map((r) => ({
+        scope: new URL(r.scope).pathname,
+        script: r.active ? new URL(r.active.scriptURL).pathname : null,
+      })),
+    );
+    expect(regs).toHaveLength(1);
+    expect(regs[0]!.scope).toBe("/");
+    expect(regs[0]!.script).toBe("/sw.js");
+
+    // Old caches are cleaned on activate — one cache, at the current version.
+    const cacheNames = await page.evaluate(() => caches.keys());
+    expect(cacheNames).toHaveLength(1);
+    expect(cacheNames[0]).toMatch(/^aqlamna-app-aqlamna-v\d+$/);
+
+    // Nothing but the app shell got swept in. The exported story especially
+    // must never be cached: it is someone's work and a stale copy corrupts it.
+    const cached = await page.evaluate(async () => {
+      const c = await caches.open((await caches.keys())[0]!);
+      return (await c.keys()).map((r) => decodeURIComponent(new URL(r.url).pathname));
+    });
+    expect(cached.sort()).toEqual(
+      [
+        "/",
+        "/assets/favicon.ico",
+        "/assets/icon-192.png",
+        "/assets/icon-512.png",
+        "/editor/",
+        "/editor/index.html",
+        "/manifest.webmanifest",
+      ].sort(),
+    );
+
+    // Now cut the network and go home the way the wordmark does.
+    await context.setOffline(true);
+    await page.click("header a[data-home-link]");
+    await page.waitForLoadState("load");
+
+    expect(page.url().startsWith("chrome-error://"), "landed on the error page").toBe(
+      false,
+    );
+    expect(new URL(page.url()).pathname).toBe("/");
+    await expect(page.locator("h1.hero-title")).toHaveText("أقلامنا");
+
+    await context.setOffline(false);
+  });
 });
