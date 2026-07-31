@@ -234,7 +234,7 @@
     <div class="install-steps" id="installSteps" data-install-sheet hidden>
       <div style="font-weight:700">لتثبيت أقلامنا على جهازك:</div>
       <div>١. اضغط زر المشاركة <span aria-hidden="true">⬆️</span></div>
-      <div>٢. اختر «إضافة إلى الشاشة الرئيسية»</div>
+      <div>٢. اختر "إضافة إلى الشاشة الرئيسية"</div>
     </div>
   </div>
 
@@ -286,7 +286,7 @@
       if (!deferred) return;
       deferred.prompt();
       deferred.userChoice.then(function (choice) {
-        text.textContent = choice.outcome === "accepted" ? "تم تثبيت أقلامنا." : "لم يتم التثبيت.";
+        text.textContent = choice.outcome === "accepted" ? "أقلامنا الآن على جهازك." : "لم يُثبَّت التطبيق.";
         btn.hidden = true;
         deferred = null;
       });
