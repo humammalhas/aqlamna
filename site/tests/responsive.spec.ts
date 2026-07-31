@@ -339,8 +339,31 @@ test.describe("editor layout", () => {
     // player sits on its empty state forever and a phone can write but never
     // run — which is the whole complaint the responsive work started from.
     await page.locator(".cm-content").click();
-    await page.keyboard.type("=== البداية ===\nالشمس عالية والطريق طويل.\n* [امضِ] -> النهاية\n\n=== النهاية ===\nوصلتَ.");
+    // Line by line with a delay. Typing a whole multi-line story in one burst
+    // drops keystrokes in CodeMirror and silently merges lines — a source that
+    // then compiles to something else entirely, which makes the test lie in
+    // both directions.
+    const story = [
+      "=== البداية ===",
+      "الشمس عالية والطريق طويل.",
+      "",
+      "* [امضِ] -> النهاية",
+      "",
+      "=== النهاية ===",
+      "وصلتَ.",
+    ];
+    for (let i = 0; i < story.length; i++) {
+      if (story[i]) await page.keyboard.type(story[i]!, { delay: 20 });
+      if (i < story.length - 1) {
+        await page.keyboard.press("Enter");
+        await page.waitForTimeout(100);
+      }
+    }
     await page.waitForTimeout(400);
+
+    // Guard the guard: if the lines merged, everything below is meaningless.
+    const lines = await page.$$eval(".cm-line", (els) => els.map((e) => e.textContent));
+    expect(lines, "typed source was mangled").toEqual(story);
 
     await page.locator('[data-pane-tab="player"]').click();
     await page.waitForTimeout(600);
