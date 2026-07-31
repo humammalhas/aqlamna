@@ -1,6 +1,25 @@
-// scripts/lint-colors.mjs — ensure zero hardcoded hex colours outside allowed files.
-// Allowed: aqlamna-theme.css, site/assets/aqlamna.css, runtime theme CSS files.
-// Exits 0 if clean, 1 if any hex found in any other source file.
+// scripts/lint-colors.mjs — no hardcoded hex colours in the editor's source.
+// Every colour comes from a CSS variable; the palette lives in aqlamna-theme.css.
+// Exits 0 if clean, 1 otherwise.
+//
+// This runs as `npm run lint:colors`. It used to be an inline `node -e` in
+// package.json that shelled `grep … || true` into `pwsh.exe` — and PowerShell
+// has neither `grep` nor `true`. It only ever worked when the whole npm chain
+// was launched from Git Bash, whose PATH the spawned pwsh inherited. Run
+// `npm test` from a plain PowerShell window and the suite died here, three
+// steps in, with four steps never executed. Pure Node, no shell, runs anywhere.
+//
+// SCOPE — the editor's src/ only, which is what this gate has always actually
+// enforced and what the cream-palette bug was about: 46 variables defined and
+// 189 hardcoded hex values still in the components.
+//
+// It is deliberately NOT extended to site/*.html, the exported stories or
+// scripts/. A wider scan written on 30 Jul (never wired into anything) reports
+// 164 hits there, and they are correct by design: the standalone export must
+// inline its themes because the runtime has zero dependencies (hard rule 4),
+// `<meta name="theme-color">` takes a literal hex and nothing else, and
+// scripts/replace-colors.mjs is a hex→variable mapping table. Whether any of
+// those deserve a gate of their own is Humam's call, not this script's.
 
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { resolve, dirname } from "node:path";
@@ -10,28 +29,6 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dirname, "..");
 
 const RE = /#[0-9a-fA-F]{3,8}\b/;
-const EXCLUDE = new Set([
-  "aqlamna-theme.css",
-  "aqlamna.css",
-]);
-
-// Collect files from a directory tree
-function walk(dir, exts, files = []) {
-  if (!existsSync(dir)) return files;
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    const p = resolve(dir, entry.name);
-    if (entry.isDirectory() && entry.name !== "generated") walk(p, exts, files);
-    else if (entry.isFile()) {
-      const ext = entry.name.split(".").pop();
-      if (exts.has(ext) && !EXCLUDE.has(entry.name)) {
-        // Also exclude runtime theme CSS files (in packages/runtime/src/themes/)
-        if (p.includes("packages\\runtime\\src\\themes")) continue;
-        files.push(p);
-      }
-    }
-  }
-  return files;
-}
 
 function checkFile(filePath) {
   const content = readFileSync(filePath, "utf8");
@@ -61,33 +58,16 @@ function walkEditor(dir, files = []) {
   }
   return files;
 }
-for (const f of walkEditor(editorDir)) {
+const editorFiles = walkEditor(editorDir);
+for (const f of editorFiles) {
   allViolations.push(...checkFile(f));
 }
 
-// 2. Site HTML pages — ALL of them, including generated docs
-const siteDir = resolve(root, "site");
-for (const f of walk(siteDir, new Set(["html"]))) {
-  allViolations.push(...checkFile(f));
-}
-// Verify: exit if site/docs/*.html are missing (build-docs not run)
-const docsDir = resolve(root, "site", "docs");
-if (existsSync(docsDir)) {
-  const docFiles = walk(docsDir, new Set(["html"]));
-  if (docFiles.length === 0) {
-    console.error("lint-colors: site/docs/ is empty. Run npm run build:docs first.");
-    process.exit(1);
-  }
-}
-
-// 3. Build scripts
-const scriptsDir = resolve(root, "scripts");
-for (const entry of readdirSync(scriptsDir, { withFileTypes: true })) {
-  if (!entry.isFile()) continue;
-  const p = resolve(scriptsDir, entry.name);
-  if (/\.(m?js)$/.test(entry.name)) {
-    allViolations.push(...checkFile(p));
-  }
+// A gate that scans nothing passes trivially. If the editor's source has moved
+// or the walk broke, say so instead of printing a green zero.
+if (editorFiles.length === 0) {
+  console.error(`lint-colors: scanned 0 files under ${editorDir} — nothing was checked.`);
+  process.exit(1);
 }
 
 if (allViolations.length > 0) {
@@ -95,4 +75,4 @@ if (allViolations.length > 0) {
   for (const v of allViolations) console.error(`  ${v}`);
   process.exit(1);
 }
-console.log("0 hardcoded colours");
+console.log(`0 hardcoded colours in ${editorFiles.length} editor source file(s)`);

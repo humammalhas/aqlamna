@@ -17,7 +17,7 @@
 // diff; `sourceMd5` is what the gate compares.
 // ---------------------------------------------------------------------------
 
-import { readFileSync, statSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync, statSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { relative, resolve, dirname, sep } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -112,4 +112,31 @@ export function parseProvenance(text) {
 /** Convenience: read an artifact file and return its provenance record. */
 export function readProvenance(artifactPath) {
   return parseProvenance(readFileSync(artifactPath, "utf-8"));
+}
+
+/**
+ * Write a generated artifact, but only when something other than `generatedAt`
+ * actually changed.
+ *
+ * `generatedAt` moves on every run by definition, so an unconditional write
+ * leaves the artifact dirty in `git status` after every single build. That
+ * makes "confirm every path you are about to commit is one you deliberately
+ * changed" harder to obey — and the one time nobody obeyed it, a commit
+ * silently reverted six of the reviewer's files. Churn is not free.
+ *
+ * Everything that carries meaning — the rules, the prompt, the source md5 — is
+ * still compared. Only the clock is ignored.
+ *
+ * Returns true if the file was written.
+ */
+export function writeArtifactIfChanged(path, content) {
+  // Every occurrence, not just the one in the provenance comment: rules.ts
+  // also carries `_meta.generatedAt` inside the JSON body, and stripping only
+  // the comment left the file rewriting itself on every build anyway.
+  const stripClock = (s) => s.replace(/"generatedAt":\s*"[^"]*"/g, '"generatedAt":""');
+  if (existsSync(path) && stripClock(readFileSync(path, "utf-8")) === stripClock(content)) {
+    return false;
+  }
+  writeFileSync(path, content, "utf-8");
+  return true;
 }

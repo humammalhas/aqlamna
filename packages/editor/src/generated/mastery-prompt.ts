@@ -4,7 +4,7 @@
 // Machine-readable. Verified by scripts/check-artifacts.mjs. Do not hand-edit.
 // {
 //   "generator": "packages/editor/scripts/build-mastery-prompt.mjs",
-//   "generatedAt": "2026-07-31T10:48:06.951Z",
+//   "generatedAt": "2026-07-31T10:52:50.739Z",
 //   "artifact": "packages/editor/src/generated/mastery-prompt.ts",
 //   "source": "ARABIC_MASTERY.md",
 //   "sourceModified": "2026-07-31T10:29:38.484Z",

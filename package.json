@@ -19,7 +19,7 @@
     "lint:docs-arabic": "node scripts/lint-docs-arabic.mjs",
     "build:all": "node scripts/build-all.mjs",
     "build:docs": "node scripts/build-docs.mjs",
-    "lint:colors": "node -e \"const s=require('child_process');const r=s.execSync('grep -rn \\\"#[0-9a-fA-F]\\\\{3,8\\\\}\\\" packages/editor/src --include=\\\"*.tsx\\\" --include=\\\"*.ts\\\" --include=\\\"*.css\\\" --exclude=\\\"aqlamna-theme.css\\\" --exclude-dir=generated || true',{encoding:'utf8',shell:'pwsh.exe'});if(r.trim()){console.error(r);process.exit(1)}console.log('0 hardcoded colours')\"",
+    "lint:colors": "node scripts/lint-colors.mjs",
     "deploy": "npm run build:all && npx wrangler pages deploy site --project-name=aqlamna"
   }
 }

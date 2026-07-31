@@ -22,7 +22,11 @@
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { buildProvenance, provenanceComment } from "../../../scripts/artifact-provenance.mjs";
+import {
+  buildProvenance,
+  provenanceComment,
+  writeArtifactIfChanged,
+} from "../../../scripts/artifact-provenance.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, "..");
@@ -214,12 +218,13 @@ const output = [
   "",
 ].join("\n");
 
-writeFileSync(outFile, output, "utf-8");
+const wrote = writeArtifactIfChanged(outFile, output);
 
 const masteryMd5 = prov.sourceMd5;
 
 console.log(
-  "[build-mastery-prompt] Wrote %s (%d chars, %d rules, %d pairs, %d checklist items, md5 %s)",
+  "[build-mastery-prompt] %s %s (%d chars, %d rules, %d pairs, %d checklist items, md5 %s)",
+  wrote ? "Wrote" : "Unchanged",
   outFile,
   charCount,
   qawaid.length,

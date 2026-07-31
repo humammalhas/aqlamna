@@ -22,7 +22,11 @@
 import { readFileSync, writeFileSync, statSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { buildProvenance, provenanceComment } from "../../../scripts/artifact-provenance.mjs";
+import {
+  buildProvenance,
+  provenanceComment,
+  writeArtifactIfChanged,
+} from "../../../scripts/artifact-provenance.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const MASTERY_PATH = resolve(__dirname, "..", "..", "..", "ARABIC_MASTERY.md");
@@ -401,12 +405,12 @@ const rules: RulesFile = ${JSON.stringify(output, null, 2)} as const;
 
 export default rules;
 `;
-writeFileSync(OUT_PATH, tsContent, "utf-8");
+const wrote = writeArtifactIfChanged(OUT_PATH, tsContent);
 
 const masteryMd5 = prov.sourceMd5;
 
 console.log(
-  `✓ rules.ts written — ${pairRules.length} pair, ${extraRules.length} pattern, ${advisoryRules.length} advisory (${output._meta.counts.total} total, md5 ${masteryMd5})`
+  `✓ rules.ts ${wrote ? "written" : "unchanged"} — ${pairRules.length} pair, ${extraRules.length} pattern, ${advisoryRules.length} advisory (${output._meta.counts.total} total, md5 ${masteryMd5})`
 );
 
 // ---- Message provenance ----------------------------------------------------
