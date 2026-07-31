@@ -302,7 +302,7 @@ body + "\n" +
 "      <a href=\"https://github.com/humammalhas/aqlamna/issues/new?template=idea.yml\" target=\"_blank\" rel=\"noopener\">اقترح فكرة<\/a>\n" +
 "      <a href=\"https://github.com/humammalhas/aqlamna/discussions\" target=\"_blank\" rel=\"noopener\">ناقش<\/a>\n" +
 "      <a href=\"mailto:admin@almaseer.co\">راسلنا<\/a>\n" +
-"      <a href=\"https://github.com/humammalhas/aqlamna\" target=\"_blank\" rel=\"noopener\">GPL-3.0<\/a>\n" +
+"      <a href=\"https://github.com/humammalhas/aqlamna/blob/main/LICENSE\" target=\"_blank\" rel=\"noopener\">GPL-3.0<\/a>\n" +
 "      <a href=\"/privacy\">الخصوصية<\/a>\n" +
 "      <a href=\"/terms\">الشروط<\/a>\n" +
 "    <\/nav>\n" +
