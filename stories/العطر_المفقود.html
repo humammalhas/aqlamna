@@ -571,7 +571,7 @@ html, body {
 <body>
 <div id="qalam-player"></div>
 <script id="qalam-story" type="application/json">
-{"qalam_version":"0.1","title":"العطر المفقود","author":"أقلامنا","language":"ar","direction":"rtl","start":"الدكان","variables":{"المكونات":{"type":"number","initial":0},"الثقة":{"type":"number","initial":0},"عرفت_السر":{"type":"boolean","initial":false},"حاولت_الخلط":{"type":"boolean","initial":false}},"lists":{},"passages":{"الدكان":{"tags":["مشهد_أول"],"content":[{"type":"text","value":"رفوف الخشب تصطفّ حتى السقف، وفي كلّ جرّة رائحةٌ تنتظر. المعلّم سليم يجلس وراء ميزانٍ نحاسيّ، وأمامه ورقة صفراء لا شيء عليها."},{"type":"text","value":"\"وصفة جدّتي ضاعت،\" قال دون أن يرفع عينيه. \"أعرف أنّ فيها أربعة أشياء. أذكر ثلاثة، والرابع يهرب منّي كلّما اقتربتُ.\""},{"type":"choices","items":[{"id":"choice_1","label":"اسأليه عن الثلاثة","sticky":false,"condition":null,"content":[],"divert":"الجرار"},{"id":"choice_2","label":"تأمّلي الدكّان أولًا","sticky":false,"condition":null,"content":[{"type":"text","value":"مررتِ بأصابعكِ على حرف الرفّ فتركت الغبار خطًّا رقيقًا. في الزاوية العليا جرّةٌ وحدها، لا ورقة عليها ولا اسم."},{"type":"set","var":"الثقة","op":"+=","value":1},{"type":"text","value":"\"عينكِ حادّة،\" قال. \"لكن ابدئي من الأسفل.\""}],"divert":"الجرار"}]}]},"الجرار":{"tags":[],"content":[{"type":"text","value":"فتح ثلاث جرارٍ ووضعها في الضوء."},{"type":"text","value":"\"زهر النارنج،\" قال، ورفع أولاها. رائحةٌ حمضيّة تلسع الأنف ثمّ تحلو."},{"type":"text","value":null},{"type":"text","value":"\"ماء الورد. من قطف الفجر لا من قطف الظهر.\""},{"type":"text","value":null},{"type":"text","value":"\"والعود. هذا لا يُشترى من السوق.\""},{"type":"text","value":"\"اجمعيها لي،\" قال. \"ثمّ نرى ما ينقص.\""},{"type":"divert","target":"المهمة"}]},"المهمة":{"tags":[],"content":[{"type":"conditional","condition":{"var":"المكونات","op":"==","value":0},"then":[{"type":"text","value":"الورقة الصفراء أمامكِ فارغة. لا شيء بعد."}],"else":[{"type":"conditional","condition":{"var":"المكونات","op":"\u003c","value":3},"then":[{"type":"text","value":"جمعتِ"}],"else":[{"type":"text","value":"الثلاثة أمامكِ. رائحةٌ واحدة ما زالت غائبة."}]}]},{"type":"choices","items":[{"id":"choice_1","label":"إلى سوق البخاريّة — زهر النارنج","sticky":false,"condition":null,"content":[],"divert":"السوق"},{"id":"choice_2","label":"إلى بيت جدّتكِ — ماء الورد","sticky":false,"condition":null,"content":[],"divert":"البيت"},{"id":"choice_3","label":"إلى المخزن — العود","sticky":false,"condition":null,"content":[],"divert":"المخزن"},{"id":"choice_4","label":"اخلطي العطر","sticky":true,"condition":{"var":"المكونات","op":">=","value":3},"content":[],"divert":"الخلط"},{"id":"choice_5","label":"اسألي المعلّم عن الجرّة العليا","sticky":true,"condition":{"var":"حاولت_الخلط"},"content":[],"divert":"الجرة_العليا"}]}]},"السوق":{"tags":[],"content":[{"type":"text","value":"الشمس عمودية والدرج ضيّق. صاحب الدكّان يعرف المعلّم سليم منذ أربعين سنة."},{"type":"text","value":"\"النارنج؟\" ضحك. \"خُذي من شجرة الحوش، لا من عندي. شجرتنا أطيب.\""},{"type":"text","value":"قطفتِ الزهر بيدكِ. البتلة باردة وقصيرة العمر."},{"type":"set","var":"المكونات","op":"+=","value":1},{"type":"divert","target":"المهمة"}]},"البيت":{"tags":[],"content":[{"type":"text","value":"باب البيت القديم يصرّ. في المطبخ قدرٌ نحاسيّ مقلوب، وتحته زجاجةٌ صغيرة كُتب عليها بخطّ يدٍ مائل: \"ورد ٦٧\"."},{"type":"choices","items":[{"id":"choice_1","label":"افتحيها","sticky":false,"condition":null,"content":[{"type":"text","value":"ملأت الرائحة المطبخ دفعةً واحدة، فوقفتِ مكانكِ. ورد قديم، وشيءٌ آخر تحته لم تعرفيه."},{"type":"set","var":"المكونات","op":"+=","value":1},{"type":"set","var":"الثقة","op":"+=","value":1}],"divert":"المهمة"},{"id":"choice_2","label":"خُذيها مغلقة","sticky":false,"condition":null,"content":[{"type":"text","value":"حملتِها كما هي. للمعلّم حقّ أن يفتحها هو."},{"type":"set","var":"المكونات","op":"+=","value":1},{"type":"set","var":"الثقة","op":"+=","value":1}],"divert":"المهمة"}]}]},"المخزن":{"tags":[],"content":[{"type":"text","value":"المخزن بارد ولا نافذة فيه. صندوق العود مقفل، والمفتاح عند المعلّم."},{"type":"choices","items":[{"id":"choice_1","label":"عودي واطلبي المفتاح","sticky":false,"condition":null,"content":[{"type":"text","value":"أعطاكِ المفتاح دون سؤال. القطعة أصغر من إصبعكِ وأثقل ممّا توقّعتِ."},{"type":"set","var":"المكونات","op":"+=","value":1},{"type":"set","var":"الثقة","op":"+=","value":1}],"divert":"المهمة"},{"id":"choice_2","label":"افتحي الصندوق بمفكّ","sticky":false,"condition":null,"content":[{"type":"text","value":"انكسر اللسان المعدنيّ فانفتح الصندوق. أخذتِ القطعة، وفي يدكِ برادةٌ من نحاس."},{"type":"set","var":"المكونات","op":"+=","value":1}],"divert":"المهمة"}]}]},"الخلط":{"tags":[],"content":[{"type":"text","value":"قطرتان من ماء الورد. زهر النارنج مفرومًا ناعمًا. برادة العود على النار الهادئة."},{"type":"conditional","condition":{"var":"عرفت_السر"},"then":[{"type":"text","value":"وفوقها صندل الرفّ، قليلًا."}],"else":[]},{"type":"choices","items":[{"id":"choice_1","label":"قدّمي الزجاجة للمعلّم","sticky":true,"condition":{"var":"عرفت_السر"},"content":[{"type":"text","value":"رفعها إلى النور وشمّها، فسكت طويلًا. \"هذه هي.\""}],"divert":"الخاتمة_الكاملة"},{"id":"choice_2","label":"قدّمي الزجاجة للمعلّم","sticky":true,"condition":{"not":{"var":"عرفت_السر"}},"content":[{"type":"text","value":"شمّها مرّتين ثمّ أنزلها. \"قريب،\" قال. \"قريب جدًّا. لكنّه ليس عطر جدّتي.\""},{"type":"set","var":"حاولت_الخلط","op":"=","value":true}],"divert":"بعد_الفشل"}]}]},"بعد_الفشل":{"tags":[],"content":[{"type":"text","value":"الورقة الصفراء ما زالت فارغة."},{"type":"choices","items":[{"id":"choice_1","label":"ابحثي عن الناقص","sticky":false,"condition":null,"content":[],"divert":"المهمة"},{"id":"choice_2","label":"اكتفي بهذا","sticky":false,"condition":null,"content":[],"divert":"الخاتمة_الناقصة"}]}]},"الخاتمة_الناقصة":{"tags":[],"content":[{"type":"text","value":"طوى المعلّم الورقة الفارغة ووضعها في جيبه. \"سنحاول مرّة أخرى. يومًا ما.\""},{"type":"text","value":"خرجتِ ورائحة الدكّان في كمّكِ، وفي الورقة لا شيء."},{"type":"divert","target":"END"}]},"الجرة_العليا":{"tags":[],"content":[{"type":"text","value":"سألتِه عن الجرّة التي لا اسم عليها."},{"type":"text","value":"نظر إليها كمن يتذكّر وجهًا. \"هذه ليست مكوّنًا. هذا خشب الرفّ نفسه — صندل قديم، كان أبوها يبيعه قبل أن يصير الدكّان دكّانًا.\""},{"type":"text","value":"فتحها. الرائحة رائحة الدكّان في الصباح، قبل أن يفتح الباب."},{"type":"text","value":"\"جدّتي لم تضعه في الوصفة،\" قال. \"الوصفة هي التي جلست فيه أربعين سنة.\""},{"type":"set","var":"المكونات","op":"+=","value":1},{"type":"set","var":"عرفت_السر","op":"=","value":true},{"type":"set","var":"الثقة","op":"+=","value":1},{"type":"divert","target":"المهمة"}]},"الخاتمة_الكاملة":{"tags":[],"content":[{"type":"conditional","condition":{"var":"الثقة","op":"\u003c","value":3},"then":[{"type":"text","value":"كتب المعلّم أسماء المكوّنات الأربعة على الورقة الصفراء، وطواها في جيبه."}],"else":[{"type":"text","value":"كتب المعلّم أسماء المكوّنات الأربعة على الورقة الصفراء، ثمّ دفعها إليكِ. \"اكتبي تحتها اسمكِ. من يعرف الرابع يعرف الوصفة.\""}]},{"type":"text","value":"جمعتِ "},{"type":"interpolation","var":"المكونات"},{"type":"text","value":" مكوّنات، ورائحة الدكّان لا تزال في كمّكِ."},{"type":"divert","target":"END"}]}},"metadata":{"created":"2026-07-31T15:16:00.747Z","modified":"2026-07-31T15:16:00.747Z","passage_count":11,"word_count":381}}
+{"qalam_version":"0.1","title":"العطر المفقود","author":"أقلامنا","language":"ar","direction":"rtl","start":"الدكان","variables":{"المكونات":{"type":"number","initial":0},"الثقة":{"type":"number","initial":0},"عرفت_السر":{"type":"boolean","initial":false},"حاولت_الخلط":{"type":"boolean","initial":false}},"lists":{},"passages":{"الدكان":{"tags":["مشهد_أول"],"content":[{"type":"text","value":"رفوف الخشب تصطفّ حتى السقف، وفي كلّ جرّة رائحةٌ تنتظر. المعلّم سليم يجلس وراء ميزانٍ نحاسيّ، وأمامه ورقة صفراء لا شيء عليها."},{"type":"text","value":"\"وصفة جدّتي ضاعت،\" قال دون أن يرفع عينيه. \"أعرف أنّ فيها أربعة أشياء. أذكر ثلاثة، والرابع يهرب منّي كلّما اقتربتُ.\""},{"type":"choices","items":[{"id":"choice_1","label":"اسأليه عن الثلاثة","sticky":false,"condition":null,"content":[],"divert":"الجرار"},{"id":"choice_2","label":"تأمّلي الدكّان أولًا","sticky":false,"condition":null,"content":[{"type":"text","value":"مررتِ بأصابعكِ على حرف الرفّ فتركت الغبار خطًّا رقيقًا. في الزاوية العليا جرّةٌ وحدها، لا ورقة عليها ولا اسم."},{"type":"set","var":"الثقة","op":"+=","value":1},{"type":"text","value":"\"عينكِ حادّة،\" قال. \"لكن ابدئي من الأسفل.\""}],"divert":"الجرار"}]}]},"الجرار":{"tags":[],"content":[{"type":"text","value":"فتح ثلاث جرارٍ ووضعها في الضوء."},{"type":"text","value":"\"زهر النارنج،\" قال، ورفع أولاها. رائحةٌ حمضيّة تلسع الأنف ثمّ تحلو."},{"type":"text","value":null},{"type":"text","value":"\"ماء الورد. من قطف الفجر لا من قطف الظهر.\""},{"type":"text","value":null},{"type":"text","value":"\"والعود. هذا لا يُشترى من السوق.\""},{"type":"text","value":"\"اجمعيها لي،\" قال. \"ثمّ نرى ما ينقص.\""},{"type":"divert","target":"المهمة"}]},"المهمة":{"tags":[],"content":[{"type":"conditional","condition":{"var":"المكونات","op":"==","value":0},"then":[{"type":"text","value":"الورقة الصفراء أمامكِ فارغة. لا شيء بعد."}],"else":[{"type":"conditional","condition":{"var":"المكونات","op":"\u003c","value":3},"then":[{"type":"text","value":"جمعتِ"}],"else":[{"type":"text","value":"الثلاثة أمامكِ. رائحةٌ واحدة ما زالت غائبة."}]}]},{"type":"choices","items":[{"id":"choice_1","label":"إلى سوق البخاريّة — زهر النارنج","sticky":false,"condition":null,"content":[],"divert":"السوق"},{"id":"choice_2","label":"إلى بيت جدّتكِ — ماء الورد","sticky":false,"condition":null,"content":[],"divert":"البيت"},{"id":"choice_3","label":"إلى المخزن — العود","sticky":false,"condition":null,"content":[],"divert":"المخزن"},{"id":"choice_4","label":"اخلطي العطر","sticky":true,"condition":{"var":"المكونات","op":">=","value":3},"content":[],"divert":"الخلط"},{"id":"choice_5","label":"اسألي المعلّم عن الجرّة العليا","sticky":true,"condition":{"var":"حاولت_الخلط"},"content":[],"divert":"الجرة_العليا"}]}]},"السوق":{"tags":[],"content":[{"type":"text","value":"الشمس عمودية والدرج ضيّق. صاحب الدكّان يعرف المعلّم سليم منذ أربعين سنة."},{"type":"text","value":"\"النارنج؟\" ضحك. \"خُذي من شجرة الحوش، لا من عندي. شجرتنا أطيب.\""},{"type":"text","value":"قطفتِ الزهر بيدكِ. البتلة باردة وقصيرة العمر."},{"type":"set","var":"المكونات","op":"+=","value":1},{"type":"divert","target":"المهمة"}]},"البيت":{"tags":[],"content":[{"type":"text","value":"باب البيت القديم يصرّ. في المطبخ قدرٌ نحاسيّ مقلوب، وتحته زجاجةٌ صغيرة كُتب عليها بخطّ يدٍ مائل: \"ورد ٦٧\"."},{"type":"choices","items":[{"id":"choice_1","label":"افتحيها","sticky":false,"condition":null,"content":[{"type":"text","value":"ملأت الرائحة المطبخ دفعةً واحدة، فوقفتِ مكانكِ. ورد قديم، وشيءٌ آخر تحته لم تعرفيه."},{"type":"set","var":"المكونات","op":"+=","value":1},{"type":"set","var":"الثقة","op":"+=","value":1}],"divert":"المهمة"},{"id":"choice_2","label":"خُذيها مغلقة","sticky":false,"condition":null,"content":[{"type":"text","value":"حملتِها كما هي. للمعلّم حقّ أن يفتحها هو."},{"type":"set","var":"المكونات","op":"+=","value":1},{"type":"set","var":"الثقة","op":"+=","value":1}],"divert":"المهمة"}]}]},"المخزن":{"tags":[],"content":[{"type":"text","value":"المخزن بارد ولا نافذة فيه. صندوق العود مقفل، والمفتاح عند المعلّم."},{"type":"choices","items":[{"id":"choice_1","label":"عودي واطلبي المفتاح","sticky":false,"condition":null,"content":[{"type":"text","value":"أعطاكِ المفتاح دون سؤال. القطعة أصغر من إصبعكِ وأثقل ممّا توقّعتِ."},{"type":"set","var":"المكونات","op":"+=","value":1},{"type":"set","var":"الثقة","op":"+=","value":1}],"divert":"المهمة"},{"id":"choice_2","label":"افتحي الصندوق بمفكّ","sticky":false,"condition":null,"content":[{"type":"text","value":"انكسر اللسان المعدنيّ فانفتح الصندوق. أخذتِ القطعة، وفي يدكِ برادةٌ من نحاس."},{"type":"set","var":"المكونات","op":"+=","value":1}],"divert":"المهمة"}]}]},"الخلط":{"tags":[],"content":[{"type":"text","value":"قطرتان من ماء الورد. زهر النارنج مفرومًا ناعمًا. برادة العود على النار الهادئة."},{"type":"conditional","condition":{"var":"عرفت_السر"},"then":[{"type":"text","value":"وفوقها صندل الرفّ، قليلًا."}],"else":[]},{"type":"choices","items":[{"id":"choice_1","label":"قدّمي الزجاجة للمعلّم","sticky":true,"condition":{"var":"عرفت_السر"},"content":[{"type":"text","value":"رفعها إلى النور وشمّها، فسكت طويلًا. \"هذه هي.\""}],"divert":"الخاتمة_الكاملة"},{"id":"choice_2","label":"قدّمي الزجاجة للمعلّم","sticky":true,"condition":{"not":{"var":"عرفت_السر"}},"content":[{"type":"text","value":"شمّها مرّتين ثمّ أنزلها. \"قريب،\" قال. \"قريب جدًّا. لكنّه ليس عطر جدّتي.\""},{"type":"set","var":"حاولت_الخلط","op":"=","value":true}],"divert":"بعد_الفشل"}]}]},"بعد_الفشل":{"tags":[],"content":[{"type":"text","value":"الورقة الصفراء ما زالت فارغة."},{"type":"choices","items":[{"id":"choice_1","label":"ابحثي عن الناقص","sticky":false,"condition":null,"content":[],"divert":"المهمة"},{"id":"choice_2","label":"اكتفي بهذا","sticky":false,"condition":null,"content":[],"divert":"الخاتمة_الناقصة"}]}]},"الخاتمة_الناقصة":{"tags":[],"content":[{"type":"text","value":"طوى المعلّم الورقة الفارغة ووضعها في جيبه. \"سنحاول مرّة أخرى. يومًا ما.\""},{"type":"text","value":"خرجتِ ورائحة الدكّان في كمّكِ، وفي الورقة لا شيء."},{"type":"divert","target":"END"}]},"الجرة_العليا":{"tags":[],"content":[{"type":"text","value":"سألتِه عن الجرّة التي لا اسم عليها."},{"type":"text","value":"نظر إليها كمن يتذكّر وجهًا. \"هذه ليست مكوّنًا. هذا خشب الرفّ نفسه — صندل قديم، كان أبوها يبيعه قبل أن يصير الدكّان دكّانًا.\""},{"type":"text","value":"فتحها. الرائحة رائحة الدكّان في الصباح، قبل أن يفتح الباب."},{"type":"text","value":"\"جدّتي لم تضعه في الوصفة،\" قال. \"الوصفة هي التي جلست فيه أربعين سنة.\""},{"type":"set","var":"المكونات","op":"+=","value":1},{"type":"set","var":"عرفت_السر","op":"=","value":true},{"type":"set","var":"الثقة","op":"+=","value":1},{"type":"divert","target":"المهمة"}]},"الخاتمة_الكاملة":{"tags":[],"content":[{"type":"conditional","condition":{"var":"الثقة","op":"\u003c","value":3},"then":[{"type":"text","value":"كتب المعلّم أسماء المكوّنات الأربعة على الورقة الصفراء، وطواها في جيبه."}],"else":[{"type":"text","value":"كتب المعلّم أسماء المكوّنات الأربعة على الورقة الصفراء، ثمّ دفعها إليكِ. \"اكتبي تحتها اسمكِ. من يعرف الرابع يعرف الوصفة.\""}]},{"type":"text","value":"جمعتِ "},{"type":"interpolation","var":"المكونات"},{"type":"text","value":" مكوّنات، ورائحة الدكّان لا تزال في كمّكِ."},{"type":"divert","target":"END"}]}},"metadata":{"created":"2026-07-31T15:35:25.718Z","modified":"2026-07-31T15:35:25.718Z","passage_count":11,"word_count":381}}
 </script>
 <script>
 (function () {
@@ -979,10 +979,39 @@ function deepCloneConsumed(consumed) {
 // Zero dependencies. Uses CSS logical properties only.
 // ---------------------------------------------------------------------------
 /**
+ * One button, two directions. The label names what the NEXT press will do.
+ *
+ * It replaced two buttons that were one idea split in half: both were named
+ * after storage rather than after direction, so neither said which way the
+ * reader was going, and their icons — a floppy disk and a file folder — came
+ * from an office rather than from a book. A ribbon belongs to a book.
+ *
+ * The retired strings are deliberately not quoted here. This comment is inlined
+ * verbatim into every exported story, and a grep of the shipped artifact asking
+ * "are the old buttons gone?" must not be answered by this file. That assertion
+ * lives in tests/embedded-toolbar.spec.ts, which does not ship.
+ */
+const MARK_SET = "🔖 ضع علامة";
+const MARK_RETURN = "🔖 ارجع إلى العلامة";
+function markLabel(marked) {
+    return marked ? MARK_RETURN : MARK_SET;
+}
+/**
+ * How long a confirmation stays on screen.
+ *
+ * 2000ms was too short for a line the eye is not already resting on, and that
+ * message is the only evidence the button did anything at all.
+ */
+const FEEDBACK_MS = 3500;
+/**
  * Renders a story scene into a container element.
  * Creates RTL-first DOM with choice buttons.
+ *
+ * `notice` is a confirmation belonging to the action that caused this render.
+ * Restart and "return to the mark" both rebuild the DOM, so their message
+ * cannot be written before the render — it has to be handed to it.
  */
-function renderScene(container, scene, title, options) {
+function renderScene(container, scene, title, options, notice) {
     container.innerHTML = "";
     // Story wrapper
     const wrapper = document.createElement("div");
@@ -1072,36 +1101,38 @@ function renderScene(container, scene, title, options) {
         endEl.appendChild(restartBtn);
         wrapper.appendChild(endEl);
     }
-    // Toolbar — save / restore / restart.
+    // Toolbar — bookmark / restart.
     //
     // Omitted entirely when the story is running inside a frame. An embedded
     // story is a preview of what the engine does, not somebody's reading
-    // session: there is no progress worth saving, "restore" would load a save
-    // made on a different page, and the three buttons add 69px of chrome to a
-    // box that is already shorter than its content, so their confirmations
-    // render below the fold and they read as dead.
+    // session: there is nothing worth bookmarking, a mark would be shared with
+    // whoever opens the story directly, and the buttons add chrome to a box that
+    // is already shorter than its content.
     //
     // Not an empty toolbar — no element at all, so the border, the 3rem margin
     // and the height all go with it.
-    if (!isEmbedded()) {
+    if (options.showToolbar !== false && !isEmbedded()) {
         const toolbar = document.createElement("div");
         toolbar.className = "aq-toolbar";
-        const saveBtn = document.createElement("button");
-        saveBtn.className = "aq-btn aq-save-btn";
-        saveBtn.textContent = "💾 حفظ";
-        saveBtn.addEventListener("click", () => {
-            const msg = options.onSave();
+        const markBtn = document.createElement("button");
+        markBtn.className = "aq-btn aq-mark-btn";
+        let marked = options.hasBookmark();
+        markBtn.textContent = markLabel(marked);
+        markBtn.addEventListener("click", () => {
+            // Do what the label promised, not what a fresh reading of storage says.
+            // If the mark disappeared between paint and press — another tab, a
+            // cleared browser — the reader pressed "go back to the mark"; quietly
+            // placing a new one instead is the button doing the opposite of what it
+            // said. onBookmarkReturn reports the loss and nothing moves.
+            const msg = marked ? options.onBookmarkReturn() : options.onBookmarkSet();
+            // Ask now, though, rather than assuming the press succeeded — a full disk
+            // or a blocked localStorage leaves the mark exactly where it was, and a
+            // label that flipped anyway would lie about what the NEXT press does.
+            marked = options.hasBookmark();
+            markBtn.textContent = markLabel(marked);
             showFeedback(toolbar, msg);
         });
-        const loadBtn = document.createElement("button");
-        loadBtn.className = "aq-btn aq-load-btn";
-        loadBtn.textContent = "📂 استعادة";
-        loadBtn.addEventListener("click", async () => {
-            const msg = await options.onLoad();
-            showFeedback(toolbar, msg);
-        });
-        toolbar.appendChild(saveBtn);
-        toolbar.appendChild(loadBtn);
+        toolbar.appendChild(markBtn);
         // Theme toggle button — only shown if callback is provided
         if (options.onThemeToggle) {
             const themeBtn = document.createElement("button");
@@ -1119,6 +1150,10 @@ function renderScene(container, scene, title, options) {
             toolbar.appendChild(restartBtn);
         }
         wrapper.appendChild(toolbar);
+        // The confirmation for whatever caused this render. Written after the
+        // toolbar exists, because it lives inside it.
+        if (notice)
+            showFeedback(toolbar, notice);
     }
     container.appendChild(wrapper);
 }
@@ -1136,7 +1171,20 @@ function renderScene(container, scene, title, options) {
 function isEmbedded() {
     return typeof window !== "undefined" && window.self !== window.top;
 }
+/**
+ * Show a confirmation beside the buttons.
+ *
+ * A `<span>` appended INTO `.aq-toolbar`, which is `display: flex` — so it is
+ * one more item on the same row, vertically centred by `align-self: center`.
+ * That placement is the point: the message used to be the only proof a button
+ * had done anything, and anything that pushes it onto a line of its own puts it
+ * where nobody is looking.
+ */
 function showFeedback(toolbar, msg) {
+    // "" is how a handler says "I re-rendered, the message went with the render".
+    // Appending an empty span would still shift the centred row.
+    if (!msg)
+        return;
     const old = toolbar.querySelector(".aq-feedback");
     if (old)
         old.remove();
@@ -1147,7 +1195,7 @@ function showFeedback(toolbar, msg) {
     setTimeout(() => {
         if (span.parentNode)
             span.remove();
-    }, 2000);
+    }, FEEDBACK_MS);
 }
 /**
  * Render an image output node.
@@ -1171,6 +1219,10 @@ function renderImage(node) {
 // Aqlamna runtime save/restore — localStorage + download/upload
 // Zero dependencies.
 // ---------------------------------------------------------------------------
+// The key the reader's bookmark lives under. Unchanged since the toolbar said
+// "حفظ / استعادة": one bookmark per story is the same one slot the old save
+// button wrote, so every position saved before this change is still there and
+// still reachable — it just answers to a different label now.
 const STORAGE_KEY_PREFIX = "aqlamna_save_";
 /**
  * Save game state to localStorage under a story-specific key.
@@ -1210,6 +1262,27 @@ function loadFromLocalStorage(storyTitle) {
     catch {
         return null;
     }
+}
+/**
+ * True when this story has a bookmark stored.
+ *
+ * Deliberately does NOT parse the payload: the button's label is a question
+ * about whether a slot is occupied, and a save that turns out to be corrupt is
+ * reported when the reader presses, not by silently offering the other label.
+ */
+function hasLocalSave(storyTitle) {
+    const key = STORAGE_KEY_PREFIX + sanitiseKey(storyTitle);
+    return localStorage.getItem(key) !== null;
+}
+/**
+ * Remove this story's bookmark.
+ *
+ * Returning to a mark spends it — one mark at a time is the deliberate trade,
+ * so the slot has to be emptied by the same press that consumes it.
+ */
+function clearLocalStorage(storyTitle) {
+    const key = STORAGE_KEY_PREFIX + sanitiseKey(storyTitle);
+    localStorage.removeItem(key);
 }
 /**
  * Download state as a JSON file.
@@ -1274,52 +1347,102 @@ function sanitiseKey(title) {
     // Remove unsafe characters for localStorage key
     return title.replace(/[^a-zA-Z\u0600-\u06FF0-9_-]/g, "_").slice(0, 64);
 }
+// ---------------------------------------------------------------------------
+// Aqlamna runtime — public entry point
+// mount(storyJson, element) initialises and renders the player.
+// ---------------------------------------------------------------------------
+/**
+ * Mount the runtime player into a DOM element.
+ * Handles the full game loop: start → render → choose → advance → render.
+ *
+ * This is the ONLY game loop. The standalone export used to carry a
+ * hand-written copy of it inside build-runtime.mjs, with its own onSave and
+ * onLoad — which is how "save feedback is implemented" stayed true of this file
+ * and false of every exported story for a day. The bootstrap now calls mount().
+ *
+ * Returns an unmount function that clears the element.
+ */
+function mount(storyJson, element, options = {}) {
+    const showToolbar = options.showToolbar !== false;
+    const title = storyJson.title ?? "قصة تفاعلية";
+    // Mutable engine reference — replaced on restart
+    let engine = new Engine(storyJson);
+    // Every localStorage call is guarded. A browser in private mode throws on
+    // read as well as write, and an unguarded throw here takes the whole click
+    // handler down — the reader would press the button and get nothing, which is
+    // exactly the "it looks dead" failure this work exists to remove.
+    function bookmarkExists() {
+        try {
+            return hasLocalSave(title);
+        }
+        catch {
+            return false;
+        }
+    }
+    function render(scene, notice) {
+        renderScene(element, scene, title, {
+            onChoice: (choiceId) => {
+                const next = engine.choose(choiceId);
+                render(next);
+            },
+            onRestart: () => {
+                engine = new Engine(storyJson);
+                render(engine.start(), "بدأنا القصة من جديد");
+            },
+            hasBookmark: bookmarkExists,
+            onBookmarkSet: () => {
+                try {
+                    saveToLocalStorage(title, engine.getState());
+                    return "وضعنا العلامة";
+                }
+                catch {
+                    return "تعذّر وضع العلامة";
+                }
+            },
+            onBookmarkReturn: () => {
+                let saved = null;
+                try {
+                    saved = loadFromLocalStorage(title);
+                }
+                catch {
+                    saved = null;
+                }
+                // Nothing to go back to: no re-render happened, so this message is
+                // the caller's to show. Every other path returns "".
+                if (!saved)
+                    return "تعذّرت العودة إلى العلامة";
+                // Returning to a mark spends it — clear before restoring, so a
+                // failure to clear cannot leave the reader at the mark with the
+                // button still offering to take them back to where they already are.
+                try {
+                    clearLocalStorage(title);
+                }
+                catch {
+                    return "تعذّرت العودة إلى العلامة";
+                }
+                engine.loadState(saved);
+                render(engine.start(), "رجعنا إلى العلامة");
+                return "";
+            },
+            showToolbar,
+            onThemeToggle: options.onThemeToggle,
+        }, notice);
+    }
+    // Initial render
+    render(engine.start());
+    return () => {
+        element.innerHTML = "";
+    };
+}
 
 
 // ---- Aqlamna standalone bootstrap -----------------------------------------
 (function () {
   var storyEl = document.getElementById("qalam-story");
   if (!storyEl) return;
-  var story = JSON.parse(storyEl.textContent);
-  var engine = new Engine(story);
   var root = document.getElementById("qalam-player");
   if (!root) return;
-
-  function render(scene) {
-    renderScene(root, scene, story.title, {
-      onChoice: function (choiceId) {
-        var next = engine.choose(choiceId);
-        render(next);
-      },
-      onRestart: function () {
-        engine = new Engine(story);
-        render(engine.start());
-      },
-      onSave: function () {
-        try {
-          saveToLocalStorage(story.title || "قصة", engine.getState());
-          return "تم الحفظ";
-        } catch (e) {
-          return "تعذّر الحفظ";
-        }
-      },
-      onLoad: function () {
-        try {
-          var saved = loadFromLocalStorage(story.title || "قصة");
-          if (saved) {
-            engine.loadState(saved);
-            render(engine.start());
-            return "تم التحميل";
-          }
-          return "لا يوجد حفظ محفوظ";
-        } catch (e) {
-          return "تعذّر التحميل";
-        }
-      },
-    });
-  }
-
-  render(engine.start());
+  mount(JSON.parse(storyEl.textContent), root);
 })();
 
 })();

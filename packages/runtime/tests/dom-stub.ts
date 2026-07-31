@@ -15,6 +15,9 @@ export interface FakeNode {
   alt: string;
   title: string;
   children: FakeNode[];
+  /** Set by appendChild. `remove()` and `parentNode` both need it. */
+  _parent: FakeNode | null;
+  parentNode: FakeNode | null;
   _listeners: Record<string, Array<() => void>>;
   appendChild(child: FakeNode): void;
   addEventListener(type: string, fn: () => void): void;
@@ -33,6 +36,8 @@ export function fakeCreateTextNode(text: string): FakeNode {
     alt: "",
     title: "",
     children: [],
+    _parent: null,
+    parentNode: null,
     _listeners: {},
     appendChild() {},
     addEventListener() {},
@@ -45,18 +50,44 @@ export function fakeCreateTextNode(text: string): FakeNode {
 }
 
 export function fakeCreateElement(tag: string): FakeNode {
+  const children: FakeNode[] = [];
+  let html = "";
+
   const el: FakeNode = {
     _tag: tag,
     className: "",
     textContent: "",
-    innerHTML: "",
+
+    // The real DOM discards every child when innerHTML is assigned, and
+    // renderScene opens with `container.innerHTML = ""`. A stub that kept the
+    // old children would leave a stale scene in the tree, so a test that clicks
+    // and then looks would find the PREVIOUS render — passing while the browser
+    // showed something else. Every multi-render assertion depends on this.
+    get innerHTML() {
+      return html;
+    },
+    set innerHTML(value: string) {
+      html = value;
+      children.length = 0;
+    },
+
     src: "",
     alt: "",
     title: "",
-    children: [],
+    children,
+    _parent: null,
+    // Mirrors _parent. showFeedback's timeout reads `span.parentNode` before
+    // removing, so a stub without it silently skips the removal.
+    get parentNode(): FakeNode | null {
+      return el._parent;
+    },
+    set parentNode(p: FakeNode | null) {
+      el._parent = p;
+    },
     _listeners: {},
     appendChild(child: FakeNode) {
-      this.children.push(child);
+      child._parent = el;
+      children.push(child);
     },
     addEventListener(type: string, fn: () => void) {
       (this._listeners[type] = this._listeners[type] || []).push(fn);
@@ -70,7 +101,13 @@ export function fakeCreateElement(tag: string): FakeNode {
       }
       return null;
     },
-    remove() {},
+    remove() {
+      const parent = this._parent;
+      if (!parent) return;
+      const i = parent.children.indexOf(this);
+      if (i >= 0) parent.children.splice(i, 1);
+      this._parent = null;
+    },
     click() {
       (this._listeners["click"] || []).forEach((fn) => fn());
     },
@@ -91,8 +128,18 @@ export function findButton(root: FakeNode, text: string): FakeNode | null {
   return search(root);
 }
 
-/** Collect all text content recursively. */
+/**
+ * Collect all text content recursively.
+ *
+ * A `<br>` becomes "\n". It carries no text of its own, so without this it
+ * contributes nothing and the strings on either side of it read as one run —
+ * which is exactly what a welded paragraph looks like. §1.16 puts a real line
+ * break inside a paragraph (`{"value": null}`), so the weld check has to be
+ * able to tell that apart from prose glued together, and the browser draws a
+ * line ending there.
+ */
 export function collectText(el: FakeNode): string {
+  if (el._tag === "br") return "\n";
   if (el.textContent && el.children.length === 0) return el.textContent;
   return el.children.map(collectText).join("");
 }

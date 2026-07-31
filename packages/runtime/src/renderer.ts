@@ -8,25 +8,73 @@ import type { StoryScene, AvailableChoice, OutputNode, ImageOutputNode } from ".
 export interface RendererOptions {
   /** Called when the player picks a choice. Passes the choice ID. */
   onChoice: (choiceId: string) => void;
-  /** Called when the player clicks restart. */
+  /**
+   * Restart from the first passage. Re-renders, so its confirmation reaches
+   * the reader as the NEXT render's `notice` — a message written here would be
+   * destroyed, because renderScene opens with `container.innerHTML = ""`.
+   */
   onRestart: () => void;
-  /** Called when the player clicks save. Returns the feedback message. */
-  onSave: () => string;
-  /** Called when the player clicks load. Returns the feedback message. */
-  onLoad: () => Promise<string>;
+  /** True when this story has a bookmark right now. Chooses the mark button's label. */
+  hasBookmark: () => boolean;
+  /**
+   * Place a bookmark at the current position. Does NOT re-render — nothing on
+   * screen changed — so it returns the message and the renderer shows it in place.
+   */
+  onBookmarkSet: () => string;
+  /**
+   * Return to the bookmark and spend it. Returns "" on success: it re-rendered,
+   * and the confirmation arrives as that render's `notice`. Returns a message
+   * only when there was nothing to go back to and nothing was re-rendered.
+   */
+  onBookmarkReturn: () => string;
   /** Called when the player clicks the theme toggle. */
   onThemeToggle?: () => void;
+  /** Suppress the toolbar entirely. Default true (shown). */
+  showToolbar?: boolean;
 }
+
+/**
+ * One button, two directions. The label names what the NEXT press will do.
+ *
+ * It replaced two buttons that were one idea split in half: both were named
+ * after storage rather than after direction, so neither said which way the
+ * reader was going, and their icons — a floppy disk and a file folder — came
+ * from an office rather than from a book. A ribbon belongs to a book.
+ *
+ * The retired strings are deliberately not quoted here. This comment is inlined
+ * verbatim into every exported story, and a grep of the shipped artifact asking
+ * "are the old buttons gone?" must not be answered by this file. That assertion
+ * lives in tests/embedded-toolbar.spec.ts, which does not ship.
+ */
+const MARK_SET = "🔖 ضع علامة";
+const MARK_RETURN = "🔖 ارجع إلى العلامة";
+
+function markLabel(marked: boolean): string {
+  return marked ? MARK_RETURN : MARK_SET;
+}
+
+/**
+ * How long a confirmation stays on screen.
+ *
+ * 2000ms was too short for a line the eye is not already resting on, and that
+ * message is the only evidence the button did anything at all.
+ */
+const FEEDBACK_MS = 3500;
 
 /**
  * Renders a story scene into a container element.
  * Creates RTL-first DOM with choice buttons.
+ *
+ * `notice` is a confirmation belonging to the action that caused this render.
+ * Restart and "return to the mark" both rebuild the DOM, so their message
+ * cannot be written before the render — it has to be handed to it.
  */
 export function renderScene(
   container: HTMLElement,
   scene: StoryScene,
   title: string | null,
   options: RendererOptions,
+  notice?: string,
 ): void {
   container.innerHTML = "";
 
@@ -128,39 +176,39 @@ export function renderScene(
     wrapper.appendChild(endEl);
   }
 
-  // Toolbar — save / restore / restart.
+  // Toolbar — bookmark / restart.
   //
   // Omitted entirely when the story is running inside a frame. An embedded
   // story is a preview of what the engine does, not somebody's reading
-  // session: there is no progress worth saving, "restore" would load a save
-  // made on a different page, and the three buttons add 69px of chrome to a
-  // box that is already shorter than its content, so their confirmations
-  // render below the fold and they read as dead.
+  // session: there is nothing worth bookmarking, a mark would be shared with
+  // whoever opens the story directly, and the buttons add chrome to a box that
+  // is already shorter than its content.
   //
   // Not an empty toolbar — no element at all, so the border, the 3rem margin
   // and the height all go with it.
-  if (!isEmbedded()) {
+  if (options.showToolbar !== false && !isEmbedded()) {
     const toolbar = document.createElement("div");
     toolbar.className = "aq-toolbar";
 
-    const saveBtn = document.createElement("button");
-    saveBtn.className = "aq-btn aq-save-btn";
-    saveBtn.textContent = "💾 حفظ";
-    saveBtn.addEventListener("click", () => {
-      const msg = options.onSave();
+    const markBtn = document.createElement("button");
+    markBtn.className = "aq-btn aq-mark-btn";
+    let marked = options.hasBookmark();
+    markBtn.textContent = markLabel(marked);
+    markBtn.addEventListener("click", () => {
+      // Do what the label promised, not what a fresh reading of storage says.
+      // If the mark disappeared between paint and press — another tab, a
+      // cleared browser — the reader pressed "go back to the mark"; quietly
+      // placing a new one instead is the button doing the opposite of what it
+      // said. onBookmarkReturn reports the loss and nothing moves.
+      const msg = marked ? options.onBookmarkReturn() : options.onBookmarkSet();
+      // Ask now, though, rather than assuming the press succeeded — a full disk
+      // or a blocked localStorage leaves the mark exactly where it was, and a
+      // label that flipped anyway would lie about what the NEXT press does.
+      marked = options.hasBookmark();
+      markBtn.textContent = markLabel(marked);
       showFeedback(toolbar, msg);
     });
-
-    const loadBtn = document.createElement("button");
-    loadBtn.className = "aq-btn aq-load-btn";
-    loadBtn.textContent = "📂 استعادة";
-    loadBtn.addEventListener("click", async () => {
-      const msg = await options.onLoad();
-      showFeedback(toolbar, msg);
-    });
-
-    toolbar.appendChild(saveBtn);
-    toolbar.appendChild(loadBtn);
+    toolbar.appendChild(markBtn);
 
     // Theme toggle button — only shown if callback is provided
     if (options.onThemeToggle) {
@@ -181,6 +229,10 @@ export function renderScene(
     }
 
     wrapper.appendChild(toolbar);
+
+    // The confirmation for whatever caused this render. Written after the
+    // toolbar exists, because it lives inside it.
+    if (notice) showFeedback(toolbar, notice);
   }
 
   container.appendChild(wrapper);
@@ -201,7 +253,20 @@ function isEmbedded(): boolean {
   return typeof window !== "undefined" && window.self !== window.top;
 }
 
-function showFeedback(toolbar: HTMLElement, msg: string) {
+/**
+ * Show a confirmation beside the buttons.
+ *
+ * A `<span>` appended INTO `.aq-toolbar`, which is `display: flex` — so it is
+ * one more item on the same row, vertically centred by `align-self: center`.
+ * That placement is the point: the message used to be the only proof a button
+ * had done anything, and anything that pushes it onto a line of its own puts it
+ * where nobody is looking.
+ */
+function showFeedback(toolbar: HTMLElement, msg: string): void {
+  // "" is how a handler says "I re-rendered, the message went with the render".
+  // Appending an empty span would still shift the centred row.
+  if (!msg) return;
+
   const old = toolbar.querySelector(".aq-feedback");
   if (old) old.remove();
 
@@ -212,7 +277,7 @@ function showFeedback(toolbar: HTMLElement, msg: string) {
 
   setTimeout(() => {
     if (span.parentNode) span.remove();
-  }, 2000);
+  }, FEEDBACK_MS);
 }
 
 /**

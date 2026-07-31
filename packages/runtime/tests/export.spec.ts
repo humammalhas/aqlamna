@@ -126,8 +126,15 @@ describe("exportStandalone", () => {
     const bytes = Buffer.byteLength(html, "utf-8");
     expect(bytes).toBeLessThan(100000);
 
-    expect(html).not.toMatch(/\bimport\s/);
-    expect(html).not.toMatch(/\bexport\s/);
+    // Module syntax, anchored to the start of a line — that is where an
+    // `import`/`export` statement can appear in tsc output, and it is exactly
+    // what build-runtime.mjs's stripper removes. The old test matched the WORD
+    // anywhere, so a code comment saying "the standalone export used to…" went
+    // red while the bundle was perfectly valid. Count what you mean, not what
+    // matches: the failure mode being guarded against is a bundle the browser
+    // rejects as a module, not the letters e-x-p-o-r-t in prose.
+    expect(html).not.toMatch(/^\s*import[\s{*]/m);
+    expect(html).not.toMatch(/^\s*export[\s{*]/m);
     expect(html).not.toMatch(/https:\/\//);
 
     expect(html).toContain("<!DOCTYPE html>");

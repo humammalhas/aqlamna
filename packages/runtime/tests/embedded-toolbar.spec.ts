@@ -1,10 +1,10 @@
 // ---------------------------------------------------------------------------
-// The save toolbar is hidden when the story runs inside a frame.
+// The toolbar is hidden when the story runs inside a frame.
 //
 // The landing page embeds the real exported story in a 520px iframe whose
-// content is taller than the box. The toolbar landed below the fold: all three
-// buttons worked, and every confirmation they printed rendered outside the
-// visible area, so they read as dead. A preview needs no save, restore or
+// content is taller than the box. The toolbar landed below the fold: every
+// button worked, and every confirmation they printed rendered outside the
+// visible area, so they read as dead. A preview needs no bookmark and no
 // restart — nobody's reading session is in there.
 //
 // One condition in the renderer, `window.self !== window.top`, so there is no
@@ -91,7 +91,7 @@ function toolbarButtons(player: FakeNode): string[] {
   );
 }
 
-describe("embedded stories hide the save toolbar", () => {
+describe("embedded stories hide the toolbar", () => {
   it("framed (self !== top): no toolbar element and no toolbar buttons", () => {
     const player = runBundle(framedWindow());
 
@@ -102,21 +102,27 @@ describe("embedded stories hide the save toolbar", () => {
     expect(toolbarButtons(player).length).toBe(0);
   });
 
-  it("top-level (self === top): all three buttons present", () => {
+  it("top-level (self === top): exactly two buttons — the mark and أعد", () => {
     const player = runBundle(topLevelWindow());
     const labels = toolbarButtons(player);
 
-    expect(labels.length).toBe(3);
-    expect(labels.some((l) => l.includes("حفظ"))).toBe(true);
-    expect(labels.some((l) => l.includes("استعادة"))).toBe(true);
+    expect(labels.length).toBe(2);
+    expect(labels.some((l) => l.includes("ضع علامة"))).toBe(true);
     expect(labels.some((l) => l.includes("أعد"))).toBe(true);
+
+    // The two buttons they replaced. 💾 حفظ and 📂 استعادة were one idea split
+    // in two, and both icons belonged to a filing cabinet rather than a book.
+    expect(labels.some((l) => l.includes("حفظ"))).toBe(false);
+    expect(labels.some((l) => l.includes("استعادة"))).toBe(false);
+    expect(labels.some((l) => l.includes("💾"))).toBe(false);
+    expect(labels.some((l) => l.includes("📂"))).toBe(false);
   });
 
   it("no window at all (file:// via a host with none, and our own Node tests): toolbar present", () => {
     // Fails closed the safe way: when we cannot tell, show the toolbar rather
-    // than silently stripping a reader's save buttons.
+    // than silently stripping a reader's bookmark button.
     const player = runBundle(undefined);
-    expect(toolbarButtons(player).length).toBe(3);
+    expect(toolbarButtons(player).length).toBe(2);
   });
 
   it("the story itself is unchanged when framed — only the toolbar goes", () => {

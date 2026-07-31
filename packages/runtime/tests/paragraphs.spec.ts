@@ -80,10 +80,12 @@ describe("§1.16 paragraphs — shipped bundle", () => {
     expect(paras.length).toBe(3);
 
     // Paragraph 1: three consecutive source lines, joined by <br>, not welded.
+    // collectText renders each <br> as "\n" — the run has to read as three
+    // lines here, because "no separator at all" is precisely the weld bug.
     expect(findAllByTag(paras[0]!, "br").length).toBe(2);
     expect(collectText(paras[0]!)).toBe(
-      "السطر الأول من الفقرة الأولى." +
-        "السطر الثاني من الفقرة الأولى." +
+      "السطر الأول من الفقرة الأولى.\n" +
+        "السطر الثاني من الفقرة الأولى.\n" +
         "السطر الثالث من الفقرة الأولى.",
     );
 

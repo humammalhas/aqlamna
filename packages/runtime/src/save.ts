@@ -5,6 +5,10 @@
 
 import type { StoryState } from "./types.js";
 
+// The key the reader's bookmark lives under. Unchanged since the toolbar said
+// "حفظ / استعادة": one bookmark per story is the same one slot the old save
+// button wrote, so every position saved before this change is still there and
+// still reachable — it just answers to a different label now.
 const STORAGE_KEY_PREFIX = "aqlamna_save_";
 
 /**
@@ -54,6 +58,29 @@ export function loadFromLocalStorage(
   } catch {
     return null;
   }
+}
+
+/**
+ * True when this story has a bookmark stored.
+ *
+ * Deliberately does NOT parse the payload: the button's label is a question
+ * about whether a slot is occupied, and a save that turns out to be corrupt is
+ * reported when the reader presses, not by silently offering the other label.
+ */
+export function hasLocalSave(storyTitle: string): boolean {
+  const key = STORAGE_KEY_PREFIX + sanitiseKey(storyTitle);
+  return localStorage.getItem(key) !== null;
+}
+
+/**
+ * Remove this story's bookmark.
+ *
+ * Returning to a mark spends it — one mark at a time is the deliberate trade,
+ * so the slot has to be emptied by the same press that consumes it.
+ */
+export function clearLocalStorage(storyTitle: string): void {
+  const key = STORAGE_KEY_PREFIX + sanitiseKey(storyTitle);
+  localStorage.removeItem(key);
 }
 
 /**

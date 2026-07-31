@@ -2,7 +2,7 @@ import { defineConfig } from "@playwright/test";
 
 export default defineConfig({
   testDir: "./tests",
-  testMatch: /(visual|deploy)\.spec\.ts/,
+  testMatch: /(visual|bookmark-visual|deploy)\.spec\.ts/,
   use: {
     baseURL: "http://localhost:5173",
     permissions: ["clipboard-read", "clipboard-write"],
