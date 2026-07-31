@@ -4,7 +4,7 @@
 // ---------------------------------------------------------------------------
 
 import { useStore } from "../store.js";
-import { buildStandaloneHtml, downloadHtml } from "../lib/export-html.js";
+import { exportStoryForDownload, downloadHtml } from "../lib/export-html.js";
 import SettingsPanel from "./SettingsPanel.js";
 import { useState, useCallback } from "react";
 
@@ -36,7 +36,7 @@ export default function TopBar() {
     compileSource();
   };
 
-  const handleExport = () => {
+  const handleExport = async () => {
     // Use existing compiled story if available, otherwise compile first
     let json = storyJson;
     if (!json) {
@@ -45,9 +45,15 @@ export default function TopBar() {
     }
     if (!json) return; // compilation failed
 
-    const html = buildStandaloneHtml(json);
+    const result = await exportStoryForDownload(json, "default");
+    if (result.blocked) {
+      alert(result.blockedMessage);
+      return;
+    }
+    if (!result.html) return;
+
     const baseName = (json.title ?? "قصة").replace(/[<>:"/\\|?*]/g, "_");
-    downloadHtml(html, `${baseName}.html`);
+    downloadHtml(result.html, `${baseName}.html`);
   };
 
   return (

@@ -7,6 +7,7 @@
 
 import { RUNTIME_BUNDLE, DARK_THEME_CSS, LIGHT_THEME_CSS, BOOK_THEME_CSS } from "../generated/runtime-bundle.js";
 import type { StoryJSON } from "@aqlamna/runtime";
+import { loadImage, formatBudget, getBudgetStatus, formatBytes } from "./image-db.js";
 
 export type PlayerTheme = "dark" | "light" | "book";
 
@@ -122,4 +123,57 @@ export function downloadHtml(html: string, filename: string): void {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+}
+
+// ---- Budget-aware export ---------------------------------------------------
+
+export interface ExportResult {
+  html: string | null;
+  blocked: boolean;
+  blockedMessage: string | null;
+}
+
+/** Inlines stored images into the story JSON and exports, checking the budget. */
+export async function exportStoryForDownload(
+  storyJson: StoryJSON,
+  projectId: string,
+): Promise<ExportResult> {
+  // If the story has declared images, inline them from IndexedDB
+  const images: Record<string, { alt: string; data?: string }> = {};
+  const storyImages = (storyJson as unknown as Record<string, unknown>).images as
+    | Record<string, { alt: string; data?: string }>
+    | undefined;
+
+  if (storyImages) {
+    for (const [name, decl] of Object.entries(storyImages)) {
+      const stored = await loadImage(projectId, name);
+      if (stored) {
+        images[name] = { alt: decl.alt, data: stored.dataUrl };
+      } else {
+        images[name] = { alt: decl.alt };
+      }
+    }
+  }
+
+  // Budget check
+  const status = await getBudgetStatus(projectId);
+  if (status.isBlocked) {
+    const top = status.largest.slice(0, 3);
+    const topNames = top.map((i) => `${i.name} (${formatBytes(i.bytes)})`).join("، ");
+    return {
+      html: null,
+      blocked: true,
+      blockedMessage:
+        `لا يمكن التصدير: حجم الصور (${formatBudget(status.totalBytes)}) تجاوز الحد الأقصى (${formatBudget(2_000_000)}).\n` +
+        `أكبر الصور: ${topNames}\n` +
+        `احذف صورة أو أكثر من IndexedDB ثم حاول مجددًا.`,
+    };
+  }
+
+  // Build story JSON with inlined images
+  const exported: Record<string, unknown> = { ...storyJson };
+  exported.images = images;
+
+  const html = buildStandaloneHtml(exported as unknown as StoryJSON);
+  return { html, blocked: false, blockedMessage: null };
 }
