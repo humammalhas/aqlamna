@@ -76,9 +76,15 @@ li { margin-block: 0.35rem; }
 
 /* ---- Inline ---- */
 strong { color: var(--aq-text); }
-code { background: var(--aq-code-bg); color: var(--aq-accent); padding: 0.1em 0.35em; border-radius: 0.25rem; font-family: "Courier New", monospace; font-size: 0.9em; }
-pre { background: var(--aq-code-bg); border: 1px solid var(--aq-code-border); border-radius: 0.5rem; padding: 1rem 1.15rem; margin-block: 1rem; overflow-x: auto; direction: rtl; text-align: start; }
-pre code { background: none; color: var(--aq-text); padding: 0; font-size: 0.9375rem; line-height: 1.8; white-space: pre-wrap; display: block; }
+code { background: var(--aq-code-bg); color: var(--aq-accent); padding: 0.1em 0.35em; border-radius: 0.25rem; font-family: "Courier New", monospace; font-size: 0.9em; unicode-bidi: isolate; }
+pre { background: var(--aq-code-bg); border: 1px solid var(--aq-code-border); border-radius: 0.5rem; padding: 1rem 1.15rem; margin-block: 1rem; overflow-x: auto; overflow-wrap: break-word; max-inline-size: 100%; direction: rtl; text-align: start; }
+pre code { background: none; color: var(--aq-text); padding: 0; font-size: 0.9375rem; line-height: 1.8; white-space: pre-wrap; unicode-bidi: isolate; display: block; }
+
+/* An ASCII run inside RTL code — `->`, `>=`, `[`, `TITLE:` — is bidi-neutral
+   and resolves right-to-left, painting `->` as `<-`. The generators wrap each
+   run in <span dir="ltr">; this makes the span an isolate so the run keeps its
+   own direction instead of inheriting the surrounding RTL. */
+pre span[dir="ltr"], code span[dir="ltr"] { unicode-bidi: isolate; }
 
 /* ---- Tables ---- */
 table { inline-size: 100%; border-collapse: collapse; margin-block: 1.25rem; font-size: 0.9375rem; }

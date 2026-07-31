@@ -1,38 +1,27 @@
 // ---------------------------------------------------------------------------
-// Bidi isolation ViewPlugin — wraps operator/symbol runs in mark decorations
-// with `direction: ltr; unicode-bidi: isolate` so that `>=` renders as typed
-// and is not mirrored/reordered by the browser's bidi algorithm.
+// Bidi isolation ViewPlugin — wraps every run of printable ASCII in a mark
+// decoration with `direction: ltr; unicode-bidi: isolate`, so operators render
+// as typed instead of being reordered by the browser's bidi algorithm.
+//
+// The previous version isolated ONE CHARACTER AT A TIME. Two adjacent isolates
+// are themselves reordered by the surrounding RTL paragraph, so `->` became
+// `-` and `>` in separate isolates and painted as `<-`. Isolating the whole
+// run is the fix: the run keeps its internal LTR order.
+//
+// The same rule is implemented for generated HTML in scripts/bidi-isolate.mjs.
+// tests/bidi-pattern.spec.ts asserts the two patterns are identical.
 // ---------------------------------------------------------------------------
 
 import { ViewPlugin, Decoration, type DecorationSet } from "@codemirror/view";
 import { type EditorState, RangeSetBuilder } from "@codemirror/state";
 
-// ---- Operators / symbols to isolate ----------------------------------------
-
 /**
- * Multi-character operators matched first so they are isolated as one unit.
- * Order matters: longer patterns before shorter ones.
+ * A maximal run of printable ASCII (U+0021–U+007E): `->`, `->->`, `<-`, `!=`,
+ * `>=`, `<=`, `==`, `===`, `**`, `[`, `]`, `.qalam`, `TITLE:`, digits.
+ * Anything Arabic, and every space, ends the run — so Arabic keeps its own
+ * direction and only the ASCII is pinned LTR.
  */
-const MULTI_CHAR_OPS = [
-  ">=", "<=", "==", "!=",
-  "->->",
-  "**",
-  "===",
-] as const;
-
-/** Single-character symbols isolated individually. */
-const SINGLE_CHAR_SYMBOLS = /[><=~{}\[\]+\-*]/g;
-
-// Build a combined regex: multi-char patterns alternated, then single-char.
-const OPS_PATTERN = new RegExp(
-  [
-    ...MULTI_CHAR_OPS.map((op) => op.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")),
-    ".",
-  ].join("|"),
-  "g",
-);
-
-// ---- Decoration ------------------------------------------------------------
+export const ASCII_RUN_SOURCE = "[!-~]+";
 
 const bidiMark = Decoration.mark({
   attributes: {
@@ -40,30 +29,19 @@ const bidiMark = Decoration.mark({
   },
 });
 
-// ---- ViewPlugin ------------------------------------------------------------
-
 function computeDecorations(state: EditorState): DecorationSet {
   const builder = new RangeSetBuilder<Decoration>();
   const doc = state.doc.toString();
+  // A fresh regex per call: a shared /g regex carries lastIndex between calls
+  // and silently skips matches on the second pass.
+  const pattern = new RegExp(ASCII_RUN_SOURCE, "g");
 
   let match: RegExpExecArray | null;
-  OPS_PATTERN.lastIndex = 0;
-  while ((match = OPS_PATTERN.exec(doc)) !== null) {
-    const text = match[0];
-    // Only isolate if the text matches a known operator pattern
-    if (isOperatorText(text)) {
-      builder.add(match.index, match.index + text.length, bidiMark);
-    }
+  while ((match = pattern.exec(doc)) !== null) {
+    builder.add(match.index, match.index + match[0].length, bidiMark);
   }
 
   return builder.finish();
-}
-
-function isOperatorText(s: string): boolean {
-  return (
-    MULTI_CHAR_OPS.includes(s as (typeof MULTI_CHAR_OPS)[number]) ||
-    SINGLE_CHAR_SYMBOLS.test(s)
-  );
 }
 
 const bidiPlugin = ViewPlugin.fromClass(
@@ -74,7 +52,11 @@ const bidiPlugin = ViewPlugin.fromClass(
       this.decorations = computeDecorations(view.state);
     }
 
-    update(update: { state: EditorState; docChanged: boolean; viewportChanged: boolean }) {
+    update(update: {
+      state: EditorState;
+      docChanged: boolean;
+      viewportChanged: boolean;
+    }) {
       if (update.docChanged || update.viewportChanged) {
         this.decorations = computeDecorations(update.state);
       }

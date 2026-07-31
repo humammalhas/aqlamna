@@ -14,7 +14,7 @@ You own everything you write and export using Aqlamna. Al-Maseer claims no right
 
 Aqlamna is free software licensed under GPL-3.0. Anyone may use, study, modify, and redistribute it under that licence.
 
-Full licence text: [LICENSE](https://github.com/almaseer/aqlamna/blob/main/LICENSE)
+Full licence text: [LICENSE](https://github.com/humammalhas/aqlamna/blob/main/LICENSE)
 
 ## No warranty
 

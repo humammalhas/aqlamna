@@ -123,6 +123,13 @@ export default function CodeEditorPane() {
         EditorView.contentAttributes.of({ dir: "rtl" }),
         EditorView.perLineTextDirection.of(true),
 
+        // Wrap long lines. Without this .cm-line is `white-space: pre`, so a
+        // 1052px line sat in a 462px column and the only way to read the end
+        // of it was a horizontal scrollbar at the bottom of a 3439px scroller
+        // — unreachable while looking at line 2. `ARABIC_MASTERY.md` showed as
+        // `TERY.md`.
+        EditorView.lineWrapping,
+
         // Core editing
         lineNumbers(),
         highlightActiveLine(),

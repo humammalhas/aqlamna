@@ -11,6 +11,7 @@
 import { readFileSync, writeFileSync, mkdirSync, readdirSync } from "node:fs";
 import { resolve, dirname, basename } from "node:path";
 import { fileURLToPath } from "node:url";
+import { isolateAscii } from "./bidi-isolate.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dirname, "..");
@@ -43,7 +44,7 @@ function inline(text) {
   });
   s = s.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
   s = s.replace(/(^|[^*])\*([^*\n]+)\*/g, "$1<em>$2</em>");
-  s = s.replace(/\u0000(\d+)\u0000/g, (_, i) => `<code>${esc(codes[Number(i)])}</code>`);
+  s = s.replace(/\u0000(\d+)\u0000/g, (_, i) => `<code>${isolateAscii(esc(codes[Number(i)]))}</code>`);
   return s;
 }
 
@@ -60,6 +61,17 @@ function renderTable(rows) {
     .map((r) => `<tr>${r.map((c) => `<td>${inline(c)}</td>`).join("")}</tr>`)
     .join("\n");
   return `<table><thead><tr>${th}</tr></thead><tbody>\n${tb}\n</tbody></table>`;
+}
+
+/**
+ * Drop the leading `# Title` line from a markdown body.
+ *
+ * The legal pages render that title in the hero AND render the body below it,
+ * so /privacy and /terms each shipped two <h1> elements saying the same thing.
+ * One document, one top-level heading.
+ */
+function stripLeadingTitle(md) {
+  return md.replace(/^﻿?\s*#\s+.*(\r\n?|\n)/, "");
 }
 
 function toHtml(md) {
@@ -81,8 +93,11 @@ function toHtml(md) {
       while (i < lines.length && !/^```/.test(lines[i])) buf.push(lines[i++]);
       i++;
       const cls = lang ? ` class="lang-${esc(lang)}"` : "";
-      // code is LTR-neutral but contains Arabic — keep it RTL-readable, isolate operators
-      out.push(`<pre${cls}><code>${esc(buf.join("\n"))}</code></pre>`);
+      // The block stays RTL so Arabic reads normally; every ASCII run inside it
+      // is wrapped in an LTR isolate so `->` does not paint as `<-`.
+      out.push(
+        `<pre${cls}><code>${isolateAscii(esc(buf.join("\n")))}</code></pre>`,
+      );
       continue;
     }
 
@@ -186,9 +201,11 @@ const STYLE = `
  code{font-family:"Courier New",monospace;font-size:.9em;
    padding:.1em .35em;border-radius:.25rem;unicode-bidi:isolate}
  pre{border:1px solid;border-radius:.5rem;
-   padding:1rem 1.15rem;margin-block:1rem;overflow-x:auto;direction:rtl;text-align:start}
+   padding:1rem 1.15rem;margin-block:1rem;overflow-x:auto;overflow-wrap:break-word;
+   max-inline-size:100%;direction:rtl;text-align:start}
  pre code{background:none;padding:0;font-size:.9375rem;line-height:1.8;
-   white-space:pre-wrap;unicode-bidi:plaintext;display:block}
+   white-space:pre-wrap;unicode-bidi:isolate;display:block}
+ pre span[dir=ltr],code span[dir=ltr]{unicode-bidi:isolate}
  blockquote{border-inline-start:3px solid;
    padding:.75rem 1rem;margin-block:1rem;border-radius:0 .35rem .35rem 0}
  table{inline-size:100%;border-collapse:collapse;margin-block:1.25rem;font-size:.9375rem}
@@ -196,7 +213,16 @@ const STYLE = `
  th{font-weight:700}
  footer{margin-block-start:3.5rem;padding-block-start:1.25rem;border-block-start:1px solid;
    font-size:.875rem;display:flex;flex-wrap:wrap;gap:.75rem 1.25rem}
- @media(max-width:34rem){html{font-size:1rem}nav.top .home{inline-size:100%;margin-block-end:.5rem}}
+ table{display:block;overflow-x:auto;max-inline-size:100%}
+ @media(max-width:40rem){
+  html{font-size:1rem}
+  .wrap{padding-inline:1.125rem}
+  nav.top .home{inline-size:100%;margin-block-end:.5rem}
+  nav.top a,footer a{display:inline-flex;align-items:center;justify-content:center;
+   min-block-size:44px;min-inline-size:44px;flex-shrink:0}
+  h1{font-size:1.5rem}
+  footer{gap:.5rem 1rem}
+ }
 `.trim();
 
 /** Site-level legal page — matches site/index.html look, not the dark docs theme. */
@@ -237,6 +263,13 @@ function legalPage(title, body) {
 ".site-footer nav{display:flex;flex-wrap:wrap;justify-content:center;gap:1.5rem;margin-block-end:1rem}\n" +
 ".site-footer a{text-decoration:none}\n" +
 ".version{text-align:center;font-size:.9375rem;margin-block-end:2rem}\n" +
+"@media(max-width:40rem){\n" +
+" .page{padding-inline:1.125rem;padding-block:1.25rem}\n" +
+" .hero{padding-block:2rem 1rem}\n" +
+" .hero-title{font-size:1.75rem}\n" +
+" .site-footer nav{gap:.5rem 1rem}\n" +
+" .site-footer a,.back-link a,.english-link a{display:inline-flex;align-items:center;min-block-size:44px}\n" +
+"}\n" +
 "  <\/style>\n" +
 "</head>\n" +
 "<body>\n" +
@@ -344,7 +377,7 @@ for (const file of sources) {
     // Map: الخصوصية.md → privacy.html, الشروط.md → terms.html
     const engFile = { "الخصوصية.md": "privacy.html", "الشروط.md": "terms.html" }[file];
     const actualOut = resolve(root, "site", engFile);
-    const html = legalPage(title, toHtml(md));
+    const html = legalPage(title, toHtml(stripLeadingTitle(md)));
     writeFileSync(actualOut, html, "utf8");
     console.log(`  docs → site/${engFile}  (${html.length} bytes)`);
     count++;

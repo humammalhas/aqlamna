@@ -4,6 +4,7 @@
 import { cpSync, existsSync, mkdirSync, rmSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { isolateAscii } from "./bidi-isolate.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dirname, "..");
@@ -123,7 +124,11 @@ function generateDemoHtml(qalamPath) {
     }
   }
 
-  const sourceBlock = escHtml(header + "\n\n" + sourceLines.join("\n"));
+  // ASCII runs get an LTR isolate so `->` does not paint as `<-`.
+  // See scripts/bidi-isolate.mjs.
+  const sourceBlock = isolateAscii(
+    escHtml(header + "\n\n" + sourceLines.join("\n")),
+  );
   const proseBlock = proseLines.map((p) => `<p class="loop-prose">${escHtml(p)}</p>`).join("\n");
   const choiceButtons = choiceLabels.map((l) => `            <button disabled>${escHtml(l)}</button>`).join("\n");
 
