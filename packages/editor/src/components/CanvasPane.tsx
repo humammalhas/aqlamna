@@ -207,18 +207,40 @@ function CanvasPaneInner() {
     return () => container.removeEventListener("keydown", handleKeyDown);
   }, [nodes, source, setSource]);
 
-  // Double-click empty canvas → prompt for new passage name
-  const handlePaneDoubleClick = useCallback(
-    (_event: React.MouseEvent) => {
+  // Double-click empty canvas → prompt for new passage name.
+  //
+  // This lived as `onDoubleClick={...}` on <ReactFlow>, and it never once ran.
+  // Double-clicking the canvas did nothing at all, for as long as the feature
+  // has been written down as done.
+  //
+  // Measured, not guessed: native CAPTURE listeners on `.react-flow` and on
+  // `.react-flow__pane` both fire on the double-click, so the event is
+  // certainly there — and `window.prompt` still never opened. React 18 attaches
+  // one root listener at `#root` and synthesises from there, so anything inside
+  // React Flow that calls `stopPropagation()` on the way up takes React's
+  // listener with it, and every `onDoubleClick` prop on every ancestor,
+  // including the container, goes silent together. Moving the prop up the tree
+  // does not help; it has to be a NATIVE listener in the capture phase, which
+  // runs before anything inside can stop anything.
+  //
+  // A double-click on a CARD belongs to PassageNode's inline rename.
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    const onDoubleClick = (event: MouseEvent) => {
+      if ((event.target as HTMLElement).closest(".react-flow__node")) return;
       const name = window.prompt("اسم المقطع الجديد:");
       if (!name || name.trim().length === 0) return;
       const newSource = appendNewPassage(source, name.trim());
-      if (newSource !== source) {
-        setSource(newSource);
-      }
-    },
-    [source, setSource],
-  );
+      if (newSource !== source) setSource(newSource);
+    };
+    container.addEventListener("dblclick", onDoubleClick, true);
+    return () => container.removeEventListener("dblclick", onDoubleClick, true);
+    // `ready` is a dependency even though the body never reads it: the
+    // container does not exist until it flips, and `source` alone does not
+    // change at that moment, so without it the effect runs once against a null
+    // ref and never runs again.
+  }, [ready, source, setSource]);
 
   // Fit view button
   const { fitView } = useReactFlow();
@@ -277,7 +299,6 @@ function CanvasPaneInner() {
         onNodeClick={handleNodeClick}
         onConnect={handleConnect}
         onNodeDragStop={handleNodeDragStop}
-        onDoubleClick={handlePaneDoubleClick}
         nodeTypes={nodeTypes}
         defaultEdgeOptions={defaultEdgeOptions}
         fitView
