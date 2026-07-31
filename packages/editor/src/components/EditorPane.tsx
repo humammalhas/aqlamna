@@ -24,7 +24,7 @@ const headerButtonStyle: React.CSSProperties = {
 };
 
 export default function EditorPane() {
-  // On a phone these two buttons live in the top bar's ⋯ menu instead; the
+  // On a phone these two buttons live in the top bar's ☰ menu instead; the
   // header row has no space for them next to the AI control.
   const isPhone = useBreakpoint() === "phone";
 

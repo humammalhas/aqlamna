@@ -2,7 +2,7 @@
 // Story actions shared by the editor pane header and the phone overflow menu.
 //
 // One implementation, two call sites. On phone these two buttons move out of
-// the pane header and into the top bar's ⋯ menu; hand-copying them there is
+// the pane header and into the top bar's ☰ menu; hand-copying them there is
 // how a handler goes stale in one place and nobody notices.
 // ---------------------------------------------------------------------------
 

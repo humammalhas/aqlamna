@@ -2,7 +2,7 @@
 // TopBar.
 //
 //   desktop / tablet  title, pane toggles, ❓, ⚙️ الإعدادات, ▶ شغّل, ⬇ تصدير
-//   phone             أقلامنا, ⚙️ الإعدادات and a ⋯ overflow menu
+//   phone             أقلامنا, ⚙️ الإعدادات and a ☰ overflow menu
 //
 // At 390px the old bar had scrollWidth 592 in clientWidth 390 while the page
 // itself did not scroll, so ⬇ تصدير and ▶ شغّل sat at NEGATIVE x — rendered,
@@ -153,7 +153,7 @@ export default function TopBar({ breakpoint, maxPanes }: Props) {
           maxInlineSize: "100%",
           // NOT `overflow: hidden`. It was here to stop the bar overflowing
           // sideways at 390px, but it also clipped every dropdown to the
-          // header's 61px height: the ⋯ menu opened 281px tall and only its
+          // header's 61px height: the ☰ menu opened 281px tall and only its
           // top 5px was ever painted, so the button looked dead — on the
           // phone AND on desktop, where it took the docs links with it.
           // Horizontal containment comes from the flex layout below plus
@@ -324,13 +324,13 @@ export default function TopBar({ breakpoint, maxPanes }: Props) {
             <div style={{ position: "relative" }} ref={moreRef}>
               <button
                 onClick={() => setShowMore((v) => !v)}
-                title="المزيد"
-                aria-label="المزيد"
+                title="القائمة"
+                aria-label="القائمة"
                 aria-expanded={showMore}
                 aria-haspopup="menu"
                 style={iconButtonStyle}
               >
-                ⋯
+                ☰
               </button>
               {showMore && (
                 <div role="menu" style={dropdownStyle}>

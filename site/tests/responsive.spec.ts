@@ -336,7 +336,7 @@ test.describe("editor layout", () => {
 
     // A tab is not a button. "run" has to be a control you can SEE, in the
     // same place it appears when the phone is rotated past 640px — and
-    // الإعدادات stays visible beside it rather than being buried in ⋯.
+    // الإعدادات stays visible beside it rather than being buried in ☰.
     const run = page.locator("header [data-run-button]");
     await expect(run).toBeVisible();
     await expect(run).toContainText("شغّل");
@@ -416,13 +416,13 @@ test.describe("editor layout", () => {
   // A menu that opens behind a clipping ancestor is indistinguishable from a
   // dead button. Both of these were broken by an `overflow: hidden` on the
   // header and no test noticed, because no test had ever opened a menu.
-  test("phone: the ⋯ menu actually opens, fully visible", async ({ page }) => {
+  test("phone: the ☰ menu actually opens, fully visible", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await skipOnboarding(page);
     await page.goto("/editor/", { waitUntil: "networkidle" });
     await page.waitForTimeout(500);
 
-    await page.getByRole("button", { name: "المزيد" }).click();
+    await page.getByRole("button", { name: "القائمة" }).click();
     await page.waitForTimeout(300);
 
     const menu = page.locator('[role="menu"]');
