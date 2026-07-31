@@ -321,30 +321,8 @@ export const LM_STUDIO: ProviderConfig = {
   imageModel: null,
 };
 
-export const CUSTOM: ProviderConfig = {
-  id: "custom",
-  displayName: "Custom (OpenAI-compatible)",
-  nameAr: "مخصص (متوافق مع OpenAI)",
-  kind: "openai-compatible",
-  baseUrl: "",
-  supportsCustomBaseUrl: true,
-  isLocal: true,
-  requiresKey: false,
-  models: ["custom-model"],
-  defaultModel: "custom-model",
-  keyAcquisitionUrl: "",
-  pricingInfo: "Your own endpoint",
-  pricingInfoAr: "نقطة النهاية الخاصة بك",
-  hasFreeTier: true,
-  browserCors: "local",
-  corsNoteAr: "يجب أن يسمح خادمك بالاتصال من أصل هذا الموقع (CORS).",
-  instructionsEn:
-    "Enter the base URL of any OpenAI-compatible API server.\nThe server must support POST /v1/chat/completions and allow this site's origin.\nAdd an API key if your server requires authentication.\nType the model name you want to use.",
-  instructionsAr:
-    "أدخل رابط أي خادم API متوافق مع OpenAI.\nيجب أن يدعم الخادم POST /v1/chat/completions ويسمح بأصل هذا الموقع.\nأضف مفتاح API إذا كان خادمك يتطلب مصادقة.\nاكتب اسم النموذج الذي تريد استخدامه.",
-  supportsImages: false,
-  imageModel: null,
-};
+// CUSTOM provider removed — orphaned localStorage key handled by getProviderSafe() fallback
+
 
 export const ALL_OPENAI_COMPATIBLE: ProviderConfig[] = [
   DEEPSEEK,
@@ -356,7 +334,7 @@ export const ALL_OPENAI_COMPATIBLE: ProviderConfig[] = [
   OPENROUTER,
 ];
 
-export const ALL_LOCAL: ProviderConfig[] = [OLLAMA, LM_STUDIO, CUSTOM];
+export const ALL_LOCAL: ProviderConfig[] = [OLLAMA, LM_STUDIO];
 
 export const ALL_PROVIDERS: ProviderConfig[] = [
   ...ALL_OPENAI_COMPATIBLE,

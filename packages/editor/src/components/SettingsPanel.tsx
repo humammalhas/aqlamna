@@ -18,6 +18,10 @@ import {
   setCustomBaseUrl,
   getEffectiveModel,
   getEffectiveBaseUrl,
+  getImageProviderId,
+  setImageProviderId,
+  getImageProvider,
+  getImageApiKey,
 } from "../lib/ai-keys.js";
 import {
   ALL_PROVIDERS,
@@ -28,10 +32,13 @@ import { getRulesMeta } from "@aqlamna/linter";
 import { useStore } from "../store.js";
 
 // Providers where the model field accepts any free-text ID.
-const ANY_MODEL_IDS = new Set(["openrouter", "lmstudio", "custom"]);
+const ANY_MODEL_IDS = new Set(["openrouter", "lmstudio"]);
 
 // Cloud providers: everything that is NOT local.
 const CLOUD_PROVIDERS = ALL_PROVIDERS.filter((p) => !ALL_LOCAL.includes(p));
+
+// Providers that support image generation.
+const IMAGE_PROVIDERS = ALL_PROVIDERS.filter((p) => p.supportsImages);
 
 export interface SettingsPanelProps {
   open: boolean;
@@ -46,6 +53,11 @@ export default function SettingsPanel({ open, onClose }: SettingsPanelProps) {
   const [model, setModel] = useState("");
   const [baseUrl, setBaseUrl] = useState("");
   const [saved, setSaved] = useState(false);
+
+  // Image provider state (independent from text provider)
+  const [imageProvId, setImageProvId] = useState(getImageProviderId());
+  const [imageKey, setImageKey] = useState(getImageApiKey() ?? "");
+  const [imageSaved, setImageSaved] = useState(false);
 
   // Load current values when modal opens or provider changes
   useEffect(() => {
@@ -233,6 +245,95 @@ export default function SettingsPanel({ open, onClose }: SettingsPanelProps) {
             />
           </>
         )}
+
+        {/* ---- Image provider ---- */}
+        <div
+          style={{
+            marginBlockStart: "1.5rem",
+            paddingBlockStart: "1rem",
+            borderBlockStart: "1px solid var(--aq-surface-hi)",
+          }}
+        >
+          <SectionLabel>🖼️ مزوّد الصور</SectionLabel>
+          <div style={{ fontSize: "0.75rem", color: "var(--aq-muted)", marginBlockEnd: "0.5rem" }}>
+            منفصل عن مزوّد النصوص. الكتابة بديب سيك والرسم بتوجيذر هو الإعداد المتوقّع.
+          </div>
+
+          <ProviderGrid>
+            {IMAGE_PROVIDERS.map((p) => (
+              <ProviderCard
+                key={p.id}
+                provider={p}
+                selected={imageProvId === p.id}
+                onClick={() => {
+                  setImageProviderId(p.id);
+                  setImageProvId(p.id);
+                  setImageKey(getApiKey(p.id) ?? "");
+                  setImageSaved(false);
+                }}
+              />
+            ))}
+          </ProviderGrid>
+
+          {IMAGE_PROVIDERS.find((p) => p.id === imageProvId)?.requiresKey && (
+            <>
+              <SectionLabel>مفتاح API للصور</SectionLabel>
+              <input
+                type="password"
+                value={imageKey}
+                onChange={(e) => setImageKey(e.target.value)}
+                placeholder="sk-..."
+                style={{ ...inputStyle, direction: "ltr", fontFamily: "monospace" }}
+              />
+              <div style={{ display: "flex", gap: "0.5rem", marginBlockStart: "0.5rem" }}>
+                <button
+                  onClick={() => {
+                    const prov = IMAGE_PROVIDERS.find((p) => p.id === imageProvId);
+                    if (prov) {
+                      setApiKey(prov.id, imageKey);
+                      setImageSaved(true);
+                      setTimeout(() => setImageSaved(false), 2000);
+                    }
+                  }}
+                  style={saveBtnStyle}
+                >
+                  حفظ مفتاح الصور
+                </button>
+                <button
+                  onClick={() => {
+                    const prov = IMAGE_PROVIDERS.find((p) => p.id === imageProvId);
+                    if (prov) {
+                      clearApiKey(prov.id);
+                      setImageKey("");
+                      setImageSaved(true);
+                      setTimeout(() => setImageSaved(false), 2000);
+                    }
+                  }}
+                  style={clearBtnStyle}
+                >
+                  مسح
+                </button>
+                {imageSaved && (
+                  <span
+                    style={{
+                      fontSize: "0.8125rem",
+                      color: "var(--aq-success)",
+                      alignSelf: "center",
+                    }}
+                  >
+                    ✓ حُفظ
+                  </span>
+                )}
+              </div>
+            </>
+          )}
+
+          {!IMAGE_PROVIDERS.find((p) => p.id === imageProvId)?.requiresKey && (
+            <div style={{ ...noteStyle, marginBlockStart: "0.5rem" }}>
+              💡 هذا المزوّد لا يحتاج مفتاح API لتوليد الصور.
+            </div>
+          )}
+        </div>
 
         {/* ---- Editor theme ---- */}
         <EditorThemeToggle />
