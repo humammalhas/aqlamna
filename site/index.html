@@ -9,8 +9,12 @@
   <meta property="og:description" content="أول محرك قصص تفاعلية مبني للعربية من الأساس. اكتب، شغّل، وصدّر قصصك في ملف واحد يعمل دون اتصال.">
   <meta property="og:image" content="/assets/icon-512.png">
   <meta property="og:type" content="website">
+  <!-- The 512×512 PNG used to be linked here as a favicon candidate. It is a
+       manifest icon and an og:image, not a tab icon, and offering it to the
+       favicon picker invited browsers to download 472KB to paint 16 CSS px.
+       favicon.ico now carries 16/32/48 in 5,807 bytes. -->
   <link rel="icon" href="/assets/favicon.ico" sizes="any">
-  <link rel="icon" type="image/png" sizes="512x512" href="/assets/icon-512.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/icon-32.png">
   <title>أقلامنا — محرك القصص التفاعلية بالعربية</title>
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
@@ -21,6 +25,9 @@
    the one thing a visitor can click — further down; it used to be at y=1759 on
    a 1280x800 viewport, two and a half screens below anything actionable. */
 .hero{text-align:center;padding-block:1.75rem 1rem}
+/* <picture> is inline by default, so `margin-inline:auto` on the <img> inside
+   it centres nothing. The wrapper has to be the block box. */
+.hero-picture{display:block}
 .hero-logo{display:block;max-inline-size:132px;block-size:auto;margin-inline:auto;margin-block-end:1rem}
 .hero-title{font-size:2.25rem;font-weight:700}
 .hero-subtitle{font-size:1.125rem;max-inline-size:32rem;margin-inline:auto}
@@ -143,13 +150,25 @@
   <main class="page">
     <!-- Hero -->
     <header class="hero">
-      <img
-        class="hero-logo"
-        src="/assets/logo-transparent.png"
-        alt="شعار أقلامنا"
-        width="132"
-        height="132"
-      >
+      <!-- The 823px master used to be served here verbatim: 1,196,544 bytes to
+           paint 132 CSS px, 99% of this page's first-paint weight. Derived by
+           scripts/build-images.mjs; WebP first, PNG for the browsers without
+           it, 1× and 2×. width/height stay at the CSS size so the layout does
+           not shift while it loads. -->
+      <picture class="hero-picture">
+        <source
+          type="image/webp"
+          srcset="/assets/logo-132.webp 1x, /assets/logo-264.webp 2x"
+        >
+        <img
+          class="hero-logo"
+          src="/assets/logo-132.png"
+          srcset="/assets/logo-132.png 1x, /assets/logo-264.png 2x"
+          alt="شعار أقلامنا"
+          width="132"
+          height="132"
+        >
+      </picture>
       <h1 class="hero-title">أقلامنا</h1>
       <p class="hero-subtitle">
         أول محرك قصص تفاعلية مبني للعربية من الأساس — لغة برمجة نصية، محرر بصري،

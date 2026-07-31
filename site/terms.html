@@ -6,14 +6,16 @@
   <meta name="theme-color" content="#1a1713">
   <meta name="description" content="شروط الاستخدام — أقلامنا">
   <link rel="icon" href="/assets/favicon.ico" sizes="any">
-  <link rel="icon" type="image/png" sizes="512x512" href="/assets/icon-512.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/icon-32.png">
   <title>شروط الاستخدام — أقلامنا</title>
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="stylesheet" href="/assets/aqlamna.css">
   <style>
 .page{inline-size:100%;max-inline-size:48rem;padding-inline:1.5rem;padding-block:2rem}
 .hero{text-align:center;padding-block:3rem 1.5rem}
-.hero-logo{display:block;max-inline-size:100px;margin-inline:auto;margin-block-end:1.5rem}
+/* <picture> is inline, so an <img> inside it cannot centre itself. */
+.hero-picture{display:block}
+.hero-logo{display:block;max-inline-size:100px;block-size:auto;margin-inline:auto;margin-block-end:1.5rem}
 .hero-title{font-size:2.25rem;font-weight:700}
 .prose{max-inline-size:40rem;margin-inline:auto}
 .prose p{line-height:1.85;margin-block:.85rem;font-size:1.0625rem}
@@ -43,7 +45,7 @@
 <body>
   <main class="page reading-page">
     <header class="hero">
-      <a href="/"><img class="hero-logo" src="/assets/logo-transparent.png" alt="شعار أقلامنا" width="100" height="100"></a>
+      <a href="/"><picture class="hero-picture"><source type="image/webp" srcset="/assets/logo-132.webp 1x, /assets/logo-264.webp 2x"><img class="hero-logo" src="/assets/logo-132.png" srcset="/assets/logo-132.png 1x, /assets/logo-264.png 2x" alt="شعار أقلامنا" width="100" height="100"></picture></a>
       <h1 class="hero-title">شروط الاستخدام</h1>
       <p class="version">الإصدار 1.0 — 30 تموز 2026</p>
     </header>

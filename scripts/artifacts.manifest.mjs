@@ -111,8 +111,12 @@ export const BUILD_DIRS = [
     dir: "packages/editor/public",
     claims: [
       {
-        kind: "source",
-        note: "brand assets copied in by hand; Vite serves them verbatim",
+        // These were hand-copied masters — the same 472KB icon and 185KB
+        // favicon the landing page served, shipped a second time under
+        // /editor/. They are now derived, so there is one producer and the two
+        // copies cannot drift.
+        kind: "explicit",
+        producer: "scripts/build-images.mjs",
         paths: ["apple-touch-icon.png", "favicon.ico", "icon-192.png", "icon-512.png"],
       },
     ],
@@ -129,13 +133,23 @@ export const BUILD_DIRS = [
       {
         kind: "explicit",
         producer: "scripts/build-site.mjs",
+        paths: ["العطر_المفقود.html"],
+      },
+      {
+        // Derived from brand/ at the size they are actually displayed. The
+        // logo used to be the 823px master served verbatim for a 132px slot.
+        kind: "explicit",
+        producer: "scripts/build-images.mjs",
         paths: [
-          "العطر_المفقود.html",
+          "assets/logo-132.webp",
+          "assets/logo-264.webp",
+          "assets/logo-132.png",
+          "assets/logo-264.png",
           "assets/icon-512.png",
           "assets/icon-192.png",
+          "assets/icon-32.png",
           "assets/apple-touch-icon.png",
           "assets/favicon.ico",
-          "assets/logo-transparent.png",
         ],
       },
       {
@@ -265,7 +279,15 @@ export const STALENESS = [
  * silence a sweep: a new build output belongs in BUILD_DIRS as a real claim.
  */
 export const RETIRED = [
-  // Empty, and it should stay that way. Six entries lived here for exactly one
+  // Empty, and it should stay that way.
+  //
+  // site/assets/logo-transparent.png passed through here on 31 Jul 2026 — the
+  // 823px, 1,196,544-byte master that build-site.mjs used to copy in and
+  // index.html served into a 132px slot. scripts/build-images.mjs replaced it
+  // with logo-{132,264}.{webp,png} and the owner approved the deletion in the
+  // same session, which is how long an entry here is supposed to live.
+  //
+  // Six other entries lived here for exactly one
   // session — the four packages/runtime/dist/export.* files orphaned when
   // 6c99553 excluded src/export.ts from the tsconfig, and the rules.md5 /
   // mastery-prompt.md5 sidecars that the in-artifact provenance replaced. All

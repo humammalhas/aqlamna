@@ -22,5 +22,8 @@
     "build:docs": "node scripts/build-docs.mjs",
     "lint:colors": "node scripts/lint-colors.mjs",
     "deploy": "npm run build:all && npx wrangler pages deploy site --project-name=aqlamna"
+  },
+  "devDependencies": {
+    "sharp": "^0.35.3"
   }
 }

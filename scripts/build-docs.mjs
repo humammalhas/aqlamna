@@ -239,14 +239,16 @@ function legalPage(title, body) {
 "  <meta name=\"theme-color\" content=\"#1a1713\">\n" +
 "  <meta name=\"description\" content=\"" + esc(title) + " — أقلامنا\">\n" +
 "  <link rel=\"icon\" href=\"/assets/favicon.ico\" sizes=\"any\">\n" +
-"  <link rel=\"icon\" type=\"image/png\" sizes=\"512x512\" href=\"/assets/icon-512.png\">\n" +
+"  <link rel=\"icon\" type=\"image/png\" sizes=\"32x32\" href=\"/assets/icon-32.png\">\n" +
 "  <title>" + esc(title) + " — أقلامنا</title>\n" +
 "  <link rel=\"manifest\" href=\"/manifest.webmanifest\">\n" +
 "  <link rel=\"stylesheet\" href=\"/assets/aqlamna.css\">\n" +
 "  <style>\n" +
 ".page{inline-size:100%;max-inline-size:48rem;padding-inline:1.5rem;padding-block:2rem}\n" +
 ".hero{text-align:center;padding-block:3rem 1.5rem}\n" +
-".hero-logo{display:block;max-inline-size:100px;margin-inline:auto;margin-block-end:1.5rem}\n" +
+"/* <picture> is inline, so an <img> inside it cannot centre itself. */\n" +
+".hero-picture{display:block}\n" +
+".hero-logo{display:block;max-inline-size:100px;block-size:auto;margin-inline:auto;margin-block-end:1.5rem}\n" +
 ".hero-title{font-size:2.25rem;font-weight:700}\n" +
 ".prose{max-inline-size:40rem;margin-inline:auto}\n" +
 ".prose p{line-height:1.85;margin-block:.85rem;font-size:1.0625rem}\n" +
@@ -276,7 +278,13 @@ function legalPage(title, body) {
 "<body>\n" +
 "  <main class=\"page reading-page\">\n" +
 "    <header class=\"hero\">\n" +
-"      <a href=\"/\"><img class=\"hero-logo\" src=\"/assets/logo-transparent.png\" alt=\"شعار أقلامنا\" width=\"100\" height=\"100\"><\/a>\n" +
+// Same derived assets as the landing page — 100px display, so the 132/264 pair
+// covers 1x and 2x here too. This link used to be the 1,196,544-byte master,
+// which meant every legal and docs page paid for it as well.
+"      <a href=\"/\"><picture class=\"hero-picture\">" +
+"<source type=\"image/webp\" srcset=\"/assets/logo-132.webp 1x, /assets/logo-264.webp 2x\">" +
+"<img class=\"hero-logo\" src=\"/assets/logo-132.png\" srcset=\"/assets/logo-132.png 1x, /assets/logo-264.png 2x\" alt=\"شعار أقلامنا\" width=\"100\" height=\"100\">" +
+"<\/picture><\/a>\n" +
 "      <h1 class=\"hero-title\">" + esc(title) + "<\/h1>\n" +
 "      <p class=\"version\">الإصدار 1.0 — 30 تموز 2026<\/p>\n" +
 "    <\/header>\n" +
@@ -321,7 +329,7 @@ function page(title, navHtml, body) {
 <meta name="theme-color" content="#F6F1E7">
 <meta name="description" content="${esc(title)} — توثيق أقلامنا، محرك القصص التفاعلية بالعربية.">
 <link rel="icon" href="/assets/favicon.ico" sizes="any">
-<link rel="icon" type="image/png" sizes="512x512" href="/assets/icon-512.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/icon-32.png">
 <title>${esc(title)} — أقلامنا</title>
 <link rel="stylesheet" href="/assets/aqlamna.css"><style>${STYLE}</style>
 </head>

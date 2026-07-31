@@ -305,6 +305,112 @@ test.describe("Preview tabs", () => {
   });
 });
 
+// ---------------------------------------------------------------------------
+// Image weight. The hero was the 823px master, 1,196,544 bytes, served into a
+// 132px slot — 99% of this page's first-paint bytes, and invisible to every
+// check the project had, because a correct-looking <img> is still a correct
+// -looking <img> at any file size.
+// ---------------------------------------------------------------------------
+
+test.describe("Image weight", () => {
+  test("no image on first paint is larger than 64KB", async ({ page }) => {
+    const images: Array<{ url: string; bytes: number }> = [];
+    // Match on BOTH the content-type and the extension. Filtering on
+    // content-type alone made this test pass by seeing nothing at all, because
+    // the local server had no .webp entry in its MIME table.
+    page.on("response", async (r) => {
+      const path = decodeURIComponent(new URL(r.url()).pathname);
+      const type = r.headers()["content-type"] ?? "";
+      if (!type.startsWith("image/") && !/\.(png|webp|jpe?g|gif|ico|avif)$/i.test(path)) return;
+      try {
+        images.push({ url: path, bytes: (await r.body()).length });
+      } catch { /* body already gone — a redirect or an abort */ }
+    });
+
+    await page.goto("/", { waitUntil: "networkidle" });
+
+    // Not an arbitrary budget: 64KB is comfortably above every asset this page
+    // now fetches and far below anything that could be an unscaled master.
+    const tooBig = images.filter((i) => i.bytes > 64 * 1024);
+    expect(
+      tooBig,
+      `oversized: ${tooBig.map((i) => `${i.url} ${i.bytes}B`).join(", ")}`,
+    ).toEqual([]);
+    expect(images.length, "no images loaded at all — the check proved nothing").toBeGreaterThan(0);
+  });
+
+  test("the hero serves a pre-scaled asset, not the 823px master", async ({ page }) => {
+    await page.goto("/", { waitUntil: "networkidle" });
+
+    const hero = await page.evaluate(() => {
+      const img = document.querySelector<HTMLImageElement>(".hero-logo")!;
+      const r = img.getBoundingClientRect();
+      return {
+        currentSrc: new URL(img.currentSrc).pathname,
+        intrinsic: [img.naturalWidth, img.naturalHeight],
+        css: [Math.round(r.width), Math.round(r.height)],
+        loaded: img.complete && img.naturalWidth > 0,
+        // <picture> is inline; the wrapper has to be the block box or the logo
+        // stops being centred.
+        pictureDisplay: getComputedStyle(img.parentElement!).display,
+        hasWebpSource: !!document.querySelector('.hero-picture source[type="image/webp"]'),
+      };
+    });
+
+    expect(hero.loaded).toBe(true);
+    // Chromium takes the WebP source. A DPR-1 context gets the 1× entry.
+    expect(hero.currentSrc).toMatch(/\/assets\/logo-(132|264)\.(webp|png)$/);
+    expect(hero.intrinsic[0], `intrinsic width ${hero.intrinsic[0]}`).toBeLessThanOrEqual(264);
+    expect(hero.css).toEqual([132, 132]);
+    expect(hero.hasWebpSource).toBe(true);
+    expect(hero.pictureDisplay).toBe("block");
+  });
+
+  test("favicon.ico is small enough to be a favicon", async ({ request }) => {
+    const res = await request.get("/assets/favicon.ico");
+    expect(res.status()).toBe(200);
+    const body = await res.body();
+
+    // It was 185,557 bytes: six entries up to 256×256, downloaded on every page
+    // view to paint 16 CSS px in a tab strip.
+    expect(body.length, `favicon.ico is ${body.length} bytes`).toBeLessThan(16 * 1024);
+
+    // Still a valid multi-size ICO, not a stub.
+    expect(body.readUInt16LE(0)).toBe(0); // reserved
+    expect(body.readUInt16LE(2)).toBe(1); // type: icon
+    const count = body.readUInt16LE(4);
+    expect(count).toBeGreaterThanOrEqual(3);
+    const sizes: number[] = [];
+    for (let i = 0; i < count; i++) {
+      const o = 6 + i * 16;
+      sizes.push(body[o] === 0 ? 256 : body[o]!);
+      const len = body.readUInt32LE(o + 8);
+      const off = body.readUInt32LE(o + 12);
+      // Every entry must be a real PNG payload inside the file.
+      expect(off + len).toBeLessThanOrEqual(body.length);
+      expect(body.subarray(off, off + 8).toString("hex")).toBe("89504e470d0a1a0a");
+    }
+    expect(sizes).toContain(16);
+    expect(sizes).toContain(32);
+  });
+
+  test("no page still links the 823px master", async ({ request }) => {
+    const pages = ["/", "/privacy.html", "/terms.html", "/docs/%D8%A7%D9%84%D9%85%D8%B1%D8%AC%D8%B9.html"];
+    for (const p of pages) {
+      const res = await request.get(p);
+      expect(res.status(), p).toBe(200);
+      const html = await res.text();
+      expect(html, `${p} still references logo-transparent.png`).not.toContain("logo-transparent.png");
+      // The 512 icon is a manifest icon and an og:image, not a favicon
+      // candidate — offering it to the favicon picker invited a 472KB download
+      // to paint 16 CSS px.
+      expect(html, `${p} offers icon-512 as a favicon`).not.toMatch(
+        /rel="icon"[^>]*icon-512\.png/,
+      );
+    }
+  });
+});
+
 test.describe("One name per thing", () => {
   test("the landing page says مخطط, and تتبّع survives only as 'tracking'", async ({ page }) => {
     await page.goto("/");

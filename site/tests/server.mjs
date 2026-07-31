@@ -17,6 +17,10 @@ const MIME = {
   ".mjs": "text/javascript; charset=utf-8",
   ".json": "application/json; charset=utf-8",
   ".png": "image/png",
+  // Without this the hero's WebP went out as application/octet-stream. Chrome
+  // sniffs the bytes and renders it anyway, so the page looked right — while
+  // any check that filters responses by content-type saw no images at all.
+  ".webp": "image/webp",
   ".ico": "image/x-icon",
   ".svg": "image/svg+xml",
   ".webmanifest": "application/manifest+json",
