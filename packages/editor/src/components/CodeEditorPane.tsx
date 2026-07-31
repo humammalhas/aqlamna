@@ -106,6 +106,7 @@ const editorTheme = EditorView.theme(
 export default function CodeEditorPane() {
   const source = useStore((s) => s.source);
   const setSource = useStore((s) => s.setSource);
+  const markEngaged = useStore((s) => s.markEngaged);
   const cursorJump = useStore((s) => s.cursorJump);
   const clearCursorJump = useStore((s) => s.clearCursorJump);
 
@@ -157,9 +158,19 @@ export default function CodeEditorPane() {
 
         // Sync editor → store
         EditorView.updateListener.of((update) => {
-          if (update.docChanged) {
-            setSource(update.state.doc.toString());
-          }
+          if (!update.docChanged) return;
+          setSource(update.state.doc.toString());
+
+          // Typing counts as engagement; the store→editor sync below does not.
+          // Without the user-event check, loading a saved story from IndexedDB
+          // would look exactly like the writer typing it.
+          const typed = update.transactions.some(
+            (tr) =>
+              tr.isUserEvent("input") ||
+              tr.isUserEvent("delete") ||
+              tr.isUserEvent("move"),
+          );
+          if (typed) markEngaged();
         }),
       ],
       parent: containerRef.current,

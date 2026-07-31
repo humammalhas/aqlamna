@@ -8,6 +8,7 @@ import { compile } from "@aqlamna/core";
 import type { StoryJSON } from "@aqlamna/runtime";
 import { saveSource } from "./lib/db.js";
 import { getViewMode, setViewMode as persistViewMode, type ViewMode } from "./lib/canvas-db.js";
+import { isEngaged, setEngaged } from "./lib/install.js";
 
 function loadPane(key: string, def: boolean): boolean {
   try { const v = localStorage.getItem(key); return v === null ? def : v === "1"; }
@@ -162,6 +163,16 @@ export interface EditorStore {
   editorTheme: EditorTheme;
   toggleEditorTheme: () => void;
 
+  /**
+   * True once the writer has actually done something — typed into the editor
+   * or played their story. The install offer waits for this, so it is never
+   * the first thing a visitor is asked.
+   */
+  engaged: boolean;
+
+  /** Record a real user action. Idempotent, and remembered across visits. */
+  markEngaged: () => void;
+
   /** Cursor jump request from canvas → CodeMirror. */
   cursorJump: { name: string; nonce: number } | null;
 
@@ -193,6 +204,10 @@ export const useStore = create<EditorStore>((set, get) => ({
   compileSource: () => {
     const { source } = get();
     if (source.trim().length === 0) return;
+
+    // Playing a story is a real action — it is only ever reached from ▶ شغّل,
+    // export, or an AI action, never from a page load.
+    get().markEngaged();
 
     try {
       const result = compile(source, "editor.qalam") as unknown as StoryJSON;
@@ -305,6 +320,14 @@ export const useStore = create<EditorStore>((set, get) => ({
     set({ editorTheme: next });
     saveEditorTheme(next);
     document.documentElement.setAttribute("data-theme", next);
+  },
+
+  engaged: isEngaged(),
+
+  markEngaged: () => {
+    if (get().engaged) return;
+    set({ engaged: true });
+    setEngaged();
   },
 
   cursorJump: null,

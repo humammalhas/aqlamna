@@ -17,6 +17,7 @@ import EditorPane from "./components/EditorPane.js";
 import PlayerPane from "./components/PlayerPane.js";
 import CanvasPane from "./components/CanvasPane.js";
 import ErrorStrip from "./components/ErrorStrip.js";
+import InstallPrompt from "./components/InstallPrompt.js";
 import OnboardingOverlay from "./components/OnboardingOverlay.js";
 
 // ---- Pane widths persisted in localStorage ----
@@ -270,6 +271,9 @@ export default function App() {
           })}
         </div>
       )}
+
+      {/* Above the tab bar, below the panes: a bar the writer can ignore. */}
+      <InstallPrompt />
 
       {isPhone && (
         // Bottom, not top — that is where thumbs are.
