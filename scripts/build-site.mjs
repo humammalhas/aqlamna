@@ -64,27 +64,39 @@ if (!existsSync(story)) {
 copyFile(story, resolve(site, "العطر_المفقود.html"));
 console.log("✓ site/العطر_المفقود.html");
 
-// 3. Brand assets → site/assets/
-// icon-192 and icon-512 are referenced by /manifest.webmanifest, whose scope
-// is the whole site — so they must exist at /assets/, not only under /editor/.
-// The manifest previously pointed at paths that 404'd, which is one reason
-// the app was never installable.
-const brandAssets = [
-  ["icon-512.png", "icon-512.png"],
-  ["icon-192.png", "icon-192.png"],
-  ["icon-180.png", "apple-touch-icon.png"],
-  ["favicon.ico", "favicon.ico"],
-  ["logo-transparent.png", "logo-transparent.png"],
+// 3. Images
+//
+// These used to be copied here straight from brand/, at full master size: a
+// 1,196,544-byte logo for a 132px slot, a 472,685-byte 512px icon, and a
+// 185,557-byte favicon.ico. scripts/build-images.mjs now derives every one of
+// them, and runs as step 1 of build:all because Vite copies its output out of
+// packages/editor/public/ during the editor build.
+//
+// This script only checks they arrived. A missing icon is silent everywhere
+// else: Chrome refuses to install a PWA whose manifest names a path that 404s
+// and never says why.
+const requiredImages = [
+  "logo-132.webp",
+  "logo-264.webp",
+  "logo-132.png",
+  "logo-264.png",
+  "icon-512.png",
+  "icon-192.png",
+  "icon-32.png",
+  "apple-touch-icon.png",
+  "favicon.ico",
 ];
-for (const [from, to] of brandAssets) {
-  const src = resolve(root, "brand", from);
-  if (!existsSync(src)) {
-    console.error("brand asset not found:", src);
+for (const name of requiredImages) {
+  const p = resolve(site, "assets", name);
+  if (!existsSync(p)) {
+    console.error(
+      `site/assets/${name} is missing — run \`node scripts/build-images.mjs\` ` +
+        "(step 1 of npm run build:all).",
+    );
     process.exit(1);
   }
-  copyFile(src, resolve(site, "assets", to));
-  console.log(`✓ site/assets/${to}`);
 }
+console.log(`✓ site/assets/ — ${requiredImages.length} derived images present`);
 
 // Every icon the manifest names must actually resolve, or Chrome silently
 // refuses to install and never says why.
@@ -357,19 +369,25 @@ function renderMapSvg(nodes, edges) {
   // One arrow per ordered pair. The story diverts to الجرار twice from the same
   // passage and the canvas draws both, one exactly on top of the other; a still
   // picture gains nothing from the overdraw.
+  //
+  // NUL joins the two names because a passage name may contain a space, so a
+  // space separator would let "أ ب" -> "ج" and "أ" -> "ب ج" collide. It must be
+  // written as a six-character escape and never as a literal 0x00 byte: this
+  // file shipped with four raw NULs in it for one commit, which made git,
+  // grep and every diff tool treat a JavaScript source file as binary.
   const seen = new Set();
   const pairs = [];
   for (const e of edges) {
     if (!box.has(e.source) || !box.has(e.target)) continue;
-    const key = `${e.source} ${e.target}`;
+    const key = `${e.source}\u0000${e.target}`;
     if (seen.has(key)) continue;
     seen.add(key);
     pairs.push({ source: e.source, target: e.target });
   }
   const both = new Set(
     pairs
-      .filter((p) => seen.has(`${p.target} ${p.source}`))
-      .map((p) => `${p.source} ${p.target}`),
+      .filter((p) => seen.has(`${p.target}\u0000${p.source}`))
+      .map((p) => `${p.source}\u0000${p.target}`),
   );
 
   const arrows = pairs.map((p) => {
@@ -378,7 +396,7 @@ function renderMapSvg(nodes, edges) {
     // A two-way pair (المهمّة ⇄ السوق) would otherwise trace one line twice.
     // Bow the two apart by sign of the name comparison, so the choice is
     // deterministic and each direction always takes the same side.
-    const bow = both.has(`${p.source} ${p.target}`) ? (p.source < p.target ? 11 : -11) : 0;
+    const bow = both.has(`${p.source}\u0000${p.target}`) ? (p.source < p.target ? 11 : -11) : 0;
     const goingLeft = t.x + t.w / 2 < s.x + s.w / 2;
     const sx = goingLeft ? s.x : s.x + s.w;
     const tx = goingLeft ? t.x + t.w : t.x;
