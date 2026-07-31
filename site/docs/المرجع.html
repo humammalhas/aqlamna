@@ -101,7 +101,9 @@
   <span dir="ltr">-&gt;</span> تابع</code></pre>
 <h3 id="خيار-دائم">خيار دائم <code><span dir="ltr">+</span></code></h3>
 <p>يبقى متاحًا مهما استخدمه القارئ:</p>
-<pre class="lang-qalam"><code><span dir="ltr">+</span> <span dir="ltr">[</span>عد للخلف<span dir="ltr">]</span>
+<pre class="lang-qalam"><code><span dir="ltr">===</span> البداية <span dir="ltr">===</span>
+
+<span dir="ltr">+</span> <span dir="ltr">[</span>عد للخلف<span dir="ltr">]</span>
   تعود أدراجك<span dir="ltr">.</span>
   <span dir="ltr">-&gt;</span> البداية</code></pre>
 <h3 id="خيار-بدون-نص-منفصل">خيار بدون نص منفصل</h3>
@@ -110,14 +112,20 @@
   <span dir="ltr">-&gt;</span> الممر</code></pre>
 <h3 id="خيارات-متداخلة">خيارات متداخلة</h3>
 <p>داخل الخيار يمكن أن يكون هناك خيارات فرعية بالعلامة <code><span dir="ltr">**</span></code>:</p>
-<pre class="lang-qalam"><code><span dir="ltr">*</span> <span dir="ltr">[</span>افتح الباب<span dir="ltr">]</span>
+<pre class="lang-qalam"><code><span dir="ltr">===</span> البداية <span dir="ltr">===</span>
+
+<span dir="ltr">*</span> <span dir="ltr">[</span>افتح الباب<span dir="ltr">]</span>
   الباب مقفل<span dir="ltr">.</span>
   <span dir="ltr">**</span> <span dir="ltr">[</span>ابحث عن المفتاح<span dir="ltr">]</span>
      وجدت المفتاح تحت السجادة<span dir="ltr">.</span>
      <span dir="ltr">-&gt;</span> الممر
   <span dir="ltr">**</span> <span dir="ltr">[</span>حاول كسر الباب<span dir="ltr">]</span>
      الباب متين جدًا<span dir="ltr">.</span>
-     <span dir="ltr">-&gt;</span> البداية</code></pre>
+     <span dir="ltr">-&gt;</span> البداية
+
+<span dir="ltr">===</span> الممر <span dir="ltr">===</span>
+
+الممر طويل ومظلم<span dir="ltr">.</span></code></pre>
 <p><strong>ملاحظة:</strong> النص بعد <code><span dir="ltr">[</span> <span dir="ltr">]</span></code> في الخيار الأساسي يظهر كله قبل الخيارات المتداخلة.</p>
 <hr>
 <h2 id="الانتقالات">الانتقالات</h2>
@@ -135,7 +143,9 @@
 <span dir="ltr">-&gt;</span> <span dir="ltr">END</span></code></pre>
 <h3 id="تابع-و-DONE"><code>تابع</code> و <code><span dir="ltr">DONE</span></code></h3>
 <p>لا يغير المقطع — يُبقي القارئ في نفس المكان (مفيد مع الخيارات التي لا تنتقل):</p>
-<pre class="lang-qalam"><code><span dir="ltr">*</span> <span dir="ltr">[</span>انظر حولك<span dir="ltr">]</span>
+<pre class="lang-qalam"><code><span dir="ltr">===</span> الغرفة <span dir="ltr">===</span>
+
+<span dir="ltr">*</span> <span dir="ltr">[</span>انظر حولك<span dir="ltr">]</span>
   لا ترى شيئًا جديدًا<span dir="ltr">.</span>
   <span dir="ltr">-&gt;</span> تابع</code></pre>
 <hr>
@@ -201,33 +211,81 @@
 <hr>
 <h2 id="الخيوط">الخيوط</h2>
 <p>دمج محتوى من مقاطع متعددة في مقطع واحد:</p>
-<pre><code><span dir="ltr">===</span> السوق <span dir="ltr">===</span>
+<pre class="lang-qalam"><code><span dir="ltr">===</span> السوق <span dir="ltr">===</span>
 
 الأصوات تملأ المكان<span dir="ltr">.</span>
 
 <span dir="ltr">&lt;-</span> بائع<span dir="ltr">_</span>الفاكهة
-<span dir="ltr">&lt;-</span> بائع<span dir="ltr">_</span>التوابل</code></pre>
-<p>العلامة <code><span dir="ltr">&lt;-</span></code> تسحب محتوى مقطع آخر إلى هذا الموضع. (هذه الخاصية قيد التطوير.)</p>
+<span dir="ltr">&lt;-</span> بائع<span dir="ltr">_</span>التوابل
+
+<span dir="ltr">===</span> بائع<span dir="ltr">_</span>الفاكهة <span dir="ltr">===</span>
+
+كومة رمّان أمام رجل عجوز<span dir="ltr">.</span>
+
+<span dir="ltr">===</span> بائع<span dir="ltr">_</span>التوابل <span dir="ltr">===</span>
+
+أكياس مفتوحة، كل واحد بلون<span dir="ltr">.</span></code></pre>
+<p>العلامة <code><span dir="ltr">&lt;-</span></code> تسحب محتوى مقطع آخر إلى هذا الموضع.</p>
+<p><strong>حدّ معروف — اقرأه قبل أن تستعمل الخيوط.</strong> الدمج يتوقّف عند أوّل مقطع مسحوب فيه خيارات. كل ما بعده يختفي في صمت: بقيّة أسطر <code><span dir="ltr">&lt;-</span></code>، ونصّ المقطع المضيف نفسه إن كان مكتوبًا بعدها.</p>
+<p>في المثال أعلاه، إذا كان في <code>بائع<span dir="ltr">_</span>الفاكهة</code> خيار واحد، فالقارئ يرى نصّ السوق ثم نصّ بائع الفاكهة وخياره — ولا يرى <code>بائع<span dir="ltr">_</span>التوابل</code> إطلاقًا. وإذا كان في المقطعين المسحوبين خيارات معًا، فخيارات الثاني لا تظهر ولا يمكن الوصول إليها، لأنّ ترقيم الخيارات يبدأ من جديد في كل مقطع فيتصادم الرقمان.</p>
+<p>الاستعمال الآمن اليوم: اسحب مقاطع <strong>نصّية فقط</strong>، واكتب خيارات المقطع المضيف فيه مباشرة. مقاطع النصّ تُدمج واحدًا بعد الآخر بلا مشكلة.</p>
 <hr>
-<h2 id="التعابير-الحسابية">التعابير الحسابية</h2>
-<pre class="lang-qalam"><code><span dir="ltr">~</span> المجموع <span dir="ltr">=</span> س <span dir="ltr">+</span> ص
-<span dir="ltr">~</span> الناتج <span dir="ltr">=</span> س <span dir="ltr">*</span> ٢
-<span dir="ltr">~</span> الباقي <span dir="ltr">=</span> س ٪ ٣</code></pre>
-<p><strong>العمليات:</strong> <code><span dir="ltr">+</span></code>, <code><span dir="ltr">-</span></code>, <code><span dir="ltr">*</span></code>, <code><span dir="ltr">/</span></code>, <code><span dir="ltr">%</span></code> (أو <code>٪</code>)</p>
+<h2 id="الحساب-في-الإسناد">الحساب في الإسناد</h2>
+<p>الحساب مدعوم في صورة واحدة فقط: <strong>زيادة المتغيّر على نفسه</strong>. تكتب اسم المتغيّر، ثم <code><span dir="ltr">=</span></code>، ثم <strong>الاسم نفسه</strong>، ثم العملية، ثم <strong>قيمة صريحة</strong>:</p>
+<pre class="lang-qalam"><code><span dir="ltr">~</span> نقاط <span dir="ltr">=</span> نقاط <span dir="ltr">+</span> ٥
+<span dir="ltr">~</span> نقاط <span dir="ltr">=</span> نقاط <span dir="ltr">-</span> ٣
+<span dir="ltr">~</span> نقاط <span dir="ltr">=</span> نقاط <span dir="ltr">*</span> ٢
+<span dir="ltr">~</span> نقاط <span dir="ltr">=</span> نقاط <span dir="ltr">/</span> ٢
+<span dir="ltr">~</span> نقاط <span dir="ltr">=</span> نقاط <span dir="ltr">%</span> ٣</code></pre>
+<p><strong>العمليات:</strong> <code><span dir="ltr">+</span></code>, <code><span dir="ltr">-</span></code>, <code><span dir="ltr">*</span></code>, <code><span dir="ltr">/</span></code>, <code><span dir="ltr">%</span></code></p>
+<p><strong>الطرف الأيمن لا بد أن يكون قيمة صريحة</strong> — رقمًا أو نصًّا بين علامتَي اقتباس أو <code>صح</code>/<code>خطأ</code> أو قيمة من قائمة معلنة. لا يمكن أن يكون متغيّرًا آخر.</p>
+<p>هذه الأشكال <strong>غير مدعومة</strong> وكلٌّ منها يعطي الخطأ <code><span dir="ltr">E201</span></code>:</p>
+<table><thead><tr><th>السطر</th><th>لماذا يُرفَض</th></tr></thead><tbody>
+<tr><td><code><span dir="ltr">~</span> المجموع <span dir="ltr">=</span> س <span dir="ltr">+</span> ص</code></td><td>متغيّر آخر على يمين علامة اليساوي</td></tr>
+<tr><td><code><span dir="ltr">~</span> الناتج <span dir="ltr">=</span> س <span dir="ltr">*</span> ٢</code></td><td>الاسم على اليمين مختلف عن اسم المتغيّر المُسنَد إليه</td></tr>
+<tr><td><code><span dir="ltr">~</span> نقاط <span dir="ltr">=</span> نقاط <span dir="ltr">+</span> الجائزة</code></td><td>الطرف الأخير متغيّر، والمطلوب قيمة صريحة</td></tr>
+</tbody></table>
+<p>لجمع متغيّرين، اجعل الحساب على خطوتين:</p>
+<pre class="lang-qalam"><code>متغير س <span dir="ltr">=</span> ٣
+متغير المجموع <span dir="ltr">=</span> ٠
+
+<span dir="ltr">===</span> الحساب <span dir="ltr">===</span>
+
+<span dir="ltr">~</span> المجموع <span dir="ltr">=</span> المجموع <span dir="ltr">+</span> ٣
+النتيجة <span dir="ltr">{</span>المجموع<span dir="ltr">}.</span></code></pre>
+<p><strong>لا توجد دوال مدمجة في اللغة، ولا أي استدعاء دالة من أي نوع.</strong> لا يوجد في اللغة ما يعطيك رقمًا بالصدفة، ولا ما يخبرك إن كان القارئ قد مرّ بمقطع من قبل أو كم مرّة، ولا ما يحسب عدد حروف نصّ. المُصرّف لا يعرف الأقواس المستديرة في الإسناد ويرفضها بالخطأ <code><span dir="ltr">E201</span></code>.</p>
 <hr>
-<h2 id="الدوال-المدمجة">الدوال المدمجة</h2>
-<h3 id="عشوائي-أ-ب-رقم-عشوائي"><code>عشوائي<span dir="ltr">(</span>أ<span dir="ltr">,</span> ب<span dir="ltr">)</span></code> — رقم عشوائي</h3>
-<pre class="lang-qalam"><code><span dir="ltr">~</span> الضرر <span dir="ltr">=</span> عشوائي<span dir="ltr">(</span>١<span dir="ltr">,</span> ٦<span dir="ltr">)</span></code></pre>
-<p><strong>الإنجليزية:</strong> <code><span dir="ltr">RANDOM(1,</span> <span dir="ltr">6)</span></code></p>
-<h3 id="زار-مقطع-هل-زار-القارئ-هذا-المقطع"><code>زار<span dir="ltr">(</span>مقطع<span dir="ltr">)</span></code> — هل زار القارئ هذا المقطع؟</h3>
-<pre class="lang-qalam"><code><span dir="ltr">{</span>زار<span dir="ltr">(</span>الغرفة<span dir="ltr">_</span>السرية<span dir="ltr">):</span> تعرف الطريق<span dir="ltr">.}</span></code></pre>
-<p><strong>الإنجليزية:</strong> <code><span dir="ltr">VISITED</span></code></p>
-<h3 id="عدد-الزيارات-مقطع-كم-مرة-زار-المقطع"><code>عدد<span dir="ltr">_</span>الزيارات<span dir="ltr">(</span>مقطع<span dir="ltr">)</span></code> — كم مرة زار المقطع</h3>
-<pre class="lang-qalam"><code><span dir="ltr">{</span>عدد<span dir="ltr">_</span>الزيارات<span dir="ltr">(</span>المكتبة<span dir="ltr">)</span> <span dir="ltr">&gt;</span> ٢<span dir="ltr">:</span> حفظت مكان كل كتاب<span dir="ltr">.}</span></code></pre>
-<p><strong>الإنجليزية:</strong> <code><span dir="ltr">VISIT_COUNT</span></code></p>
-<h3 id="طول-نص-عدد-حروف-النص"><code>طول<span dir="ltr">(</span>نص<span dir="ltr">)</span></code> — عدد حروف النص</h3>
-<pre class="lang-qalam"><code><span dir="ltr">~</span> عدد<span dir="ltr">_</span>الحروف <span dir="ltr">=</span> طول<span dir="ltr">(</span>اسم<span dir="ltr">_</span>البطل<span dir="ltr">)</span></code></pre>
-<p><strong>الإنجليزية:</strong> <code><span dir="ltr">LEN</span></code></p>
+<h2 id="الصور">الصور</h2>
+<p>الصورة تُعلَن مرّة في أعلى الملف، ثم تُستعمل في أي مقطع — أو في عدّة مقاطع. تُخزَّن مرّة واحدة مهما تكرّر استعمالها.</p>
+<pre class="lang-qalam"><code>أسلوب<span dir="ltr">_</span>الصور<span dir="ltr">:</span> <span dir="ltr">&quot;</span>رسم كتب أطفال، ألوان ترابية هادئة<span dir="ltr">&quot;</span>
+صورة بوابة<span dir="ltr">_</span>المدينة <span dir="ltr">=</span> <span dir="ltr">&quot;</span>بوابة حجرية قديمة عند غروب الشمس<span dir="ltr">&quot;</span>
+
+<span dir="ltr">===</span> البداية <span dir="ltr">===</span>
+
+صورة<span dir="ltr">:</span> بوابة<span dir="ltr">_</span>المدينة
+
+وقفتِ أمام البوابة<span dir="ltr">.</span></code></pre>
+<p><strong>علامات الترقيم مختلفة بين الثلاثة، وهذا أكثر ما يُخطئ فيه الكاتب:</strong></p>
+<table><thead><tr><th>السطر</th><th>العلامة</th><th>المكان</th></tr></thead><tbody>
+<tr><td><code>أسلوب<span dir="ltr">_</span>الصور<span dir="ltr">:</span> <span dir="ltr">&quot;</span>…<span dir="ltr">&quot;</span></code></td><td><strong>نقطتان</strong> <code><span dir="ltr">:</span></code> مثل <code>عنوان<span dir="ltr">:</span></code> و <code>مؤلف<span dir="ltr">:</span></code></td><td>أعلى الملف، قبل أول <code><span dir="ltr">===</span></code></td></tr>
+<tr><td><code>صورة الاسم <span dir="ltr">=</span> <span dir="ltr">&quot;</span>…<span dir="ltr">&quot;</span></code></td><td><strong>علامة يساوي</strong> <code><span dir="ltr">=</span></code></td><td>أعلى الملف، مع <code>متغير</code> و <code>قائمة</code></td></tr>
+<tr><td><code>صورة<span dir="ltr">:</span> الاسم</code></td><td><strong>نقطتان</strong> <code><span dir="ltr">:</span></code></td><td>داخل المقطع، على سطر مستقل</td></tr>
+</tbody></table>
+<p><strong>الأسماء الإنجليزية:</strong> <code><span dir="ltr">image</span></code> للتصريح والاستعمال، <code><span dir="ltr">image_style</span></code> للأسلوب.</p>
+<h3 id="التصريح">التصريح</h3>
+<p>اسم الصورة يتبع قواعد أسماء المتغيرات (يُنزع التشكيل). النصّ بين علامتَي الاقتباس هو <strong>الوصف العربي</strong>: هو ما يُرسَل ليُرسَم، وهو نصّ <code><span dir="ltr">alt</span></code> للقارئ الذي يستعمل قارئ شاشة، وهو ما يظهر داخل إطار مكان الصورة إن لم تُولَّد بعد.</p>
+<p>التصريح وحده لا يرسم شيئًا. التوليد فعل صريح تضغطه في المحرر.</p>
+<p>صورة مُعلَنة ولم تُستعمل ليست خطأ. وصورة مُعلَنة ولم تُولَّد ليست خطأ أيضًا — تُصدَّر كإطار يحمل وصفها العربي، والقصة تظلّ تُقرأ وتُلعب.</p>
+<h3 id="الاستعمال-داخل-المقطع">الاستعمال داخل المقطع</h3>
+<p><code>صورة<span dir="ltr">:</span> الاسم</code> على سطر مستقل تضع الصورة في ذلك الموضع بالضبط. ترتيبها بين النصّ والخيارات هو ترتيب كتابتها — ليست ترويسة للمقطع ولا خاصيّة له.</p>
+<h3 id="الأسلوب">الأسلوب</h3>
+<p><code>أسلوب<span dir="ltr">_</span>الصور</code> اختياري، وواحد للقصة كلها. اكتبه إن أردت أن تتشابه صور القصة.</p>
+<p><strong>لماذا يوجد أصلًا:</strong> قبل أن يصل الوصف إلى نموذج الرسم، يُترجَم إلى الإنجليزية، ثم يُضاف أسلوبك إليه <strong>حرفيًّا</strong>. لولا هذا السطر لاخترع النموذج أسلوبًا مختلفًا لكل صورة، فتخرج عشر صور كأن عشرة رسّامين رسموها.</p>
+<p>ولهذا: <strong>اكتب في الوصف الموضوع فقط</strong> — من في الصورة، وأين، ومتى. اترك الإضاءة والمزاج والألوان والتكوين لسطر <code>أسلوب<span dir="ltr">_</span>الصور</code>.</p>
+<h3 id="نموذج-الرسم-لا-يكتب-العربية">نموذج الرسم لا يكتب العربية</h3>
+<p>نماذج توليد الصور لا تُحسن رسم الحرف العربي؛ ما تكتبه يخرج خربشة تشبه الحروف ولا تُقرأ. <strong>صِف المشهد، ولا تطلب لافتة ولا كتابًا مفتوحًا ولا نقشًا فيه كلام.</strong> إن احتجت كلامًا مكتوبًا في المشهد، اكتبه نصًّا في المقطع لا داخل الصورة.</p>
+<h3 id="أخطاء-الصور">أخطاء الصور</h3>
+<p><code><span dir="ltr">E106</span></code> اسم صورة غير مُعلَن · <code><span dir="ltr">E107</span></code> اسم صورة مكرّر · <code><span dir="ltr">E108</span></code> تصريح صورة بلا وصف بين علامتَي اقتباس. التفاصيل في <a href="./الأخطاء.html">دليل الأخطاء</a>.</p>
 <hr>
 <h2 id="الكلمات-المفتاحية-عربي-وإنجليزي">الكلمات المفتاحية — عربي وإنجليزي</h2>
 <table><thead><tr><th>العربي</th><th>الإنجليزي</th></tr></thead><tbody>
@@ -241,10 +299,8 @@
 <tr><td><code>نهاية</code></td><td><code><span dir="ltr">END</span></code></td></tr>
 <tr><td><code>تابع</code></td><td><code><span dir="ltr">DONE</span></code></td></tr>
 <tr><td><code>غير<span dir="ltr">_</span>ذلك</code></td><td><code><span dir="ltr">ELSE</span></code></td></tr>
-<tr><td><code>عشوائي</code></td><td><code><span dir="ltr">RANDOM</span></code></td></tr>
-<tr><td><code>زار</code></td><td><code><span dir="ltr">VISITED</span></code></td></tr>
-<tr><td><code>عدد<span dir="ltr">_</span>الزيارات</code></td><td><code><span dir="ltr">VISIT_COUNT</span></code></td></tr>
-<tr><td><code>طول</code></td><td><code><span dir="ltr">LEN</span></code></td></tr>
+<tr><td><code>صورة</code></td><td><code><span dir="ltr">image</span></code></td></tr>
+<tr><td><code>أسلوب<span dir="ltr">_</span>الصور</code></td><td><code><span dir="ltr">image_style</span></code></td></tr>
 <tr><td><code>عنوان</code></td><td><code><span dir="ltr">TITLE</span></code></td></tr>
 <tr><td><code>مؤلف</code></td><td><code><span dir="ltr">AUTHOR</span></code></td></tr>
 <tr><td><code>لغة</code></td><td><code><span dir="ltr">LANGUAGE</span></code></td></tr>

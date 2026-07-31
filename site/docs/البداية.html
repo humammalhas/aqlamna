@@ -69,7 +69,7 @@
 <p>بنهاية هذا الدليل ستكون قد كتبت قصتك الأولى المكونة من ثلاثة مشاهد، فيها خيارات ومتغيرات وشرط.</p>
 <hr>
 <h2 id="الخطوة-١-أول-مقطع">الخطوة ١: أول مقطع</h2>
-<p>افتح المحرر وامسح كل شيء. اكتب هذا السطر:</p>
+<p>افتح المحرر واضغط زر <strong>قصة جديدة</strong> — يفرغ لك اللوحة ويبدأ من صفحة بيضاء. ثم اكتب هذا السطر:</p>
 <pre><code><span dir="ltr">===</span> البداية <span dir="ltr">===</span></code></pre>
 <p>العلامة <code><span dir="ltr">===</span></code> تعني &quot;بداية مقطع جديد&quot;. المقطع مثل صفحة في كتاب — هو ما يراه القارئ على الشاشة دفعة واحدة. اسم المقطع هنا هو <code>البداية</code>. يمكنك تسميته أي شيء بالعربية.</p>
 <p>الآن أضف نصًا تحت العنوان:</p>
@@ -116,42 +116,8 @@
 <p>القصة تصبح أقوى عندما تتذكّر ما فعله القارئ. أضف هذا قبل المقطع الأول (في أي مكان قبل أول <code><span dir="ltr">===</span></code>):</p>
 <pre><code>متغير أخذ<span dir="ltr">_</span>المفتاح <span dir="ltr">=</span> خطأ</code></pre>
 <p>هذا يعلن عن &quot;متغير&quot; اسمه <code>أخذ<span dir="ltr">_</span>المفتاح</code>. قيمته <code>خطأ</code> (لا). المتغير مثل صندوق صغير تخزّن فيه معلومة. <code>خطأ</code> و <code>صح</code> هما القيمتان المنطقيتان — مثل &quot;لا&quot; و &quot;نعم&quot;.</p>
-<p>الآن أضف خيارًا جديدًا في المقطع الأول وخيارًا في المقطع الثاني يعتمد على المتغير:</p>
+<p>الآن اجعل للقارئ طريقين للخروج من الغرفة: أن يفتح الباب مباشرة، أو أن يأخذ المفتاح في طريقه. كلا الخيارين ينتقل إلى <code>الممر</code> — الفرق بينهما أن الثاني يغيّر قيمة المتغير:</p>
 <pre class="lang-qalam"><code>متغير أخذ<span dir="ltr">_</span>المفتاح <span dir="ltr">=</span> خطأ
-
-<span dir="ltr">===</span> البداية <span dir="ltr">===</span>
-
-تستيقظ في غرفة مظلمة<span dir="ltr">.</span> ضوء خافت يتسلل من تحت الباب<span dir="ltr">.</span>
-لا تتذكر كيف وصلت إلى هنا<span dir="ltr">.</span>
-
-<span dir="ltr">*</span> <span dir="ltr">[</span>افتح الباب<span dir="ltr">]</span>
-  تفتح الباب بحذر<span dir="ltr">.</span> الممر طويل ومظلم<span dir="ltr">.</span>
-  <span dir="ltr">-&gt;</span> الممر
-
-<span dir="ltr">*</span> <span dir="ltr">[</span>خذ المفتاح من الطاولة<span dir="ltr">]</span>
-  تلتقط مفتاحًا صدئًا من على الطاولة<span dir="ltr">.</span> قد يكون مفيدًا<span dir="ltr">.</span>
-  <span dir="ltr">~</span> أخذ<span dir="ltr">_</span>المفتاح <span dir="ltr">=</span> صح
-  <span dir="ltr">-&gt;</span> البداية
-
-<span dir="ltr">===</span> الممر <span dir="ltr">===</span>
-
-الممر طويل<span dir="ltr">.</span> في نهايته ضوء خافت<span dir="ltr">.</span>
-
-<span dir="ltr">{</span>أخذ<span dir="ltr">_</span>المفتاح<span dir="ltr">:</span> المفتاح في يدك<span dir="ltr">.</span> تشعر ببعض الاطمئنان<span dir="ltr">.}</span>
-
-<span dir="ltr">{</span>أخذ<span dir="ltr">_</span>المفتاح<span dir="ltr">:</span>
-  <span dir="ltr">-</span> أخذ<span dir="ltr">_</span>المفتاح<span dir="ltr">:</span> المفتاح في يدك<span dir="ltr">.</span> تشعر ببعض الاطمئنان<span dir="ltr">.</span>
-  <span dir="ltr">-</span> غير<span dir="ltr">_</span>ذلك<span dir="ltr">:</span> يدك فارغة<span dir="ltr">.</span> كان عليك أن تأخذ المفتاح<span dir="ltr">.</span>
-<span dir="ltr">}</span></code></pre>
-<p>العلامة <code><span dir="ltr">~</span></code> تعني &quot;تغيير قيمة متغير&quot;. <code><span dir="ltr">~</span> أخذ<span dir="ltr">_</span>المفتاح <span dir="ltr">=</span> صح</code> تغير قيمة المتغير من <code>خطأ</code> إلى <code>صح</code>.</p>
-<p>العلامة <code><span dir="ltr">{</span> <span dir="ltr">}</span></code> التي بداخلها <code><span dir="ltr">:</span></code> تعني &quot;شرط&quot;. إذا كان أخذ_المفتاح يساوي <code>صح</code>، يظهر النص الذي بعد النقطتين. لاحظ أن <code>غير<span dir="ltr">_</span>ذلك</code> تعني &quot;في كل الحالات الأخرى&quot;.</p>
-<hr>
-<h2 id="الخطوة-٥-القصة-الكاملة-ثلاثة-مشاهد">الخطوة ٥: القصة الكاملة — ثلاثة مشاهد</h2>
-<p>لنجمع كل شيء في قصة كاملة. هذا هو النص النهائي:</p>
-<pre class="lang-qalam"><code>عنوان<span dir="ltr">:</span> <span dir="ltr">&quot;</span>الغرفة المظلمة<span dir="ltr">&quot;</span>
-مؤلف<span dir="ltr">:</span> <span dir="ltr">&quot;</span>أنت<span dir="ltr">&quot;</span>
-
-متغير أخذ<span dir="ltr">_</span>المفتاح <span dir="ltr">=</span> خطأ
 
 <span dir="ltr">===</span> البداية <span dir="ltr">===</span>
 
@@ -159,19 +125,73 @@
 لا تتذكر كيف وصلت إلى هنا<span dir="ltr">.</span>
 ثمة طاولة صغيرة في الزاوية، عليها مفتاح صدئ<span dir="ltr">.</span>
 
-<span dir="ltr">*</span> <span dir="ltr">[</span>افتح الباب<span dir="ltr">]</span>
-  تفتح الباب بحذر<span dir="ltr">.</span> الممر طويل ومظلم<span dir="ltr">.</span>
+<span dir="ltr">*</span> <span dir="ltr">[</span>افتح الباب واخرج<span dir="ltr">]</span>
+  تفتح الباب بحذر وتترك المفتاح مكانه<span dir="ltr">.</span>
   <span dir="ltr">-&gt;</span> الممر
 
-<span dir="ltr">*</span> <span dir="ltr">[</span>خذ المفتاح من الطاولة<span dir="ltr">]</span>
-  تلتقط المفتاح الصدئ<span dir="ltr">.</span> ثقيل في يدك<span dir="ltr">.</span>
+<span dir="ltr">*</span> <span dir="ltr">[</span>خذ المفتاح ثم افتح الباب<span dir="ltr">]</span>
+  تلتقط المفتاح الصدئ، ثم تدفع الباب بكتفك<span dir="ltr">.</span>
   <span dir="ltr">~</span> أخذ<span dir="ltr">_</span>المفتاح <span dir="ltr">=</span> صح
-  <span dir="ltr">-&gt;</span> البداية
+  <span dir="ltr">-&gt;</span> الممر
+
+<span dir="ltr">===</span> الممر <span dir="ltr">===</span>
+
+الممر طويل<span dir="ltr">.</span> في نهايته ضوء خافت<span dir="ltr">.</span>
+
+<span dir="ltr">{</span>أخذ<span dir="ltr">_</span>المفتاح<span dir="ltr">:</span> المفتاح في يدك<span dir="ltr">.</span> تشعر ببعض الاطمئنان<span dir="ltr">.}</span></code></pre>
+<p>العلامة <code><span dir="ltr">~</span></code> تعني &quot;تغيير قيمة متغير&quot;. <code><span dir="ltr">~</span> أخذ<span dir="ltr">_</span>المفتاح <span dir="ltr">=</span> صح</code> تغير قيمة المتغير من <code>خطأ</code> إلى <code>صح</code>.</p>
+<p>العلامة <code><span dir="ltr">{</span> <span dir="ltr">}</span></code> التي بداخلها <code><span dir="ltr">:</span></code> تعني &quot;شرط&quot;. إذا كان <code>أخذ<span dir="ltr">_</span>المفتاح</code> يساوي <code>صح</code>، يظهر النص الذي بعد النقطتين. وإذا كان <code>خطأ</code>، لا يظهر شيء ولا يشعر القارئ بوجود السطر أصلًا.</p>
+<p><strong>لماذا ينتقل الخياران إلى المقطع نفسه؟</strong> لأن الانتقال إلى <code>البداية</code> كان سيعيد طباعة فقرة الاستيقاظ من أولها، فيظن القارئ أن القصة عادت إلى نقطة الصفر. المقطع يُطبع كاملًا في كل مرة يدخله القارئ، فاجعل الانتقال إلى الأمام دائمًا.</p>
+<h3 id="حين-تريد-نص-ا-للحالتين">حين تريد نصًّا للحالتين</h3>
+<p>السطر السابق يقول شيئًا عند <code>صح</code> ويسكت عند <code>خطأ</code>. إذا أردت نصًّا في الحالتين، استبدله بالشرط متعدد الفروع — الصيغة نفسها موسّعة، و<code>غير<span dir="ltr">_</span>ذلك</code> تعني &quot;في كل الحالات الأخرى&quot;:</p>
+<pre class="lang-qalam"><code>متغير أخذ<span dir="ltr">_</span>المفتاح <span dir="ltr">=</span> خطأ
+
+<span dir="ltr">===</span> الممر <span dir="ltr">===</span>
+
+الممر طويل<span dir="ltr">.</span> في نهايته ضوء خافت<span dir="ltr">.</span>
+
+<span dir="ltr">{</span>أخذ<span dir="ltr">_</span>المفتاح<span dir="ltr">:</span>
+  <span dir="ltr">-</span> أخذ<span dir="ltr">_</span>المفتاح<span dir="ltr">:</span> المفتاح في يدك<span dir="ltr">.</span> تشعر ببعض الاطمئنان<span dir="ltr">.</span>
+  <span dir="ltr">-</span> غير<span dir="ltr">_</span>ذلك<span dir="ltr">:</span> يدك فارغة<span dir="ltr">.</span> كان عليك أن تأخذ المفتاح<span dir="ltr">.</span>
+<span dir="ltr">}</span></code></pre>
+<p>هذا <strong>بديل</strong> عن سطر الشرط البسيط، لا إضافة إليه. اختر واحدًا: البسيط حين يكفي الصمت، والمتعدد حين يكون للفشل نصّه الخاص.</p>
+<h3 id="إدراج-قيمة-المتغير-في-النص">إدراج قيمة المتغير في النص</h3>
+<p>القوسان <code><span dir="ltr">{</span> <span dir="ltr">}</span></code> <strong>دون نقطتين</strong> لا يختبران شيئًا — يطبعان قيمة المتغير مكانها:</p>
+<pre class="lang-qalam"><code>متغير اسم<span dir="ltr">_</span>البطل <span dir="ltr">=</span> <span dir="ltr">&quot;</span>ليلى<span dir="ltr">&quot;</span>
+
+<span dir="ltr">===</span> البداية <span dir="ltr">===</span>
+
+اسمك <span dir="ltr">{</span>اسم<span dir="ltr">_</span>البطل<span dir="ltr">}</span>، وأنت لا تتذكرين كيف وصلت إلى هنا<span dir="ltr">.</span></code></pre>
+<p>القارئ يرى: «اسمك ليلى، وأنت لا تتذكرين كيف وصلت إلى هنا.»</p>
+<p><strong>النقطتان <code><span dir="ltr">:</span></code> هما الفرق كله.</strong> <code><span dir="ltr">{</span>س<span dir="ltr">}</span></code> إدراج، <code><span dir="ltr">{</span>س<span dir="ltr">:}</span></code> شرط.</p>
+<hr>
+<h2 id="الخطوة-٥-القصة-الكاملة-ثلاثة-مشاهد">الخطوة ٥: القصة الكاملة — ثلاثة مشاهد</h2>
+<p>لنجمع كل شيء في قصة كاملة. هذا هو النص النهائي:</p>
+<pre class="lang-qalam"><code>عنوان<span dir="ltr">:</span> <span dir="ltr">&quot;</span>الغرفة المظلمة<span dir="ltr">&quot;</span>
+مؤلف<span dir="ltr">:</span> <span dir="ltr">&quot;</span>أنت<span dir="ltr">&quot;</span>
+
+متغير أخذ<span dir="ltr">_</span>المفتاح <span dir="ltr">=</span> خطأ
+متغير اسم<span dir="ltr">_</span>البطل <span dir="ltr">=</span> <span dir="ltr">&quot;</span>ليلى<span dir="ltr">&quot;</span>
+
+<span dir="ltr">===</span> البداية <span dir="ltr">===</span>
+
+تستيقظ في غرفة مظلمة<span dir="ltr">.</span> ضوء خافت يتسلل من تحت الباب<span dir="ltr">.</span>
+لا تتذكرين كيف وصلت إلى هنا يا <span dir="ltr">{</span>اسم<span dir="ltr">_</span>البطل<span dir="ltr">}.</span>
+ثمة طاولة صغيرة في الزاوية، عليها مفتاح صدئ<span dir="ltr">.</span>
+
+<span dir="ltr">*</span> <span dir="ltr">[</span>افتح الباب واخرج<span dir="ltr">]</span>
+  تفتحين الباب بحذر وتتركين المفتاح مكانه<span dir="ltr">.</span>
+  <span dir="ltr">-&gt;</span> الممر
+
+<span dir="ltr">*</span> <span dir="ltr">[</span>خذ المفتاح ثم افتح الباب<span dir="ltr">]</span>
+  تلتقطين المفتاح الصدئ، ثم تدفعين الباب بكتفك<span dir="ltr">.</span>
+  <span dir="ltr">~</span> أخذ<span dir="ltr">_</span>المفتاح <span dir="ltr">=</span> صح
+  <span dir="ltr">-&gt;</span> الممر
 
 <span dir="ltr">===</span> الممر <span dir="ltr">===</span>
 
 الممر طويل، جدرانه حجرية رطبة<span dir="ltr">.</span>
-تسمع صوت خطوات من بعيد<span dir="ltr">.</span>
+تسمعين صوت خطوات من بعيد<span dir="ltr">.</span>
 
 <span dir="ltr">{</span>أخذ<span dir="ltr">_</span>المفتاح<span dir="ltr">:</span>
   <span dir="ltr">-</span> أخذ<span dir="ltr">_</span>المفتاح<span dir="ltr">:</span> تشعر ببعض الاطمئنان والمفتاح في قبضتك<span dir="ltr">.</span>
@@ -179,11 +199,11 @@
 <span dir="ltr">}</span>
 
 <span dir="ltr">*</span> <span dir="ltr">[</span>اتبع الصوت<span dir="ltr">]</span>
-  تمشي نحو مصدر الصوت<span dir="ltr">.</span> الظلام يحيط بك من كل جانب<span dir="ltr">.</span>
+  تمشين نحو مصدر الصوت<span dir="ltr">.</span> الظلام يحيط بك من كل جانب<span dir="ltr">.</span>
   <span dir="ltr">-&gt;</span> النهاية
 
 <span dir="ltr">*</span> <span dir="ltr">[</span>اختبئ<span dir="ltr">]</span>
-  تجد فجوة في الجدار وتختبئ فيها<span dir="ltr">.</span> الصوت يقترب ثم يبتعد<span dir="ltr">.</span>
+  تجدين فجوة في الجدار وتختبئين فيها<span dir="ltr">.</span> الصوت يقترب ثم يبتعد<span dir="ltr">.</span>
   <span dir="ltr">-&gt;</span> النهاية
 
 <span dir="ltr">===</span> النهاية <span dir="ltr">===</span>
@@ -191,11 +211,11 @@
 النفق ينتهي فجأة<span dir="ltr">.</span> أمامك باب حجري ضخم عليه نقوش غريبة<span dir="ltr">.</span>
 
 <span dir="ltr">{</span>أخذ<span dir="ltr">_</span>المفتاح<span dir="ltr">:</span>
-  <span dir="ltr">-</span> أخذ<span dir="ltr">_</span>المفتاح<span dir="ltr">:</span> تدخل المفتاح في القفل<span dir="ltr">.</span> يدار بسهولة<span dir="ltr">.</span> الباب ينفتح<span dir="ltr">.</span>
+  <span dir="ltr">-</span> أخذ<span dir="ltr">_</span>المفتاح<span dir="ltr">:</span> تدخلين المفتاح في القفل<span dir="ltr">.</span> يدار بسهولة<span dir="ltr">.</span> الباب ينفتح<span dir="ltr">.</span>
   <span dir="ltr">-</span> غير<span dir="ltr">_</span>ذلك<span dir="ltr">:</span> الباب مقفل<span dir="ltr">.</span> لا يمكنك فتحه<span dir="ltr">.</span>
 <span dir="ltr">}</span></code></pre>
 <p>هذه قصتك الأولى. فيها:</p>
-<ul><li><strong>عنوان</strong> و <strong>مؤلف</strong> (اختياري، يظهران للمشغّل)</li><li><strong>ثلاثة مقاطع</strong>: البداية، الممر، النهاية</li><li><strong>متغير</strong> واحد: <code>أخذ<span dir="ltr">_</span>المفتاح</code></li><li><strong>خيارات</strong> تنتقل بين المقاطع</li><li><strong>شرط</strong> يغير النص حسب قيمة المتغير</li></ul>
+<ul><li><strong>عنوان</strong> و <strong>مؤلف</strong> (اختياري، يظهران للمشغّل)</li><li><strong>ثلاثة مقاطع</strong>: البداية، الممر، النهاية</li><li><strong>متغيران</strong>: <code>أخذ<span dir="ltr">_</span>المفتاح</code> و <code>اسم<span dir="ltr">_</span>البطل</code></li><li><strong>إدراج</strong> قيمة متغير في النص: <code><span dir="ltr">{</span>اسم<span dir="ltr">_</span>البطل<span dir="ltr">}</span></code></li><li><strong>خيارات</strong> تنتقل بين المقاطع</li><li><strong>شرط</strong> يغير النص حسب قيمة المتغير</li></ul>
 <hr>
 <h2 id="ملخص-الرموز">ملخص الرموز</h2>
 <table><thead><tr><th>الرمز</th><th>ماذا يفعل</th><th>مثال</th></tr></thead><tbody>
