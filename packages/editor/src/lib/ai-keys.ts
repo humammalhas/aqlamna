@@ -122,4 +122,44 @@ export function clearAllKeys(): void {
   localStorage.removeItem(KEY_PROVIDER);
   localStorage.removeItem(KEY_MODEL);
   localStorage.removeItem(KEY_BASEURL);
+  localStorage.removeItem(KEY_IMAGE_PROVIDER);
+}
+
+// ---- Image provider (independent from text provider) -----------------------
+
+const KEY_IMAGE_PROVIDER = "aqlamna-image-provider";
+
+/**
+ * Default image provider is Together, whose image model is
+ * `black-forest-labs/FLUX.1-schnell`. Say nothing here about what it costs —
+ * this comment used to call it free, which was true in 2024 and is not now.
+ */
+export function getImageProviderId(): string {
+  const id = localStorage.getItem(KEY_IMAGE_PROVIDER);
+  if (id && providerById(id)?.supportsImages) return id;
+  return "together";
+}
+
+export function setImageProviderId(id: string): void {
+  if (!providerById(id)?.supportsImages) return;
+  localStorage.setItem(KEY_IMAGE_PROVIDER, id);
+}
+
+export function getImageProvider(): ProviderConfig {
+  return providerById(getImageProviderId())!;
+}
+
+export function getImageModel(): string {
+  return getImageProvider().imageModel!;
+}
+
+export function getImageApiKey(): string | null {
+  return getApiKey(getImageProviderId());
+}
+
+export function hasImageApiKey(): boolean {
+  const provider = getImageProvider();
+  if (!provider.requiresKey) return true;
+  const key = getImageApiKey();
+  return key !== null && key.length > 0;
 }
