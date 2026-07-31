@@ -3,6 +3,21 @@
    Values match site/assets/aqlamna.css :root.
    --------------------------------------------------------------------------- */
 
+/* --- Page ----------------------------------------------------------------- */
+/* html AND body both carry the background. Setting it on .aq-story alone left
+   white margins around a cream card on every exported story. */
+
+html, body {
+  margin: 0;
+  padding: 0;
+  min-block-size: 100%;
+  background: #F6F1E7;
+  color: #2B2721;
+  -webkit-text-size-adjust: 100%;
+}
+
+* { box-sizing: border-box; }
+
 /* --- Container ------------------------------------------------------------ */
 
 .aq-story {
@@ -111,7 +126,16 @@
 
 /* --- Responsive ----------------------------------------------------------- */
 
-@media (max-width: 480px) {
-  .aq-story { padding: 1rem; font-size: 1rem; }
+.aq-choice-btn { min-block-size: 48px; }
+.aq-btn { min-block-size: 44px; }
+
+@media (max-width: 40rem) {
+  .aq-story {
+    padding-inline: 1.125rem;
+    padding-block: 1.5rem calc(1.5rem + env(safe-area-inset-bottom));
+    font-size: 1.0625rem;
+  }
   .aq-title { font-size: 1.375rem; }
+  .aq-toolbar { flex-wrap: wrap; margin-block-start: 2rem; }
+  .aq-btn { min-inline-size: 44px; }
 }

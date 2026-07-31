@@ -10,6 +10,21 @@
    Values match site/assets/aqlamna.css :root.
    --------------------------------------------------------------------------- */
 
+/* --- Page ----------------------------------------------------------------- */
+/* html AND body both carry the background. Setting it on .aq-story alone left
+   white margins around a cream card on every exported story. */
+
+html, body {
+  margin: 0;
+  padding: 0;
+  min-block-size: 100%;
+  background: #F6F1E7;
+  color: #2B2721;
+  -webkit-text-size-adjust: 100%;
+}
+
+* { box-sizing: border-box; }
+
 /* --- Container ------------------------------------------------------------ */
 
 .aq-story {
@@ -118,9 +133,18 @@
 
 /* --- Responsive ----------------------------------------------------------- */
 
-@media (max-width: 480px) {
-  .aq-story { padding: 1rem; font-size: 1rem; }
+.aq-choice-btn { min-block-size: 48px; }
+.aq-btn { min-block-size: 44px; }
+
+@media (max-width: 40rem) {
+  .aq-story {
+    padding-inline: 1.125rem;
+    padding-block: 1.5rem calc(1.5rem + env(safe-area-inset-bottom));
+    font-size: 1.0625rem;
+  }
   .aq-title { font-size: 1.375rem; }
+  .aq-toolbar { flex-wrap: wrap; margin-block-start: 2rem; }
+  .aq-btn { min-inline-size: 44px; }
 }
 </style>
 <style id="aq-theme-dark" disabled>
@@ -128,6 +152,21 @@
    Aqlamna dark theme — RTL-first, CSS logical properties only
    Font stack per design §7.4 (self-hosted only, no Google Fonts link)
    --------------------------------------------------------------------------- */
+
+/* --- Page ----------------------------------------------------------------- */
+/* html AND body both carry the background. Setting it on .aq-story alone left
+   white margins around a cream card on every exported story. */
+
+html, body {
+  margin: 0;
+  padding: 0;
+  min-block-size: 100%;
+  background: #1a1814;
+  color: #e0d6c2;
+  -webkit-text-size-adjust: 100%;
+}
+
+* { box-sizing: border-box; }
 
 /* --- Container ------------------------------------------------------------ */
 
@@ -285,15 +324,22 @@
 
 /* --- Responsive ----------------------------------------------------------- */
 
-@media (max-width: 480px) {
+.aq-choice-btn { min-block-size: 48px; }
+.aq-btn { min-block-size: 44px; }
+
+@media (max-width: 40rem) {
   .aq-story {
-    padding: 1rem;
-    font-size: 1rem;
+    padding-inline: 1.125rem;
+    padding-block: 1.5rem calc(1.5rem + env(safe-area-inset-bottom));
+    font-size: 1.0625rem;
   }
 
   .aq-title {
     font-size: 1.375rem;
   }
+
+  .aq-toolbar { flex-wrap: wrap; margin-block-start: 2rem; }
+  .aq-btn { min-inline-size: 44px; }
 }
 </style>
 <style id="aq-theme-book" disabled>
@@ -302,6 +348,21 @@
    Designed to feel like a printed book, not a screen.
    RTL-first, CSS logical properties only
    --------------------------------------------------------------------------- */
+
+/* --- Page ----------------------------------------------------------------- */
+/* html AND body both carry the background. Setting it on .aq-story alone left
+   white margins around a cream card on every exported story. */
+
+html, body {
+  margin: 0;
+  padding: 0;
+  min-block-size: 100%;
+  background: #f5f0e8;
+  color: #3c2a1e;
+  -webkit-text-size-adjust: 100%;
+}
+
+* { box-sizing: border-box; }
 
 /* --- Container ------------------------------------------------------------ */
 
@@ -458,15 +519,22 @@
 
 /* --- Responsive ----------------------------------------------------------- */
 
-@media (max-width: 480px) {
+.aq-choice-btn { min-block-size: 48px; }
+.aq-btn { min-block-size: 44px; }
+
+@media (max-width: 40rem) {
   .aq-story {
-    padding: 1.25rem 1rem;
+    padding-inline: 1.125rem;
+    padding-block: 1.5rem calc(1.5rem + env(safe-area-inset-bottom));
     font-size: 1.125rem;
   }
 
   .aq-title {
     font-size: 1.5rem;
   }
+
+  .aq-toolbar { flex-wrap: wrap; margin-block-start: 2rem; }
+  .aq-btn { min-inline-size: 44px; }
 }
 </style>
 <script>
@@ -503,7 +571,7 @@
 <body>
 <div id="qalam-player"></div>
 <script id="qalam-story" type="application/json">
-{"qalam_version":"0.1","title":"الرحيق","author":null,"language":"ar","direction":"rtl","start":"البداية","variables":{"الرحيق":{"type":"number","initial":0},"وجد_الخريطة":{"type":"boolean","initial":false},"اسم_البطل":{"type":"string","initial":"نحلة"}},"lists":{},"passages":{"البداية":{"tags":[],"content":[{"type":"conditional","condition":{"var":"وجد_الخريطة"},"then":[{"type":"text","value":"الخريطة معك."}],"else":[]},{"type":"text","value":"جمعتِ "},{"type":"interpolation","var":"الرحيق"},{"type":"text","value":" قطرة."},{"type":"choices","items":[{"id":"choice_1","label":"اجمع الرحيق","sticky":true,"condition":null,"content":[{"type":"set","var":"الرحيق","op":"+=","value":2}],"divert":"البداية"},{"id":"choice_2","label":"تحدثي مع النحلة الحكيمة","sticky":false,"condition":null,"content":[{"type":"set","var":"وجد_الخريطة","op":"=","value":true}],"divert":"البداية"},{"id":"choice_3","label":"عودي إلى الخلية","sticky":true,"condition":{"var":"الرحيق","op":">=","value":4},"content":[],"divert":"END"}]}]}},"metadata":{"created":"2026-07-31T02:41:51.076Z","modified":"2026-07-31T02:41:51.076Z","passage_count":1,"word_count":4}}
+{"qalam_version":"0.1","title":"الرحيق","author":null,"language":"ar","direction":"rtl","start":"البداية","variables":{"الرحيق":{"type":"number","initial":0},"وجد_الخريطة":{"type":"boolean","initial":false},"اسم_البطل":{"type":"string","initial":"نحلة"}},"lists":{},"passages":{"البداية":{"tags":[],"content":[{"type":"conditional","condition":{"var":"وجد_الخريطة"},"then":[{"type":"text","value":"الخريطة معك."}],"else":[]},{"type":"text","value":"جمعتِ "},{"type":"interpolation","var":"الرحيق"},{"type":"text","value":" قطرة."},{"type":"choices","items":[{"id":"choice_1","label":"اجمع الرحيق","sticky":true,"condition":null,"content":[{"type":"set","var":"الرحيق","op":"+=","value":2}],"divert":"البداية"},{"id":"choice_2","label":"تحدثي مع النحلة الحكيمة","sticky":false,"condition":null,"content":[{"type":"set","var":"وجد_الخريطة","op":"=","value":true}],"divert":"البداية"},{"id":"choice_3","label":"عودي إلى الخلية","sticky":true,"condition":{"var":"الرحيق","op":">=","value":4},"content":[],"divert":"END"}]}]}},"metadata":{"created":"2026-07-31T04:38:17.820Z","modified":"2026-07-31T04:38:17.820Z","passage_count":1,"word_count":4}}
 </script>
 <script>
 (function () {
@@ -688,13 +756,28 @@ class Engine {
     processContent(content, output) {
         for (const node of content) {
             switch (node.type) {
-                case "text":
+                case "text": {
+                    // PHASE1_SPEC §1.16. The compiled JSON encodes a line break inside a
+                    // paragraph as a text node whose value is null; a paragraph boundary
+                    // is encoded implicitly, as two adjacent prose text nodes with no
+                    // sentinel between them. Turn both into explicit output nodes here so
+                    // the renderer never has to guess.
+                    if (node.value === null) {
+                        output.push({ type: "linebreak" });
+                        break;
+                    }
+                    const last = output[output.length - 1];
+                    if (last && last.type === "text" && !last.inline) {
+                        output.push({ type: "paragraph" });
+                    }
                     output.push({ type: "text", value: node.value });
                     break;
+                }
                 case "interpolation":
                     output.push({
                         type: "text",
                         value: String(this.resolveVar(node.var)),
+                        inline: true,
                     });
                     break;
                 case "set":
@@ -911,16 +994,24 @@ function renderScene(container, scene, title, options) {
         titleEl.textContent = title;
         wrapper.appendChild(titleEl);
     }
-    // Output area — group consecutive text and linebreak nodes into paragraphs.
-    // Text nodes arising from text + interpolation + text must render inline
-    // as a single paragraph.  Linebreaks become <br> inside the paragraph.
+    // Output area — PHASE1_SPEC §1.16.
+    //   text        → a run of prose inside the current paragraph
+    //   linebreak   → <br> inside the current paragraph
+    //   paragraph   → close the current <p> and open a new one
+    //   image       → close the current <p>, then emit the figure
+    // Text arising from text + interpolation + text stays in one paragraph
+    // because the engine emits no `paragraph` node between them.
     const outputEl = document.createElement("div");
     outputEl.className = "aq-output";
     // null sentinel means <br>; string means a text run
     const run = [];
     function flushRun() {
-        if (run.length === 0)
+        // A run of nothing but line breaks is not a paragraph — drop it rather
+        // than emitting an empty <p> that pushes the prose around.
+        if (!run.some((item) => item !== null && item !== "")) {
+            run.length = 0;
             return;
+        }
         const p = document.createElement("p");
         p.className = "aq-text";
         for (const item of run) {
@@ -940,6 +1031,9 @@ function renderScene(container, scene, title, options) {
         }
         else if (node.type === "linebreak") {
             run.push(null);
+        }
+        else if (node.type === "paragraph") {
+            flushRun();
         }
         else if (node.type === "image") {
             flushRun();

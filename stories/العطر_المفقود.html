@@ -10,6 +10,21 @@
    Values match site/assets/aqlamna.css :root.
    --------------------------------------------------------------------------- */
 
+/* --- Page ----------------------------------------------------------------- */
+/* html AND body both carry the background. Setting it on .aq-story alone left
+   white margins around a cream card on every exported story. */
+
+html, body {
+  margin: 0;
+  padding: 0;
+  min-block-size: 100%;
+  background: #F6F1E7;
+  color: #2B2721;
+  -webkit-text-size-adjust: 100%;
+}
+
+* { box-sizing: border-box; }
+
 /* --- Container ------------------------------------------------------------ */
 
 .aq-story {
@@ -118,9 +133,18 @@
 
 /* --- Responsive ----------------------------------------------------------- */
 
-@media (max-width: 480px) {
-  .aq-story { padding: 1rem; font-size: 1rem; }
+.aq-choice-btn { min-block-size: 48px; }
+.aq-btn { min-block-size: 44px; }
+
+@media (max-width: 40rem) {
+  .aq-story {
+    padding-inline: 1.125rem;
+    padding-block: 1.5rem calc(1.5rem + env(safe-area-inset-bottom));
+    font-size: 1.0625rem;
+  }
   .aq-title { font-size: 1.375rem; }
+  .aq-toolbar { flex-wrap: wrap; margin-block-start: 2rem; }
+  .aq-btn { min-inline-size: 44px; }
 }
 </style>
 <style id="aq-theme-dark" disabled>
@@ -128,6 +152,21 @@
    Aqlamna dark theme — RTL-first, CSS logical properties only
    Font stack per design §7.4 (self-hosted only, no Google Fonts link)
    --------------------------------------------------------------------------- */
+
+/* --- Page ----------------------------------------------------------------- */
+/* html AND body both carry the background. Setting it on .aq-story alone left
+   white margins around a cream card on every exported story. */
+
+html, body {
+  margin: 0;
+  padding: 0;
+  min-block-size: 100%;
+  background: #1a1814;
+  color: #e0d6c2;
+  -webkit-text-size-adjust: 100%;
+}
+
+* { box-sizing: border-box; }
 
 /* --- Container ------------------------------------------------------------ */
 
@@ -285,15 +324,22 @@
 
 /* --- Responsive ----------------------------------------------------------- */
 
-@media (max-width: 480px) {
+.aq-choice-btn { min-block-size: 48px; }
+.aq-btn { min-block-size: 44px; }
+
+@media (max-width: 40rem) {
   .aq-story {
-    padding: 1rem;
-    font-size: 1rem;
+    padding-inline: 1.125rem;
+    padding-block: 1.5rem calc(1.5rem + env(safe-area-inset-bottom));
+    font-size: 1.0625rem;
   }
 
   .aq-title {
     font-size: 1.375rem;
   }
+
+  .aq-toolbar { flex-wrap: wrap; margin-block-start: 2rem; }
+  .aq-btn { min-inline-size: 44px; }
 }
 </style>
 <style id="aq-theme-book" disabled>
@@ -302,6 +348,21 @@
    Designed to feel like a printed book, not a screen.
    RTL-first, CSS logical properties only
    --------------------------------------------------------------------------- */
+
+/* --- Page ----------------------------------------------------------------- */
+/* html AND body both carry the background. Setting it on .aq-story alone left
+   white margins around a cream card on every exported story. */
+
+html, body {
+  margin: 0;
+  padding: 0;
+  min-block-size: 100%;
+  background: #f5f0e8;
+  color: #3c2a1e;
+  -webkit-text-size-adjust: 100%;
+}
+
+* { box-sizing: border-box; }
 
 /* --- Container ------------------------------------------------------------ */
 
@@ -458,15 +519,22 @@
 
 /* --- Responsive ----------------------------------------------------------- */
 
-@media (max-width: 480px) {
+.aq-choice-btn { min-block-size: 48px; }
+.aq-btn { min-block-size: 44px; }
+
+@media (max-width: 40rem) {
   .aq-story {
-    padding: 1.25rem 1rem;
+    padding-inline: 1.125rem;
+    padding-block: 1.5rem calc(1.5rem + env(safe-area-inset-bottom));
     font-size: 1.125rem;
   }
 
   .aq-title {
     font-size: 1.5rem;
   }
+
+  .aq-toolbar { flex-wrap: wrap; margin-block-start: 2rem; }
+  .aq-btn { min-inline-size: 44px; }
 }
 </style>
 <script>
@@ -503,7 +571,7 @@
 <body>
 <div id="qalam-player"></div>
 <script id="qalam-story" type="application/json">
-{"qalam_version":"0.1","title":"العطر المفقود","author":"أقلامنا","language":"ar","direction":"rtl","start":"الدكان","variables":{"المكونات":{"type":"number","initial":0},"الثقة":{"type":"number","initial":0},"عرفت_السر":{"type":"boolean","initial":false},"حاولت_الخلط":{"type":"boolean","initial":false}},"lists":{},"passages":{"الدكان":{"tags":["مشهد_أول"],"content":[{"type":"text","value":"رفوف الخشب تصطفّ حتى السقف، وفي كلّ جرّة رائحةٌ تنتظر. المعلّم سليم يجلس وراء ميزانٍ نحاسيّ، وأمامه ورقة صفراء لا شيء عليها."},{"type":"text","value":"\"وصفة جدّتي ضاعت،\" قال دون أن يرفع عينيه. \"أعرف أنّ فيها أربعة أشياء. أذكر ثلاثة، والرابع يهرب منّي كلّما اقتربتُ.\""},{"type":"choices","items":[{"id":"choice_1","label":"اسأليه عن الثلاثة","sticky":false,"condition":null,"content":[],"divert":"الجرار"},{"id":"choice_2","label":"تأمّلي الدكّان أولًا","sticky":false,"condition":null,"content":[{"type":"text","value":"مررتِ بأصابعكِ على حرف الرفّ فتركت الغبار خطًّا رقيقًا. في الزاوية العليا جرّةٌ وحدها، لا ورقة عليها ولا اسم."},{"type":"set","var":"الثقة","op":"+=","value":1},{"type":"text","value":"\"عينكِ حادّة،\" قال. \"لكن ابدئي من الأسفل.\""}],"divert":"الجرار"}]}]},"الجرار":{"tags":[],"content":[{"type":"text","value":"فتح ثلاث جرارٍ ووضعها في الضوء."},{"type":"text","value":"\"زهر النارنج،\" قال، ورفع أولاها. رائحةٌ حمضيّة تلسع الأنف ثمّ تحلو."},{"type":"text","value":null},{"type":"text","value":"\"ماء الورد. من قطف الفجر لا من قطف الظهر.\""},{"type":"text","value":null},{"type":"text","value":"\"والعود. هذا لا يُشترى من السوق.\""},{"type":"text","value":"\"اجمعيها لي،\" قال. \"ثمّ نرى ما ينقص.\""},{"type":"divert","target":"المهمة"}]},"المهمة":{"tags":[],"content":[{"type":"conditional","condition":{"var":"المكونات","op":"==","value":0},"then":[{"type":"text","value":"الورقة الصفراء أمامكِ فارغة. لا شيء بعد."}],"else":[{"type":"conditional","condition":{"var":"المكونات","op":"\u003c","value":3},"then":[{"type":"text","value":"جمعتِ"}],"else":[{"type":"text","value":"الثلاثة أمامكِ. رائحةٌ واحدة ما زالت غائبة."}]}]},{"type":"choices","items":[{"id":"choice_1","label":"إلى سوق البخاريّة — زهر النارنج","sticky":false,"condition":null,"content":[],"divert":"السوق"},{"id":"choice_2","label":"إلى بيت جدّتكِ — ماء الورد","sticky":false,"condition":null,"content":[],"divert":"البيت"},{"id":"choice_3","label":"إلى المخزن — العود","sticky":false,"condition":null,"content":[],"divert":"المخزن"},{"id":"choice_4","label":"اخلطي العطر","sticky":true,"condition":{"var":"المكونات","op":">=","value":3},"content":[],"divert":"الخلط"},{"id":"choice_5","label":"اسألي المعلّم عن الجرّة العليا","sticky":true,"condition":{"var":"حاولت_الخلط"},"content":[],"divert":"الجرة_العليا"}]}]},"السوق":{"tags":[],"content":[{"type":"text","value":"الشمس عمودية والدرج ضيّق. صاحب الدكّان يعرف المعلّم سليم منذ أربعين سنة."},{"type":"text","value":"\"النارنج؟\" ضحك. \"خُذي من شجرة الحوش، لا من عندي. شجرتنا أطيب.\""},{"type":"text","value":"قطفتِ الزهر بيدكِ. البتلة باردة وقصيرة العمر."},{"type":"set","var":"المكونات","op":"+=","value":1},{"type":"divert","target":"المهمة"}]},"البيت":{"tags":[],"content":[{"type":"text","value":"باب البيت القديم يصرّ. في المطبخ قدرٌ نحاسيّ مقلوب، وتحته زجاجةٌ صغيرة كُتب عليها بخطّ يدٍ مائل: \"ورد ٦٧\"."},{"type":"choices","items":[{"id":"choice_1","label":"افتحيها","sticky":false,"condition":null,"content":[{"type":"text","value":"ملأت الرائحة المطبخ دفعةً واحدة، فوقفتِ مكانكِ. ورد قديم، وشيءٌ آخر تحته لم تعرفيه."},{"type":"set","var":"المكونات","op":"+=","value":1},{"type":"set","var":"الثقة","op":"+=","value":1}],"divert":"المهمة"},{"id":"choice_2","label":"خُذيها مغلقة","sticky":false,"condition":null,"content":[{"type":"text","value":"حملتِها كما هي. للمعلّم حقّ أن يفتحها هو."},{"type":"set","var":"المكونات","op":"+=","value":1},{"type":"set","var":"الثقة","op":"+=","value":1}],"divert":"المهمة"}]}]},"المخزن":{"tags":[],"content":[{"type":"text","value":"المخزن بارد ولا نافذة فيه. صندوق العود مقفل، والمفتاح عند المعلّم."},{"type":"choices","items":[{"id":"choice_1","label":"عودي واطلبي المفتاح","sticky":false,"condition":null,"content":[{"type":"text","value":"أعطاكِ المفتاح دون سؤال. القطعة أصغر من إصبعكِ وأثقل ممّا توقّعتِ."},{"type":"set","var":"المكونات","op":"+=","value":1},{"type":"set","var":"الثقة","op":"+=","value":1}],"divert":"المهمة"},{"id":"choice_2","label":"افتحي الصندوق بمفكّ","sticky":false,"condition":null,"content":[{"type":"text","value":"انكسر اللسان المعدنيّ فانفتح الصندوق. أخذتِ القطعة، وفي يدكِ برادةٌ من نحاس."},{"type":"set","var":"المكونات","op":"+=","value":1}],"divert":"المهمة"}]}]},"الخلط":{"tags":[],"content":[{"type":"text","value":"قطرتان من ماء الورد. زهر النارنج مفرومًا ناعمًا. برادة العود على النار الهادئة."},{"type":"conditional","condition":{"var":"عرفت_السر"},"then":[{"type":"text","value":"وفوقها صندل الرفّ، قليلًا."}],"else":[]},{"type":"choices","items":[{"id":"choice_1","label":"قدّمي الزجاجة للمعلّم","sticky":true,"condition":{"var":"عرفت_السر"},"content":[{"type":"text","value":"رفعها إلى النور وشمّها، فسكت طويلًا. \"هذه هي.\""}],"divert":"الخاتمة_الكاملة"},{"id":"choice_2","label":"قدّمي الزجاجة للمعلّم","sticky":true,"condition":{"not":{"var":"عرفت_السر"}},"content":[{"type":"text","value":"شمّها مرّتين ثمّ أنزلها. \"قريب،\" قال. \"قريب جدًّا. لكنّه ليس عطر جدّتي.\""},{"type":"set","var":"حاولت_الخلط","op":"=","value":true}],"divert":"بعد_الفشل"}]}]},"بعد_الفشل":{"tags":[],"content":[{"type":"text","value":"الورقة الصفراء ما زالت فارغة."},{"type":"choices","items":[{"id":"choice_1","label":"ابحثي عن الناقص","sticky":false,"condition":null,"content":[],"divert":"المهمة"},{"id":"choice_2","label":"اكتفي بهذا","sticky":false,"condition":null,"content":[],"divert":"الخاتمة_الناقصة"}]}]},"الخاتمة_الناقصة":{"tags":[],"content":[{"type":"text","value":"طوى المعلّم الورقة الفارغة ووضعها في جيبه. \"سنحاول مرّة أخرى. يومًا ما.\""},{"type":"text","value":"خرجتِ ورائحة الدكّان في كمّكِ، وفي الورقة لا شيء."},{"type":"divert","target":"END"}]},"الجرة_العليا":{"tags":[],"content":[{"type":"text","value":"سألتِه عن الجرّة التي لا اسم عليها."},{"type":"text","value":"نظر إليها كمن يتذكّر وجهًا. \"هذه ليست مكوّنًا. هذا خشب الرفّ نفسه — صندل قديم، كان أبوها يبيعه قبل أن يصير الدكّان دكّانًا.\""},{"type":"text","value":"فتحها. الرائحة رائحة الدكّان في الصباح، قبل أن يفتح الباب."},{"type":"text","value":"\"جدّتي لم تضعه في الوصفة،\" قال. \"الوصفة هي التي جلست فيه أربعين سنة.\""},{"type":"set","var":"المكونات","op":"+=","value":1},{"type":"set","var":"عرفت_السر","op":"=","value":true},{"type":"set","var":"الثقة","op":"+=","value":1},{"type":"divert","target":"المهمة"}]},"الخاتمة_الكاملة":{"tags":[],"content":[{"type":"conditional","condition":{"var":"الثقة","op":"\u003c","value":3},"then":[{"type":"text","value":"كتب المعلّم أسماء المكوّنات الأربعة على الورقة الصفراء، وطواها في جيبه."}],"else":[{"type":"text","value":"كتب المعلّم أسماء المكوّنات الأربعة على الورقة الصفراء، ثمّ دفعها إليكِ. \"اكتبي تحتها اسمكِ. من يعرف الرابع يعرف الوصفة.\""}]},{"type":"text","value":"جمعتِ "},{"type":"interpolation","var":"المكونات"},{"type":"text","value":" مكوّنات، ورائحة الدكّان لا تزال في كمّكِ."},{"type":"divert","target":"END"}]}},"metadata":{"created":"2026-07-31T02:42:07.332Z","modified":"2026-07-31T02:42:07.332Z","passage_count":11,"word_count":381}}
+{"qalam_version":"0.1","title":"العطر المفقود","author":"أقلامنا","language":"ar","direction":"rtl","start":"الدكان","variables":{"المكونات":{"type":"number","initial":0},"الثقة":{"type":"number","initial":0},"عرفت_السر":{"type":"boolean","initial":false},"حاولت_الخلط":{"type":"boolean","initial":false}},"lists":{},"passages":{"الدكان":{"tags":["مشهد_أول"],"content":[{"type":"text","value":"رفوف الخشب تصطفّ حتى السقف، وفي كلّ جرّة رائحةٌ تنتظر. المعلّم سليم يجلس وراء ميزانٍ نحاسيّ، وأمامه ورقة صفراء لا شيء عليها."},{"type":"text","value":"\"وصفة جدّتي ضاعت،\" قال دون أن يرفع عينيه. \"أعرف أنّ فيها أربعة أشياء. أذكر ثلاثة، والرابع يهرب منّي كلّما اقتربتُ.\""},{"type":"choices","items":[{"id":"choice_1","label":"اسأليه عن الثلاثة","sticky":false,"condition":null,"content":[],"divert":"الجرار"},{"id":"choice_2","label":"تأمّلي الدكّان أولًا","sticky":false,"condition":null,"content":[{"type":"text","value":"مررتِ بأصابعكِ على حرف الرفّ فتركت الغبار خطًّا رقيقًا. في الزاوية العليا جرّةٌ وحدها، لا ورقة عليها ولا اسم."},{"type":"set","var":"الثقة","op":"+=","value":1},{"type":"text","value":"\"عينكِ حادّة،\" قال. \"لكن ابدئي من الأسفل.\""}],"divert":"الجرار"}]}]},"الجرار":{"tags":[],"content":[{"type":"text","value":"فتح ثلاث جرارٍ ووضعها في الضوء."},{"type":"text","value":"\"زهر النارنج،\" قال، ورفع أولاها. رائحةٌ حمضيّة تلسع الأنف ثمّ تحلو."},{"type":"text","value":null},{"type":"text","value":"\"ماء الورد. من قطف الفجر لا من قطف الظهر.\""},{"type":"text","value":null},{"type":"text","value":"\"والعود. هذا لا يُشترى من السوق.\""},{"type":"text","value":"\"اجمعيها لي،\" قال. \"ثمّ نرى ما ينقص.\""},{"type":"divert","target":"المهمة"}]},"المهمة":{"tags":[],"content":[{"type":"conditional","condition":{"var":"المكونات","op":"==","value":0},"then":[{"type":"text","value":"الورقة الصفراء أمامكِ فارغة. لا شيء بعد."}],"else":[{"type":"conditional","condition":{"var":"المكونات","op":"\u003c","value":3},"then":[{"type":"text","value":"جمعتِ"}],"else":[{"type":"text","value":"الثلاثة أمامكِ. رائحةٌ واحدة ما زالت غائبة."}]}]},{"type":"choices","items":[{"id":"choice_1","label":"إلى سوق البخاريّة — زهر النارنج","sticky":false,"condition":null,"content":[],"divert":"السوق"},{"id":"choice_2","label":"إلى بيت جدّتكِ — ماء الورد","sticky":false,"condition":null,"content":[],"divert":"البيت"},{"id":"choice_3","label":"إلى المخزن — العود","sticky":false,"condition":null,"content":[],"divert":"المخزن"},{"id":"choice_4","label":"اخلطي العطر","sticky":true,"condition":{"var":"المكونات","op":">=","value":3},"content":[],"divert":"الخلط"},{"id":"choice_5","label":"اسألي المعلّم عن الجرّة العليا","sticky":true,"condition":{"var":"حاولت_الخلط"},"content":[],"divert":"الجرة_العليا"}]}]},"السوق":{"tags":[],"content":[{"type":"text","value":"الشمس عمودية والدرج ضيّق. صاحب الدكّان يعرف المعلّم سليم منذ أربعين سنة."},{"type":"text","value":"\"النارنج؟\" ضحك. \"خُذي من شجرة الحوش، لا من عندي. شجرتنا أطيب.\""},{"type":"text","value":"قطفتِ الزهر بيدكِ. البتلة باردة وقصيرة العمر."},{"type":"set","var":"المكونات","op":"+=","value":1},{"type":"divert","target":"المهمة"}]},"البيت":{"tags":[],"content":[{"type":"text","value":"باب البيت القديم يصرّ. في المطبخ قدرٌ نحاسيّ مقلوب، وتحته زجاجةٌ صغيرة كُتب عليها بخطّ يدٍ مائل: \"ورد ٦٧\"."},{"type":"choices","items":[{"id":"choice_1","label":"افتحيها","sticky":false,"condition":null,"content":[{"type":"text","value":"ملأت الرائحة المطبخ دفعةً واحدة، فوقفتِ مكانكِ. ورد قديم، وشيءٌ آخر تحته لم تعرفيه."},{"type":"set","var":"المكونات","op":"+=","value":1},{"type":"set","var":"الثقة","op":"+=","value":1}],"divert":"المهمة"},{"id":"choice_2","label":"خُذيها مغلقة","sticky":false,"condition":null,"content":[{"type":"text","value":"حملتِها كما هي. للمعلّم حقّ أن يفتحها هو."},{"type":"set","var":"المكونات","op":"+=","value":1},{"type":"set","var":"الثقة","op":"+=","value":1}],"divert":"المهمة"}]}]},"المخزن":{"tags":[],"content":[{"type":"text","value":"المخزن بارد ولا نافذة فيه. صندوق العود مقفل، والمفتاح عند المعلّم."},{"type":"choices","items":[{"id":"choice_1","label":"عودي واطلبي المفتاح","sticky":false,"condition":null,"content":[{"type":"text","value":"أعطاكِ المفتاح دون سؤال. القطعة أصغر من إصبعكِ وأثقل ممّا توقّعتِ."},{"type":"set","var":"المكونات","op":"+=","value":1},{"type":"set","var":"الثقة","op":"+=","value":1}],"divert":"المهمة"},{"id":"choice_2","label":"افتحي الصندوق بمفكّ","sticky":false,"condition":null,"content":[{"type":"text","value":"انكسر اللسان المعدنيّ فانفتح الصندوق. أخذتِ القطعة، وفي يدكِ برادةٌ من نحاس."},{"type":"set","var":"المكونات","op":"+=","value":1}],"divert":"المهمة"}]}]},"الخلط":{"tags":[],"content":[{"type":"text","value":"قطرتان من ماء الورد. زهر النارنج مفرومًا ناعمًا. برادة العود على النار الهادئة."},{"type":"conditional","condition":{"var":"عرفت_السر"},"then":[{"type":"text","value":"وفوقها صندل الرفّ، قليلًا."}],"else":[]},{"type":"choices","items":[{"id":"choice_1","label":"قدّمي الزجاجة للمعلّم","sticky":true,"condition":{"var":"عرفت_السر"},"content":[{"type":"text","value":"رفعها إلى النور وشمّها، فسكت طويلًا. \"هذه هي.\""}],"divert":"الخاتمة_الكاملة"},{"id":"choice_2","label":"قدّمي الزجاجة للمعلّم","sticky":true,"condition":{"not":{"var":"عرفت_السر"}},"content":[{"type":"text","value":"شمّها مرّتين ثمّ أنزلها. \"قريب،\" قال. \"قريب جدًّا. لكنّه ليس عطر جدّتي.\""},{"type":"set","var":"حاولت_الخلط","op":"=","value":true}],"divert":"بعد_الفشل"}]}]},"بعد_الفشل":{"tags":[],"content":[{"type":"text","value":"الورقة الصفراء ما زالت فارغة."},{"type":"choices","items":[{"id":"choice_1","label":"ابحثي عن الناقص","sticky":false,"condition":null,"content":[],"divert":"المهمة"},{"id":"choice_2","label":"اكتفي بهذا","sticky":false,"condition":null,"content":[],"divert":"الخاتمة_الناقصة"}]}]},"الخاتمة_الناقصة":{"tags":[],"content":[{"type":"text","value":"طوى المعلّم الورقة الفارغة ووضعها في جيبه. \"سنحاول مرّة أخرى. يومًا ما.\""},{"type":"text","value":"خرجتِ ورائحة الدكّان في كمّكِ، وفي الورقة لا شيء."},{"type":"divert","target":"END"}]},"الجرة_العليا":{"tags":[],"content":[{"type":"text","value":"سألتِه عن الجرّة التي لا اسم عليها."},{"type":"text","value":"نظر إليها كمن يتذكّر وجهًا. \"هذه ليست مكوّنًا. هذا خشب الرفّ نفسه — صندل قديم، كان أبوها يبيعه قبل أن يصير الدكّان دكّانًا.\""},{"type":"text","value":"فتحها. الرائحة رائحة الدكّان في الصباح، قبل أن يفتح الباب."},{"type":"text","value":"\"جدّتي لم تضعه في الوصفة،\" قال. \"الوصفة هي التي جلست فيه أربعين سنة.\""},{"type":"set","var":"المكونات","op":"+=","value":1},{"type":"set","var":"عرفت_السر","op":"=","value":true},{"type":"set","var":"الثقة","op":"+=","value":1},{"type":"divert","target":"المهمة"}]},"الخاتمة_الكاملة":{"tags":[],"content":[{"type":"conditional","condition":{"var":"الثقة","op":"\u003c","value":3},"then":[{"type":"text","value":"كتب المعلّم أسماء المكوّنات الأربعة على الورقة الصفراء، وطواها في جيبه."}],"else":[{"type":"text","value":"كتب المعلّم أسماء المكوّنات الأربعة على الورقة الصفراء، ثمّ دفعها إليكِ. \"اكتبي تحتها اسمكِ. من يعرف الرابع يعرف الوصفة.\""}]},{"type":"text","value":"جمعتِ "},{"type":"interpolation","var":"المكونات"},{"type":"text","value":" مكوّنات، ورائحة الدكّان لا تزال في كمّكِ."},{"type":"divert","target":"END"}]}},"metadata":{"created":"2026-07-31T04:37:56.743Z","modified":"2026-07-31T04:37:56.743Z","passage_count":11,"word_count":381}}
 </script>
 <script>
 (function () {
@@ -688,13 +756,28 @@ class Engine {
     processContent(content, output) {
         for (const node of content) {
             switch (node.type) {
-                case "text":
+                case "text": {
+                    // PHASE1_SPEC §1.16. The compiled JSON encodes a line break inside a
+                    // paragraph as a text node whose value is null; a paragraph boundary
+                    // is encoded implicitly, as two adjacent prose text nodes with no
+                    // sentinel between them. Turn both into explicit output nodes here so
+                    // the renderer never has to guess.
+                    if (node.value === null) {
+                        output.push({ type: "linebreak" });
+                        break;
+                    }
+                    const last = output[output.length - 1];
+                    if (last && last.type === "text" && !last.inline) {
+                        output.push({ type: "paragraph" });
+                    }
                     output.push({ type: "text", value: node.value });
                     break;
+                }
                 case "interpolation":
                     output.push({
                         type: "text",
                         value: String(this.resolveVar(node.var)),
+                        inline: true,
                     });
                     break;
                 case "set":
@@ -911,16 +994,24 @@ function renderScene(container, scene, title, options) {
         titleEl.textContent = title;
         wrapper.appendChild(titleEl);
     }
-    // Output area — group consecutive text and linebreak nodes into paragraphs.
-    // Text nodes arising from text + interpolation + text must render inline
-    // as a single paragraph.  Linebreaks become <br> inside the paragraph.
+    // Output area — PHASE1_SPEC §1.16.
+    //   text        → a run of prose inside the current paragraph
+    //   linebreak   → <br> inside the current paragraph
+    //   paragraph   → close the current <p> and open a new one
+    //   image       → close the current <p>, then emit the figure
+    // Text arising from text + interpolation + text stays in one paragraph
+    // because the engine emits no `paragraph` node between them.
     const outputEl = document.createElement("div");
     outputEl.className = "aq-output";
     // null sentinel means <br>; string means a text run
     const run = [];
     function flushRun() {
-        if (run.length === 0)
+        // A run of nothing but line breaks is not a paragraph — drop it rather
+        // than emitting an empty <p> that pushes the prose around.
+        if (!run.some((item) => item !== null && item !== "")) {
+            run.length = 0;
             return;
+        }
         const p = document.createElement("p");
         p.className = "aq-text";
         for (const item of run) {
@@ -940,6 +1031,9 @@ function renderScene(container, scene, title, options) {
         }
         else if (node.type === "linebreak") {
             run.push(null);
+        }
+        else if (node.type === "paragraph") {
+            flushRun();
         }
         else if (node.type === "image") {
             flushRun();

@@ -56,7 +56,11 @@ export type ContentNode =
 
 export interface TextNode {
   type: "text";
-  value: string;
+  /**
+   * `null` is the line-break sentinel of PHASE1_SPEC §1.16 — it joins two
+   * consecutive prose lines inside one paragraph. Real prose is a string.
+   */
+  value: string | null;
 }
 
 export interface ChoicesNode {
@@ -168,8 +172,20 @@ export interface StoryScene {
 
 export type OutputNode =
   | ImageOutputNode
-  | { type: "text"; value: string }
-  | { type: "linebreak" };
+  | TextOutputNode
+  | { type: "linebreak" }
+  | { type: "paragraph" };
+
+export interface TextOutputNode {
+  type: "text";
+  value: string;
+  /**
+   * True when this run came from an interpolation (`{متغير}`) rather than a
+   * prose line. Two adjacent prose runs mean a paragraph boundary (PHASE1_SPEC
+   * §1.16); an interpolation sits *inside* a line and must never break it.
+   */
+  inline?: boolean;
+}
 
 export interface ImageOutputNode {
   type: "image";

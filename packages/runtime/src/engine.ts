@@ -232,14 +232,29 @@ export class Engine {
   ): ContentResult {
     for (const node of content) {
       switch (node.type) {
-        case "text":
+        case "text": {
+          // PHASE1_SPEC §1.16. The compiled JSON encodes a line break inside a
+          // paragraph as a text node whose value is null; a paragraph boundary
+          // is encoded implicitly, as two adjacent prose text nodes with no
+          // sentinel between them. Turn both into explicit output nodes here so
+          // the renderer never has to guess.
+          if (node.value === null) {
+            output.push({ type: "linebreak" });
+            break;
+          }
+          const last = output[output.length - 1];
+          if (last && last.type === "text" && !last.inline) {
+            output.push({ type: "paragraph" });
+          }
           output.push({ type: "text", value: node.value });
           break;
+        }
 
         case "interpolation":
           output.push({
             type: "text",
             value: String(this.resolveVar(node.var)),
+            inline: true,
           });
           break;
 

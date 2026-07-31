@@ -4,6 +4,21 @@
    RTL-first, CSS logical properties only
    --------------------------------------------------------------------------- */
 
+/* --- Page ----------------------------------------------------------------- */
+/* html AND body both carry the background. Setting it on .aq-story alone left
+   white margins around a cream card on every exported story. */
+
+html, body {
+  margin: 0;
+  padding: 0;
+  min-block-size: 100%;
+  background: #f5f0e8;
+  color: #3c2a1e;
+  -webkit-text-size-adjust: 100%;
+}
+
+* { box-sizing: border-box; }
+
 /* --- Container ------------------------------------------------------------ */
 
 .aq-story {
@@ -159,13 +174,20 @@
 
 /* --- Responsive ----------------------------------------------------------- */
 
-@media (max-width: 480px) {
+.aq-choice-btn { min-block-size: 48px; }
+.aq-btn { min-block-size: 44px; }
+
+@media (max-width: 40rem) {
   .aq-story {
-    padding: 1.25rem 1rem;
+    padding-inline: 1.125rem;
+    padding-block: 1.5rem calc(1.5rem + env(safe-area-inset-bottom));
     font-size: 1.125rem;
   }
 
   .aq-title {
     font-size: 1.5rem;
   }
+
+  .aq-toolbar { flex-wrap: wrap; margin-block-start: 2rem; }
+  .aq-btn { min-inline-size: 44px; }
 }

@@ -42,9 +42,13 @@ export function renderScene(
     wrapper.appendChild(titleEl);
   }
 
-  // Output area — group consecutive text and linebreak nodes into paragraphs.
-  // Text nodes arising from text + interpolation + text must render inline
-  // as a single paragraph.  Linebreaks become <br> inside the paragraph.
+  // Output area — PHASE1_SPEC §1.16.
+  //   text        → a run of prose inside the current paragraph
+  //   linebreak   → <br> inside the current paragraph
+  //   paragraph   → close the current <p> and open a new one
+  //   image       → close the current <p>, then emit the figure
+  // Text arising from text + interpolation + text stays in one paragraph
+  // because the engine emits no `paragraph` node between them.
   const outputEl = document.createElement("div");
   outputEl.className = "aq-output";
 
@@ -52,7 +56,12 @@ export function renderScene(
   const run: Array<string | null> = [];
 
   function flushRun(): void {
-    if (run.length === 0) return;
+    // A run of nothing but line breaks is not a paragraph — drop it rather
+    // than emitting an empty <p> that pushes the prose around.
+    if (!run.some((item) => item !== null && item !== "")) {
+      run.length = 0;
+      return;
+    }
     const p = document.createElement("p");
     p.className = "aq-text";
     for (const item of run) {
@@ -71,6 +80,8 @@ export function renderScene(
       run.push(node.value);
     } else if (node.type === "linebreak") {
       run.push(null);
+    } else if (node.type === "paragraph") {
+      flushRun();
     } else if (node.type === "image") {
       flushRun();
       outputEl.appendChild(renderImage(node));
