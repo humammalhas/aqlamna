@@ -179,9 +179,53 @@ export default function TopBar({ breakpoint, maxPanes }: Props) {
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", minInlineSize: 0 }}>
-          <span style={{ fontSize: "1.25rem", fontWeight: 700, color: "var(--aq-accent)" }}>
+          {/* THE WAY OUT. This was a <span>, and the editor had zero <a> in its
+              header and zero links to "/" anywhere on the page — so once you
+              opened /editor/ the only exits were browser back and retyping the
+              URL. An INSTALLED user has neither: the manifest sets
+              start_url "/editor/" with display "standalone", so the app opens
+              straight into the editor with no address bar, and the landing
+              page, the docs, privacy and terms were unreachable by any means.
+
+              A real <a href="/">, not onClick on a span: middle-click,
+              ⌘/Ctrl-click, "open in new tab" and the keyboard all have to
+              work, and only an anchor gives them for free. No target="_blank"
+              — inside the installed app that would throw the visitor out into
+              a browser window; "/" is inside the manifest's scope ("/"), so a
+              plain same-origin href navigates within the app.
+
+              The accessible name says the DESTINATION, because "أقلامنا" alone
+              is a brand name and tells a screen-reader user nothing about
+              where the link goes. It opens with the visible text, so it
+              satisfies WCAG 2.5.3 (label in name); `الصفحة الرئيسية` is the
+              same wording the docs footers already use for this destination.
+
+              GEOMETRY. `inline-flex` + `min-block-size` gives the link a 44px
+              tall target WITHOUT adding a single pixel of inline width — the
+              phone bar at 390px has to hold this plus ⚙️, ▶ شغّل, ⬇ تصدير and
+              ☰ with scrollWidth === clientWidth, and the header is already
+              61px tall because of those 44px buttons. Any horizontal padding
+              here spends width the bar does not have. `textDecoration: none`
+              is not cosmetic: an anchor underlines by default and the span did
+              not. */}
+          <a
+            href="/"
+            data-home-link
+            title="الصفحة الرئيسية"
+            aria-label="أقلامنا — الصفحة الرئيسية"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              minBlockSize: "44px",
+              fontSize: "1.25rem",
+              fontWeight: 700,
+              color: "var(--aq-accent)",
+              textDecoration: "none",
+              whiteSpace: "nowrap",
+            }}
+          >
             أقلامنا
-          </span>
+          </a>
           {!isPhone && (
             <span style={{ fontSize: "0.9375rem", color: "var(--aq-muted)" }}>المحرر</span>
           )}

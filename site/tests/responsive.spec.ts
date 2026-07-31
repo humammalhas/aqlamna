@@ -456,7 +456,11 @@ test.describe("editor layout", () => {
       await page.getByRole("button", { name: "مساعدة" }).click();
       await page.waitForTimeout(300);
 
-      const links = page.locator("header a");
+      // The THREE DOC LINKS, not "every anchor in the header". The header now
+      // also carries the أقلامنا wordmark as a link to "/", which is a
+      // permanent fourth <a> and has nothing to do with this menu. The doc
+      // links are the ones that open in a new tab.
+      const links = page.locator('header a[target="_blank"]');
       await expect(links).toHaveCount(3);
 
       const headerBottom = await page
@@ -504,5 +508,168 @@ test.describe("editor layout", () => {
       `scroller ${m.codeMirror!.clientWidth} client / ${m.codeMirror!.scrollWidth} scroll`,
     ).toBe(m.codeMirror!.clientWidth);
     expect(m.codeMirror!.widestLine).toBeLessThanOrEqual(m.codeMirror!.clientWidth);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// The way out of the editor
+//
+// Measured before this existed: 0 <a> in the editor header, 0 links to "/"
+// anywhere on the page, and أقلامنا in the corner was a <span>. Browser back
+// and retyping the URL were the only exits — and an INSTALLED user has
+// neither, because the manifest opens the app at /editor/ in `standalone`
+// with no address bar.
+// ---------------------------------------------------------------------------
+
+test.describe("the editor has a way back to the site", () => {
+  for (const width of [390, 1440]) {
+    test(`${width}: the wordmark is a real link to / and lands on the landing page`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height: 844 });
+      await skipOnboarding(page);
+      await page.goto("/editor/", { waitUntil: "networkidle" });
+      await page.waitForTimeout(500);
+
+      const link = page.locator("header a[data-home-link]");
+      await expect(link).toBeVisible();
+
+      const attrs = await link.evaluate((el: HTMLAnchorElement) => ({
+        tag: el.tagName.toLowerCase(),
+        hrefAttr: el.getAttribute("href"),
+        // A resolved href is what middle-click, ⌘/Ctrl-click and "open in new
+        // tab" actually use. A click handler on a <span> gives none of them.
+        resolvedPath: new URL(el.href).pathname,
+        target: el.getAttribute("target"),
+        accessibleName: el.getAttribute("aria-label") ?? "",
+        visibleText: el.textContent!.trim(),
+        textDecorationLine: getComputedStyle(el).textDecorationLine,
+      }));
+
+      expect(attrs.tag, "the wordmark is not an anchor").toBe("a");
+      expect(attrs.hrefAttr).toBe("/");
+      expect(attrs.resolvedPath).toBe("/");
+      // target="_blank" inside an installed app throws the writer out into a
+      // browser window. The whole point is to stay in the app.
+      expect(attrs.target).toBeNull();
+      // WCAG 2.5.3: the accessible name must contain the visible label, and it
+      // must say where the link GOES — "أقلامنا" alone is a brand name.
+      expect(attrs.accessibleName).toContain(attrs.visibleText);
+      expect(attrs.accessibleName.length).toBeGreaterThan(attrs.visibleText.length);
+      // An anchor underlines by default; the span it replaced did not.
+      expect(attrs.textDecorationLine).toBe("none");
+
+      // Keyboard: reachable, with a visible ring. Assert the COMPUTED outline
+      // off the focused element, not the presence of a :focus-visible rule.
+      await link.focus();
+      const ring = await link.evaluate((el) => {
+        const cs = getComputedStyle(el);
+        return {
+          isActive: document.activeElement === el,
+          outlineStyle: cs.outlineStyle,
+          outlineWidth: parseFloat(cs.outlineWidth),
+        };
+      });
+      expect(ring.isActive).toBe(true);
+      expect(ring.outlineStyle).not.toBe("none");
+      expect(ring.outlineWidth).toBeGreaterThan(0);
+
+      // Clicking it actually arrives somewhere, in this window.
+      const response = await Promise.all([
+        page.waitForNavigation({ waitUntil: "networkidle" }),
+        link.click(),
+      ]);
+      expect(response[0]!.status()).toBe(200);
+      expect(new URL(page.url()).pathname).toBe("/");
+      await expect(page.locator("h1.hero-title")).toHaveText("أقلامنا");
+      expect(page.context().pages()).toHaveLength(1);
+    });
+  }
+
+  test("390: the link costs the top bar nothing — no scroll, nothing off-screen", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await skipOnboarding(page);
+    await page.goto("/editor/", { waitUntil: "networkidle" });
+    await page.waitForTimeout(500);
+
+    const header = await page.locator("header").evaluate((el) => ({
+      scrollWidth: el.scrollWidth,
+      clientWidth: el.clientWidth,
+    }));
+    expect(
+      header.scrollWidth,
+      `header ${header.scrollWidth} scroll / ${header.clientWidth} client`,
+    ).toBe(header.clientWidth);
+
+    // Every control in the bar, wordmark included: on screen and big enough to
+    // hit. ⬇ تصدير and ▶ شغّل once sat at NEGATIVE x here.
+    const boxes = await page
+      .locator("header a, header button")
+      .evaluateAll((els) =>
+        els.map((el) => {
+          const r = el.getBoundingClientRect();
+          return {
+            name: el.getAttribute("aria-label") ?? el.textContent!.trim(),
+            x: r.x,
+            width: r.width,
+            height: r.height,
+          };
+        }),
+      );
+    expect(boxes.length).toBe(5); // أقلامنا · ⚙️ · ▶ شغّل · ⬇ تصدير · ☰
+    for (const b of boxes) {
+      expect(b.x, `${b.name} starts at x=${b.x}`).toBeGreaterThanOrEqual(0);
+      expect(b.x + b.width, `${b.name} ends at ${b.x + b.width}`).toBeLessThanOrEqual(390.5);
+      expect(b.height, `${b.name} is ${b.height}px tall`).toBeGreaterThanOrEqual(44);
+      expect(b.width, `${b.name} is ${b.width}px wide`).toBeGreaterThanOrEqual(44);
+    }
+  });
+
+  test("leaving mid-sentence keeps the writing", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await skipOnboarding(page);
+    await page.goto("/editor/", { waitUntil: "networkidle" });
+    await page.waitForTimeout(600);
+
+    // A one-click exit from an editor is only safe if the editor has already
+    // written what is on screen. `setSource()` persists to IndexedDB on every
+    // change, so this asserts the bytes came back — not that the code looks
+    // like it saves.
+    const sentence = "كان يا ما كان، في قريةٍ صغيرة على حافّة الوادي";
+    await page.locator(".cm-content").click();
+    await page.keyboard.type(sentence, { delay: 30 });
+
+    // No pause between the last keystroke and the click. That is the case.
+    await Promise.all([
+      page.waitForNavigation({ waitUntil: "networkidle" }),
+      page.locator("header a[data-home-link]").click(),
+    ]);
+    expect(new URL(page.url()).pathname).toBe("/");
+
+    await page.goto("/editor/", { waitUntil: "networkidle" });
+    await page.waitForTimeout(1200);
+
+    const restored = await page.evaluate(
+      () =>
+        new Promise<string | null>((resolve) => {
+          const req = indexedDB.open("aqlamna-editor", 3);
+          req.onsuccess = () => {
+            const g = req.result
+              .transaction("projects", "readonly")
+              .objectStore("projects")
+              .get("current-source");
+            g.onsuccess = () => resolve((g.result as string) ?? null);
+            g.onerror = () => resolve(null);
+          };
+          req.onerror = () => resolve(null);
+          req.onblocked = () => resolve(null);
+        }),
+    );
+    expect(restored, `typed ${sentence.length} chars, got back ${restored?.length ?? 0}`).toBe(
+      sentence,
+    );
+    await expect(page.locator(".cm-content")).toContainText(sentence);
   });
 });
