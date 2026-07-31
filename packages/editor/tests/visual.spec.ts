@@ -78,8 +78,8 @@ const RUN = { name: "شغّل القصة" } as const;
 /**
  * Make a pane visible.
  *
- * نص · مخطط · شغّل are TOGGLES with `aria-pressed`, not a view switcher. On a
- * desktop viewport all three can be on at once, and every `click("نص")` in
+ * قصتك · مخطط · شغّل are TOGGLES with `aria-pressed`, not a view switcher. On a
+ * desktop viewport all three can be on at once, and every `click("قصتك")` in
  * this file — written as "switch back to text" — was turning the text pane
  * OFF. The failure surfaced as ".cm-line never appeared", which reads like
  * CodeMirror broke and is the opposite of what happened.
@@ -369,7 +369,7 @@ test.describe("canvas visual contract", () => {
     await page.waitForSelector(".react-flow__node-passage", { timeout: 10000 });
 
     // Switch back to text
-    await showPane(page, "نص");
+    await showPane(page, "قصتك");
     await page.waitForSelector(".cm-line", { timeout: 10000 });
 
     // Content preserved, character for character.
@@ -481,7 +481,7 @@ test.describe("canvas interactions", () => {
 
     // Switch back to text and do the rename manually via the editor
     // (this simulates what the rename feature does: replace header + references)
-    await showPane(page, "نص");
+    await showPane(page, "قصتك");
     await page.waitForSelector(".cm-line", { timeout: 10000 });
 
     // Manually replace "ثان" with "مقطع_جديد" in the editor
@@ -516,7 +516,7 @@ test.describe("canvas interactions", () => {
     expect(edgeCount).toBeGreaterThan(0);
 
     // Switch back to text
-    await showPane(page, "نص");
+    await showPane(page, "قصتك");
     await page.waitForSelector(".cm-line", { timeout: 10000 });
 
     // Content preserved after round-trip
@@ -585,7 +585,7 @@ test.describe("canvas interactions", () => {
       .not.toBe("");
 
     // Switch back to text
-    await showPane(page, "نص");
+    await showPane(page, "قصتك");
     await page.waitForSelector(".cm-line", { timeout: 10000 });
 
     const finalText = await editor.textContent();

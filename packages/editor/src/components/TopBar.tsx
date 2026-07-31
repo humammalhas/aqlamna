@@ -142,9 +142,12 @@ export default function TopBar({ breakpoint, maxPanes }: Props) {
     };
   }, [showMore, showHelp]);
 
+  // Same three words as App.tsx's PANE_ORDER and as the landing page's preview
+  // tabs. The text pane is `قصتك` here and `قصتك` in EditorPane's header; it
+  // used to be `نص` in one and `قصتك` in the other, in the same window.
   const paneToggles: Array<{ key: PaneKey; label: string; on: boolean }> = [
     { key: "player", label: "شغّل", on: panePlayer },
-    { key: "text", label: "نص", on: paneText },
+    { key: "text", label: "قصتك", on: paneText },
     { key: "canvas", label: "مخطط", on: paneCanvas },
   ];
 

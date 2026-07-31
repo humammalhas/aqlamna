@@ -232,7 +232,7 @@ test.describe("editor layout", () => {
 
       // Turn every pane on, one at a time — the bug was that a pane enabled
       // after a manual drag got a column of exactly 0px.
-      for (const name of ["شغّل", "نص", "مخطط"]) {
+      for (const name of ["شغّل", "قصتك", "مخطط"]) {
         const btn = page.getByRole("button", { name, exact: true });
         if ((await btn.getAttribute("aria-pressed")) === "false") {
           await btn.click();
@@ -304,7 +304,7 @@ test.describe("editor layout", () => {
     await page.goto("/editor/", { waitUntil: "networkidle" });
     await page.waitForTimeout(500);
 
-    for (const name of ["شغّل", "نص", "مخطط"]) {
+    for (const name of ["شغّل", "قصتك", "مخطط"]) {
       const btn = page.getByRole("button", { name, exact: true });
       if ((await btn.getAttribute("aria-pressed")) === "true") {
         await btn.click();
@@ -319,7 +319,7 @@ test.describe("editor layout", () => {
     const on: string[] = [];
     for (const [name, key] of [
       ["شغّل", "player"],
-      ["نص", "text"],
+      ["قصتك", "text"],
       ["مخطط", "canvas"],
     ] as const) {
       const btn = page.getByRole("button", { name, exact: true });
@@ -485,7 +485,7 @@ test.describe("editor layout", () => {
     await page.waitForTimeout(500);
 
     // Make sure the text pane is on.
-    const textBtn = page.getByRole("button", { name: "نص", exact: true });
+    const textBtn = page.getByRole("button", { name: "قصتك", exact: true });
     if ((await textBtn.getAttribute("aria-pressed")) === "false") {
       await textBtn.click();
       await page.waitForTimeout(300);

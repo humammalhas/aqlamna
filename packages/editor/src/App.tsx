@@ -39,11 +39,20 @@ function saveWidths(w: WidthsMap) {
   try { localStorage.setItem(WIDTHS_KEY, JSON.stringify(w)); } catch { /* noop */ }
 }
 
-/** Panes in RTL visual order: the first entry is painted RIGHTMOST. */
+/**
+ * Panes in RTL visual order: the first entry is painted RIGHTMOST.
+ *
+ * `label` and `tabLabel` must name the SAME thing. The text pane used to be
+ * `نص` in the toggle bar and `قصتك` in its own header — two names for one pane,
+ * both on screen at once, against §5.3 of the corpus (one term per concept).
+ * `قصتك` wins: it says whose story it is, `نص` says only "text", and it is what
+ * the landing page's preview tabs use so the words a visitor learns there are
+ * the words they meet here.
+ */
 const PANE_ORDER: Array<{ key: PaneKey; label: string; tabLabel: string }> = [
   { key: "player", label: "شغّل", tabLabel: "▶ شغّل" },
   { key: "canvas", label: "مخطط", tabLabel: "مخطط" },
-  { key: "text", label: "نص", tabLabel: "قصتك" },
+  { key: "text", label: "قصتك", tabLabel: "قصتك" },
 ];
 
 type DragTarget = {
