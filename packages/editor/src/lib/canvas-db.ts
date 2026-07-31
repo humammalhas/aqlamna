@@ -3,8 +3,8 @@
 // Separate from the source-text DB so positions never leak into .qalam files.
 // ---------------------------------------------------------------------------
 
-const DB_NAME = "aqlamna-editor";
-const DB_VERSION = 2; // v1 had "projects" store, v2 adds "canvas"
+import { openEditorDB } from "./db.js";
+
 const STORE_NAME = "canvas";
 
 /** View mode persisted across sessions. */
@@ -12,26 +12,15 @@ export type ViewMode = "text" | "canvas" | "split";
 
 const VIEW_MODE_KEY = "view-mode";
 
-// ---- Open DB with store migration ------------------------------------------
+// ---- Open DB ---------------------------------------------------------------
+//
+// This file used to carry its own `indexedDB.open("aqlamna-editor", 2)` while
+// db.ts asked for 3. store.ts calls getViewMode() at module level, so THIS
+// opener won the race, created the database at v2 and held the connection —
+// which blocked db.ts's upgrade and deadlocked every IndexedDB call in the tab.
+// See the header of db.ts. There is one opener now and one version number.
 
-function openCanvasStore(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, DB_VERSION);
-    req.onupgradeneeded = () => {
-      const db = req.result;
-      // Create "projects" store if not exists (v1)
-      if (!db.objectStoreNames.contains("projects")) {
-        db.createObjectStore("projects");
-      }
-      // Create "canvas" store for our data (v2)
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME);
-      }
-    };
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
-  });
-}
+const openCanvasStore = openEditorDB;
 
 // ---- View mode -------------------------------------------------------------
 

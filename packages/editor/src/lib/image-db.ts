@@ -3,16 +3,15 @@
 // Downscales to 768px long side, encodes to WebP, discards the original.
 // ---------------------------------------------------------------------------
 
-const DB_NAME = "aqlamna-editor";
+import { openEditorDB } from "./db.js";
+
 const STORE_NAME = "images";
 
-function openDB(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME);
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
-  });
-}
+// This file used to call `indexedDB.open("aqlamna-editor")` with NO version,
+// which opens whatever version exists — including one with no "images" store,
+// where every transaction below throws NotFoundError. One opener, one version,
+// one schema. See the header of db.ts.
+const openDB = openEditorDB;
 
 export interface StoredImage {
   /** The WebP data URL (data:image/webp;base64,...). */
