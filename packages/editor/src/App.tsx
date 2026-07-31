@@ -1,12 +1,17 @@
 // ---------------------------------------------------------------------------
-// App — root component. Three independent toggleable panes in a CSS grid.
-// Player on the right, text and canvas on the left. Drag handles between
-// adjacent visible panes. No overlays, no absolute positioning.
+// App — root component.
+//
+//   desktop (>= 64rem)  three panes in a CSS grid with draggable dividers
+//   tablet  (40–64rem)  two panes, one divider; a third selection replaces one
+//   phone   (< 40rem)   ONE pane, full width and height, with a bottom tab bar
+//
+// No overlays, no absolute positioning, no horizontal page scroll at any size.
 // ---------------------------------------------------------------------------
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import { useStore } from "./store.js";
+import { useStore, type PaneKey } from "./store.js";
 import { loadSource } from "./lib/db.js";
+import { useBreakpoint, MAX_PANES } from "./lib/breakpoint.js";
 import TopBar from "./components/TopBar.js";
 import EditorPane from "./components/EditorPane.js";
 import PlayerPane from "./components/PlayerPane.js";
@@ -18,6 +23,7 @@ import OnboardingOverlay from "./components/OnboardingOverlay.js";
 
 const WIDTHS_KEY = "aqlamna-pane-widths";
 const MIN_PX = 260;
+const DIVIDER_PX = 6;
 
 type WidthsMap = Record<string, number>;
 
@@ -32,67 +38,82 @@ function saveWidths(w: WidthsMap) {
   try { localStorage.setItem(WIDTHS_KEY, JSON.stringify(w)); } catch { /* noop */ }
 }
 
-/** Return equal widths for the given keys, normalized to sum=1. */
-function equalWidths(keys: string[]): WidthsMap {
-  const n = keys.length;
-  const w: WidthsMap = {};
-  for (const k of keys) w[k] = 1 / n;
-  return w;
-}
+/** Panes in RTL visual order: the first entry is painted RIGHTMOST. */
+const PANE_ORDER: Array<{ key: PaneKey; label: string; tabLabel: string }> = [
+  { key: "player", label: "شغّل", tabLabel: "▶ شغّل" },
+  { key: "canvas", label: "مخطط", tabLabel: "مخطط" },
+  { key: "text", label: "نص", tabLabel: "قصتك" },
+];
 
-// ---- Drag state ----
-
-type DragTarget = { leftIdx: number; rightIdx: number; startX: number; startLeft: number; startRight: number };
+type DragTarget = {
+  startKey: PaneKey;
+  endKey: PaneKey;
+  startX: number;
+  startStart: number;
+  startEnd: number;
+};
 
 export default function App() {
-  const storyJson = useStore((s) => s.storyJson);
   const error = useStore((s) => s.error);
   const playerKey = useStore((s) => s.playerKey);
   const panePlayer = useStore((s) => s.panePlayer);
   const paneText = useStore((s) => s.paneText);
   const paneCanvas = useStore((s) => s.paneCanvas);
+  const togglePane = useStore((s) => s.togglePane);
+  const ensurePaneLimit = useStore((s) => s.ensurePaneLimit);
   const loadSourceAction = useStore((s) => s.loadSource);
   const clearError = useStore((s) => s.clearError);
   const initialized = useRef(false);
 
-  // Pane widths keyed by pane type (e.g. "text", "canvas", "player").
+  const breakpoint = useBreakpoint();
+  const maxPanes = MAX_PANES[breakpoint];
+
   const [widths, setWidths] = useState<WidthsMap>(() => loadWidths());
   const [drag, setDrag] = useState<DragTarget | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // In RTL, the first grid column appears on the RIGHT.
-  // We want: player (right), canvas, text (left).
-  const visible: Array<{ key: string; label: string }> = [];
-  if (panePlayer) visible.push({ key: "player", label: "شغّل" });
-  if (paneCanvas) visible.push({ key: "canvas", label: "مخطط" });
-  if (paneText) visible.push({ key: "text", label: "نص" });
+  const on: Record<PaneKey, boolean> = {
+    player: panePlayer,
+    text: paneText,
+    canvas: paneCanvas,
+  };
+  // The store guarantees at least one and at most `maxPanes` are on, so this
+  // list is never empty and never needs a fallback that the toggles disagree
+  // with. Trim defensively anyway if a stale localStorage says otherwise.
+  const visible = PANE_ORDER.filter((p) => on[p.key]).slice(0, maxPanes);
+  const visibleKeys = visible.map((p) => p.key);
 
-  const effectiveVisible = visible.length === 0
-    ? [{ key: "text", label: "نص" }]
-    : visible;
+  // Enforce the size limit when the window crosses a breakpoint, so the
+  // toggles and the tab bar always agree with what is on screen.
+  useEffect(() => {
+    ensurePaneLimit(maxPanes);
+  }, [maxPanes, panePlayer, paneText, paneCanvas, ensurePaneLimit]);
 
-  // Normalise widths: use saved values for visible panes, fill gaps with equal share
-  const visibleKeys = effectiveVisible.map((p) => p.key);
+  // Normalise widths. A pane with no saved width must get a real share — the
+  // old code divided 0 by the running total and handed the newly enabled pane
+  // a column of exactly 0px.
   const normWidths = (() => {
-    const total = visibleKeys.reduce((s, k) => s + (widths[k] || 0), 0);
-    if (total > 0.01) {
-      // We have saved widths — renormalise to sum=1
+    const known = visibleKeys.filter((k) => (widths[k] ?? 0) > 0);
+    if (known.length === 0) {
       const out: WidthsMap = {};
-      for (const k of visibleKeys) out[k] = (widths[k] || 0) / total;
+      for (const k of visibleKeys) out[k] = 1 / visibleKeys.length;
       return out;
     }
-    return equalWidths(visibleKeys);
+    const avg = known.reduce((s, k) => s + widths[k]!, 0) / known.length;
+    const filled: WidthsMap = {};
+    for (const k of visibleKeys) filled[k] = (widths[k] ?? 0) > 0 ? widths[k]! : avg;
+    const total = visibleKeys.reduce((s, k) => s + filled[k]!, 0);
+    const out: WidthsMap = {};
+    for (const k of visibleKeys) out[k] = filled[k]! / total;
+    return out;
   })();
 
-  // Compute grid-template-columns: each pane gets its share, dividers between
-  const gridCols = visibleKeys.flatMap((k, i) => {
-    const cols: string[] = [];
-    if (i > 0) cols.push("4px");
-    cols.push(`${normWidths[k]}fr`);
-    return cols;
-  }).join(" ");
+  // Dividers are declared at the same px width as the element that fills them,
+  // so the columns add up to the container and not four pixels more.
+  const gridCols = visibleKeys
+    .flatMap((k, i) => (i > 0 ? [`${DIVIDER_PX}px`, `${normWidths[k]}fr`] : [`${normWidths[k]}fr`]))
+    .join(" ");
 
-  // Load source on mount
   useEffect(() => {
     if (initialized.current) return;
     initialized.current = true;
@@ -101,43 +122,48 @@ export default function App() {
     });
   }, [loadSourceAction]);
 
-  // Save widths on change
   useEffect(() => { saveWidths(widths); }, [widths]);
 
-  // ---- Drag handlers ----
+  // ---- Divider drag --------------------------------------------------------
 
-  const handleDividerDown = useCallback((leftKey: string, rightKey: string) => (e: React.MouseEvent) => {
-    e.preventDefault();
-    setDrag({
-      leftIdx: 0, rightIdx: 0, // unused with key-based widths
-      startX: e.clientX,
-      startLeft: normWidths[leftKey] ?? 0.5,
-      startRight: normWidths[rightKey] ?? 0.5,
-      leftKey,
-      rightKey,
-    } as DragTarget & { leftKey: string; rightKey: string });
-  }, [normWidths]);
+  const handleDividerDown = useCallback(
+    (startKey: PaneKey, endKey: PaneKey) => (e: React.MouseEvent) => {
+      e.preventDefault();
+      setDrag({
+        startKey,
+        endKey,
+        startX: e.clientX,
+        startStart: normWidths[startKey] ?? 0.5,
+        startEnd: normWidths[endKey] ?? 0.5,
+      });
+    },
+    [normWidths],
+  );
 
   useEffect(() => {
     if (!drag || !containerRef.current) return;
-    const d = drag as DragTarget & { leftKey?: string; rightKey?: string };
-    if (!d.leftKey || !d.rightKey) return;
 
     const handleMove = (e: MouseEvent) => {
-      const rect = containerRef.current!.getBoundingClientRect();
-      const totalPx = rect.width;
-      const dx = e.clientX - drag.startX;
-      const dFrac = dx / totalPx;
+      const totalPx = containerRef.current!.getBoundingClientRect().width;
+      if (totalPx <= 0) return;
 
-      const newLeft = Math.max(MIN_PX / totalPx, drag.startLeft + dFrac);
-      const newRight = Math.max(MIN_PX / totalPx, drag.startRight - dFrac);
+      // The grid is RTL: `startKey` is the pane on the RIGHT of the divider.
+      // Dragging the cursor right must therefore SHRINK it, or the divider
+      // travels the opposite way to the mouse — measured at exactly -1:1.
+      const dFrac = -(e.clientX - drag.startX) / totalPx;
 
-      setWidths((prev) => {
-        const next = { ...prev };
-        next[d.leftKey!] = newLeft;
-        next[d.rightKey!] = newRight;
-        return next;
-      });
+      const minFrac = MIN_PX / totalPx;
+      const pair = drag.startStart + drag.startEnd;
+      let next = drag.startStart + dFrac;
+      next = Math.max(minFrac, Math.min(pair - minFrac, next));
+      // A container too narrow for two minimums: split it and stop.
+      if (pair - minFrac < minFrac) next = pair / 2;
+
+      setWidths((prev) => ({
+        ...prev,
+        [drag.startKey]: next,
+        [drag.endKey]: pair - next,
+      }));
     };
 
     const handleUp = () => setDrag(null);
@@ -150,11 +176,9 @@ export default function App() {
     };
   }, [drag]);
 
-  // ---- Render ----
+  // ---- Render --------------------------------------------------------------
 
-  const isMobile = typeof window !== "undefined" && window.innerWidth <= 768;
-
-  const renderPane = (key: string) => {
+  const renderPane = (key: PaneKey) => {
     switch (key) {
       case "text": return <EditorPane />;
       case "canvas": return <CanvasPane />;
@@ -163,13 +187,39 @@ export default function App() {
     }
   };
 
-  return (
-    <div className="flex flex-col" style={{ blockSize: "100vh" }}>
-      <TopBar />
+  const isPhone = breakpoint === "phone";
 
-      {!isMobile && (
+  return (
+    <div className="flex flex-col" style={{ blockSize: "100dvh", overflowX: "hidden" }}>
+      <h1 className="sr-only">أقلامنا — محرّر القصص التفاعلية</h1>
+
+      <TopBar breakpoint={breakpoint} maxPanes={maxPanes} />
+
+      {isPhone ? (
+        // One pane, full width, full height. Everything else is a tab away.
+        <div
+          data-panes="phone"
+          style={{ flex: "1 1 0", minBlockSize: 0, overflow: "hidden" }}
+        >
+          {visibleKeys.map((key) => (
+            <div
+              key={key}
+              data-pane={key}
+              style={{
+                blockSize: "100%",
+                minBlockSize: 0,
+                overflow: "auto",
+                position: "relative",
+              }}
+            >
+              {renderPane(key)}
+            </div>
+          ))}
+        </div>
+      ) : (
         <div
           ref={containerRef}
+          data-panes={breakpoint}
           style={{
             display: "grid",
             gridTemplateColumns: gridCols,
@@ -178,64 +228,90 @@ export default function App() {
             overflow: "hidden",
           }}
         >
-          {effectiveVisible.flatMap((pane, i) => {
+          {visible.flatMap((pane, i) => {
             const items = [];
-            // Divider before this pane (except first)
             if (i > 0) {
               items.push(
                 <div
                   key={`div-${visibleKeys[i - 1]}-${visibleKeys[i]}`}
-                  onMouseDown={handleDividerDown(visibleKeys[i - 1], visibleKeys[i])}
+                  role="separator"
+                  aria-orientation="vertical"
+                  aria-label={`غيّر عرض ${visible[i - 1]!.label} و${pane.label}`}
+                  tabIndex={0}
+                  onMouseDown={handleDividerDown(visibleKeys[i - 1]!, visibleKeys[i]!)}
                   style={{
-                    gridColumn: i * 2, // 2, 4, 6, ...
+                    gridColumn: i * 2,
                     gridRow: 1,
-                    inlineSize: "6px",
+                    inlineSize: "100%",
                     cursor: "col-resize",
                     background: drag ? "var(--aq-accent)" : "var(--aq-border)",
                     zIndex: 10,
                   }}
-                />
+                />,
               );
             }
-            // Pane
             items.push(
               <div
                 key={pane.key}
+                data-pane={pane.key}
                 style={{
-                  gridColumn: i * 2 + 1, // 1, 3, 5, ...
+                  gridColumn: i * 2 + 1,
                   gridRow: 1,
+                  minInlineSize: 0,
                   minBlockSize: 0,
                   overflow: "auto",
                   position: "relative",
                 }}
               >
                 {renderPane(pane.key)}
-              </div>
+              </div>,
             );
             return items;
           })}
         </div>
       )}
 
-      {/* Mobile: stacked */}
-      {isMobile && (
-        <div style={{ flex: "1 1 0", minBlockSize: 0, display: "flex", flexDirection: "column", overflow: "auto" }}>
-          {paneText && (
-            <div style={{ flex: panePlayer && storyJson ? "0 0 55%" : "1 1 0", minBlockSize: 0, overflow: "hidden" }}>
-              <EditorPane />
-            </div>
-          )}
-          {paneCanvas && (
-            <div style={{ flex: "0 0 40%", minBlockSize: 0 }}>
-              <CanvasPane />
-            </div>
-          )}
-          {panePlayer && storyJson && (
-            <div style={{ flex: "0 0 45%", minBlockSize: 0 }}>
-              <PlayerPane key={playerKey} />
-            </div>
-          )}
-        </div>
+      {isPhone && (
+        // Bottom, not top — that is where thumbs are.
+        <nav
+          aria-label="الأقسام"
+          style={{
+            display: "flex",
+            flexShrink: 0,
+            borderBlockStart: "1px solid var(--aq-border)",
+            background: "var(--aq-surface)",
+            paddingBlockEnd: "env(safe-area-inset-bottom)",
+          }}
+        >
+          {PANE_ORDER.slice().reverse().map((p) => {
+            const active = visibleKeys[0] === p.key;
+            return (
+              <button
+                key={p.key}
+                data-pane-tab={p.key}
+                aria-pressed={active}
+                onClick={() => togglePane(p.key, 1)}
+                style={{
+                  flex: "1 1 0",
+                  minBlockSize: "48px",
+                  paddingBlock: "0.5rem",
+                  fontSize: "0.9375rem",
+                  fontWeight: active ? 700 : 400,
+                  fontFamily: "inherit",
+                  color: active ? "var(--aq-accent)" : "var(--aq-muted)",
+                  background: "transparent",
+                  border: "none",
+                  borderBlockStart: active
+                    ? "2px solid var(--aq-accent)"
+                    : "2px solid transparent",
+                  cursor: "pointer",
+                }}
+              >
+                {p.tabLabel}
+              </button>
+            );
+          })}
+        </nav>
       )}
 
       <ErrorStrip error={error} onDismiss={clearError} />

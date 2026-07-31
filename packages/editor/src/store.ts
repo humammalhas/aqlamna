@@ -19,6 +19,35 @@ function savePane(key: string, v: boolean) {
 
 export type PlayerTheme = "dark" | "light" | "book";
 
+export type PaneKey = "player" | "text" | "canvas";
+
+const PANE_STORAGE = {
+  player: "aqlamna-pane-player",
+  text: "aqlamna-pane-text",
+  canvas: "aqlamna-pane-canvas",
+} as const;
+
+/**
+ * Read the persisted pane flags, repairing an impossible state.
+ *
+ * A previous build let the user switch every pane off. The text pane kept
+ * rendering (the layout fell back to it) while its button read OFF, and the
+ * disagreement persisted across reloads. An all-off state is not representable
+ * any more: it loads as text-on.
+ */
+function loadPanes(): { panePlayer: boolean; paneText: boolean; paneCanvas: boolean } {
+  const panes = {
+    panePlayer: loadPane(PANE_STORAGE.player, true),
+    paneText: loadPane(PANE_STORAGE.text, true),
+    paneCanvas: loadPane(PANE_STORAGE.canvas, false),
+  };
+  if (!panes.panePlayer && !panes.paneText && !panes.paneCanvas) {
+    panes.paneText = true;
+    savePane(PANE_STORAGE.text, true);
+  }
+  return panes;
+}
+
 export type EditorTheme = "light" | "dark";
 
 function loadEditorTheme(): EditorTheme {
@@ -89,13 +118,25 @@ export interface EditorStore {
   /** Replace the entire source (used for initial load from IndexedDB). */
   loadSource: (source: string) => void;
 
-  /** Current view mode: text-only, canvas-only, or split. */
+  /** Which panes are visible. At least one is ALWAYS true — see togglePane. */
   panePlayer: boolean;
   paneText: boolean;
   paneCanvas: boolean;
-  togglePanePlayer: () => void;
-  togglePaneText: () => void;
-  togglePaneCanvas: () => void;
+
+  /**
+   * Turn a pane on or off, honouring the size limit for the current
+   * breakpoint. Never leaves zero panes visible and never leaves more than
+   * `maxPanes` visible, so a toggle's state and what is rendered cannot drift
+   * apart.
+   */
+  togglePane: (key: PaneKey, maxPanes: number) => void;
+
+  /**
+   * Drop panes until at most `maxPanes` are visible. Called when the window
+   * crosses a breakpoint. Keeps them in the order a writer wants them: the
+   * text they are writing first, then the player, then the map.
+   */
+  ensurePaneLimit: (maxPanes: number) => void;
 
   viewMode: ViewMode;
 
@@ -136,10 +177,8 @@ export const useStore = create<EditorStore>((set, get) => ({
   storyJson: null,
   error: null,
   playerKey: 0,
-  panePlayer: loadPane("aqlamna-pane-player", true),
-    paneText: loadPane("aqlamna-pane-text", true),
-    paneCanvas: loadPane("aqlamna-pane-canvas", false),
-    viewMode: "text",
+  ...loadPanes(),
+  viewMode: "text",
   viewModeLoaded: false,
   qualityLintEnabled: localStorage.getItem("aqlamna-quality-lint") !== "off",
   playerTheme: loadTheme(),
@@ -193,9 +232,58 @@ export const useStore = create<EditorStore>((set, get) => ({
     });
   },
 
-  togglePanePlayer: () => { const n = !get().panePlayer; set({ panePlayer: n }); savePane("aqlamna-pane-player", n); },
-  togglePaneText: () => { const n = !get().paneText; set({ paneText: n }); savePane("aqlamna-pane-text", n); },
-  togglePaneCanvas: () => { const n = !get().paneCanvas; set({ paneCanvas: n }); savePane("aqlamna-pane-canvas", n); },
+  togglePane: (key: PaneKey, maxPanes: number) => {
+    const state = get();
+    const on: Record<PaneKey, boolean> = {
+      player: state.panePlayer,
+      text: state.paneText,
+      canvas: state.paneCanvas,
+    };
+
+    if (on[key]) {
+      // Turning the last visible pane off would render a pane whose button
+      // says OFF. Refuse instead.
+      const visible = (Object.keys(on) as PaneKey[]).filter((k) => on[k]);
+      if (visible.length <= 1) return;
+      on[key] = false;
+    } else {
+      on[key] = true;
+      // Over the limit for this size: drop another pane rather than adding a
+      // column. The player is kept last — it is the point of the editor.
+      let visible = (Object.keys(on) as PaneKey[]).filter((k) => on[k]);
+      while (visible.length > maxPanes) {
+        const droppable = visible.filter((k) => k !== key);
+        const victim = droppable.find((k) => k !== "player") ?? droppable[0];
+        if (!victim) break;
+        on[victim] = false;
+        visible = (Object.keys(on) as PaneKey[]).filter((k) => on[k]);
+      }
+    }
+
+    set({ panePlayer: on.player, paneText: on.text, paneCanvas: on.canvas });
+    for (const k of Object.keys(on) as PaneKey[]) {
+      savePane(PANE_STORAGE[k], on[k]);
+    }
+  },
+  ensurePaneLimit: (maxPanes: number) => {
+    const state = get();
+    const on: Record<PaneKey, boolean> = {
+      player: state.panePlayer,
+      text: state.paneText,
+      canvas: state.paneCanvas,
+    };
+    const keepOrder: PaneKey[] = ["text", "player", "canvas"];
+    const visible = keepOrder.filter((k) => on[k]);
+    if (visible.length <= maxPanes && visible.length > 0) return;
+
+    const keep = new Set(visible.slice(0, Math.max(1, maxPanes)));
+    if (keep.size === 0) keep.add("text");
+
+    for (const k of keepOrder) on[k] = keep.has(k);
+    set({ panePlayer: on.player, paneText: on.text, paneCanvas: on.canvas });
+    for (const k of keepOrder) savePane(PANE_STORAGE[k], on[k]);
+  },
+
   setViewMode: (mode: ViewMode) => {
     set({ viewMode: mode });
     persistViewMode(mode).catch(() => {});

@@ -40,6 +40,7 @@ test("downscale proof — 768px long side, WebP output", async ({ page }) => {
 
     const pngDataUrl = canvas.toDataURL("image/png");
     const rawB64 = pngDataUrl.split(",")[1];
+    if (!rawB64) throw new Error("canvas.toDataURL returned no base64 payload");
     const rawBytes = Math.round(rawB64.length * 0.75);
 
     // ---- downscaleToWebP (exact copy of image-db.ts logic) ----

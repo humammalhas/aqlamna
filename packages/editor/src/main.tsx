@@ -17,8 +17,13 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
 );
 
 // Register service worker in production only — it breaks HMR in dev.
+// The path must be base-relative: the site build serves this app from
+// /editor/, so a hardcoded "/sw.js" asked for a file at the site root that
+// does not exist and logged a console error on every editor page load.
 if (import.meta.env.PROD && "serviceWorker" in navigator) {
-  navigator.serviceWorker.register("/sw.js").catch((err) => {
-    console.warn("Service worker registration failed:", err);
-  });
+  navigator.serviceWorker
+    .register(`${import.meta.env.BASE_URL}sw.js`)
+    .catch((err) => {
+      console.warn("Service worker registration failed:", err);
+    });
 }

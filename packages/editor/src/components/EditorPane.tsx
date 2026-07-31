@@ -4,22 +4,29 @@
 // CodeMirror below.
 // ---------------------------------------------------------------------------
 
-import { useCallback } from "react";
 import CodeEditorPane from "./CodeEditorPane.js";
 import AIActions from "./AIActions.js";
-import { useStore } from "../store.js";
-import { SEED_STORY } from "../generated/seed-story.js";
+import { newStory, openExample } from "../lib/story-actions.js";
+import { useBreakpoint } from "../lib/breakpoint.js";
+
+const headerButtonStyle: React.CSSProperties = {
+  minBlockSize: "36px",
+  paddingBlock: "0.25rem",
+  paddingInline: "0.625rem",
+  fontSize: "0.8125rem",
+  fontFamily: "inherit",
+  color: "var(--aq-muted)",
+  background: "transparent",
+  border: "1px solid var(--aq-border)",
+  borderRadius: "6px",
+  cursor: "pointer",
+  whiteSpace: "nowrap",
+};
 
 export default function EditorPane() {
-  const source = useStore((s) => s.source);
-  const setSource = useStore((s) => s.setSource);
-
-  const handleOpenExample = useCallback(() => {
-    if (source.trim().length > 0) {
-      if (!window.confirm("سيؤدي هذا إلى استبدال النص الحالي. هل تريد الاستمرار؟")) return;
-    }
-    setSource(SEED_STORY);
-  }, [source, setSource]);
+  // On a phone these two buttons live in the top bar's ⋯ menu instead; the
+  // header row has no space for them next to the AI control.
+  const isPhone = useBreakpoint() === "phone";
 
   return (
     <div style={{ blockSize: "100%", display: "flex", flexDirection: "column", minBlockSize: 0 }}>
@@ -45,47 +52,24 @@ export default function EditorPane() {
           >
             قصتك
           </span>
-          <button
-            onClick={() => {
-              if (source.trim().length > 0) {
-                if (!window.confirm("سيؤدي هذا إلى مسح النص الحالي. هل تريد الاستمرار؟")) return;
-              }
-              setSource("");
-            }}
-            title="مسح النص وبدء قصة جديدة"
-            style={{
-              paddingBlock: "0.25rem",
-              paddingInline: "0.625rem",
-              fontSize: "0.8125rem",
-              fontFamily: "inherit",
-              color: "var(--aq-muted)",
-              background: "transparent",
-              border: "1px solid var(--aq-border)",
-              borderRadius: "6px",
-              cursor: "pointer",
-              whiteSpace: "nowrap",
-            }}
-          >
-            قصة جديدة
-          </button>
-          <button
-            onClick={handleOpenExample}
-            title="تحميل قصة العطر المفقود كمثال"
-            style={{
-              paddingBlock: "0.25rem",
-              paddingInline: "0.625rem",
-              fontSize: "0.8125rem",
-              fontFamily: "inherit",
-              color: "var(--aq-muted)",
-              background: "transparent",
-              border: "1px solid var(--aq-border)",
-              borderRadius: "6px",
-              cursor: "pointer",
-              whiteSpace: "nowrap",
-            }}
-          >
-            افتح مثالًا
-          </button>
+          {!isPhone && (
+            <>
+              <button
+                onClick={newStory}
+                title="مسح النص وبدء قصة جديدة"
+                style={headerButtonStyle}
+              >
+                قصة جديدة
+              </button>
+              <button
+                onClick={openExample}
+                title="تحميل قصة العطر المفقود كمثال"
+                style={headerButtonStyle}
+              >
+                افتح مثالًا
+              </button>
+            </>
+          )}
         </div>
         <AIActions />
       </div>

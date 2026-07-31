@@ -293,8 +293,19 @@ function CanvasPaneInner() {
         zoomActivationKeyCode="Control"
         selectionOnDrag={false}
         style={{ background: "var(--aq-input-bg)" }}
+        ariaLabelConfig={{
+          "controls.ariaLabel": "أدوات المخطط",
+          "controls.zoomIn.ariaLabel": "تكبير",
+          "controls.zoomOut.ariaLabel": "تصغير",
+          "controls.fitView.ariaLabel": "لائم الشاشة",
+          "controls.interactive.ariaLabel": "تبديل قفل المخطط",
+          "minimap.ariaLabel": "خريطة مصغّرة للمخطط",
+        }}
       >
         <Background variant={BackgroundVariant.Dots} gap={24} size={1} color="var(--aq-surface-hi)" />
+        {/* The zoom / fit / lock buttons are icon-only. Their accessible names
+            come from ariaLabelConfig on <ReactFlow> above — in Arabic, like
+            the rest of the interface. */}
         <Controls style={{ direction: "rtl" }} position="bottom-left" />
         <MiniMap
           style={{ background: "var(--aq-editor-bg)", border: "1px solid var(--aq-border)" }}

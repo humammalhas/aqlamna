@@ -11,17 +11,17 @@
   "description": "محرر قصص تفاعلية بالعربية — اكتب قصصك التفاعلية بصيغة .qalam وشغّلها في المتصفح.",
   "icons": [
     {
-      "src": "/icon-192.png",
+      "src": "/editor/icon-192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/icon-512.png",
+      "src": "/editor/icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
     },
     {
-      "src": "/icon-512.png",
+      "src": "/editor/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"

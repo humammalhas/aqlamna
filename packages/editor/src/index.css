@@ -11,6 +11,24 @@ html, body, #root {
   block-size: 100%;
   margin: 0;
   padding: 0;
+  /* The page itself never scrolls sideways. When the top bar overflowed at
+     390px the document did NOT scroll, so two buttons sat at negative x and
+     could not be reached at all. Panes scroll; the page does not. */
+  max-inline-size: 100%;
+  overflow-x: hidden;
+}
+
+/* Every interactive element shows where the keyboard is. */
+:focus-visible {
+  outline: 2px solid var(--aq-accent);
+  outline-offset: 2px;
+}
+
+/* Touch targets: 44px minimum on a phone, for anything clickable. */
+@media (max-width: 39.999rem) {
+  button, a[href], summary, [role="button"], [role="menuitem"] {
+    min-block-size: 44px;
+  }
 }
 
 body {
