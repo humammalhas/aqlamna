@@ -328,6 +328,42 @@ test.describe("editor layout", () => {
     expect(on.sort()).toEqual(m.panes.map((p) => p.name).sort());
   });
 
+  test("phone portrait: the run button is visible in the top bar", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await skipOnboarding(page);
+    await page.goto("/editor/", { waitUntil: "networkidle" });
+    await page.waitForTimeout(500);
+
+    // A tab is not a button. "run" has to be a control you can SEE, in the
+    // same place it appears when the phone is rotated past 640px — and
+    // الإعدادات stays visible beside it rather than being buried in ⋯.
+    const run = page.locator("header [data-run-button]");
+    await expect(run).toBeVisible();
+    await expect(run).toContainText("شغّل");
+
+    const settings = page.getByRole("button", { name: "الإعدادات" });
+    await expect(settings).toBeVisible();
+    const sBox = (await settings.boundingBox())!;
+    expect(sBox.x).toBeGreaterThanOrEqual(0);
+    expect(sBox.x + sBox.width).toBeLessThanOrEqual(390.5);
+
+    // Both in the bar and the bar still does not scroll sideways.
+    const header = await page.locator("header").evaluate((el) => ({
+      scrollWidth: el.scrollWidth,
+      clientWidth: el.clientWidth,
+    }));
+    expect(header.scrollWidth).toBe(header.clientWidth);
+
+    const box = (await run.boundingBox())!;
+    expect(box.x).toBeGreaterThanOrEqual(0);
+    expect(box.x + box.width).toBeLessThanOrEqual(390.5);
+    expect(box.height).toBeGreaterThanOrEqual(44);
+
+    // And it must look like the primary action, not like plain text.
+    const bg = await run.evaluate((el) => getComputedStyle(el).backgroundColor);
+    expect(bg).not.toBe("rgba(0, 0, 0, 0)");
+  });
+
   test("phone: you can actually run a story", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await skipOnboarding(page);
@@ -365,7 +401,8 @@ test.describe("editor layout", () => {
     const lines = await page.$$eval(".cm-line", (els) => els.map((e) => e.textContent));
     expect(lines, "typed source was mangled").toEqual(story);
 
-    await page.locator('[data-pane-tab="player"]').click();
+    // Use the top-bar run button, which is what a person reaches for.
+    await page.locator("header [data-run-button]").click();
     await page.waitForTimeout(600);
 
     const player = page.locator('[data-pane="player"]');

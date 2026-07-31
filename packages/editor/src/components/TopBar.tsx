@@ -84,6 +84,16 @@ export default function TopBar({ breakpoint, maxPanes }: Props) {
   const toggleSettings = useCallback(() => setSettingsOpen((v) => !v), []);
   const handlePlay = useCallback(() => compileSource(), [compileSource]);
 
+  /**
+   * Phone: compile AND bring the player forward. On a phone only one pane is
+   * on screen, so compiling while the text pane is showing would look like
+   * nothing happened at all.
+   */
+  const handlePhoneRun = useCallback(() => {
+    compileSource();
+    togglePane("player", 1);
+  }, [compileSource, togglePane]);
+
   const handleExport = useCallback(async () => {
     let json = storyJson;
     if (!json) {
@@ -216,14 +226,56 @@ export default function TopBar({ breakpoint, maxPanes }: Props) {
             </div>
           )}
 
-          <button
-            onClick={toggleSettings}
-            title="الإعدادات"
-            aria-label="الإعدادات"
-            style={iconButtonStyle}
-          >
-            {isPhone ? "⚙️" : "⚙️ الإعدادات"}
-          </button>
+          {/* Portrait phone: settings AND run, both always visible. Run used
+              to exist only as a bottom TAB, and a tab does not read as an
+              action — the report was simply "i cant see run". Rotating the
+              phone past 640px brought the real button back, which is the
+              mental model to match here. Measured at 390px the bar does not
+              overflow with both. */}
+          {isPhone && (
+            <button
+              onClick={toggleSettings}
+              title="الإعدادات"
+              aria-label="الإعدادات"
+              style={iconButtonStyle}
+            >
+              ⚙️
+            </button>
+          )}
+
+          {isPhone && (
+            <button
+              onClick={handlePhoneRun}
+              data-run-button
+              style={{
+                minBlockSize: "44px",
+                paddingBlock: "0.5rem",
+                paddingInline: "1rem",
+                fontSize: "0.9375rem",
+                fontWeight: 700,
+                fontFamily: "inherit",
+                color: "var(--aq-editor-bg)",
+                background: "var(--aq-accent)",
+                border: "none",
+                borderRadius: "6px",
+                cursor: "pointer",
+                whiteSpace: "nowrap",
+              }}
+            >
+              ▶ شغّل
+            </button>
+          )}
+
+          {!isPhone && (
+            <button
+              onClick={toggleSettings}
+              title="الإعدادات"
+              aria-label="الإعدادات"
+              style={iconButtonStyle}
+            >
+              ⚙️ الإعدادات
+            </button>
+          )}
 
           {!isPhone && (
             <>
@@ -282,6 +334,8 @@ export default function TopBar({ breakpoint, maxPanes }: Props) {
               </button>
               {showMore && (
                 <div role="menu" style={dropdownStyle}>
+                  {/* الإعدادات is NOT duplicated here — it has its own ⚙️
+                      button in the bar, next to ▶ شغّل. */}
                   <button
                     role="menuitem"
                     style={menuItemStyle}
