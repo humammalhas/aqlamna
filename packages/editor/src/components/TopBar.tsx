@@ -141,7 +141,15 @@ export default function TopBar({ breakpoint, maxPanes }: Props) {
           flexWrap: "nowrap",
           inlineSize: "100%",
           maxInlineSize: "100%",
-          overflow: "hidden",
+          // NOT `overflow: hidden`. It was here to stop the bar overflowing
+          // sideways at 390px, but it also clipped every dropdown to the
+          // header's 61px height: the ⋯ menu opened 281px tall and only its
+          // top 5px was ever painted, so the button looked dead — on the
+          // phone AND on desktop, where it took the docs links with it.
+          // Horizontal containment comes from the flex layout below plus
+          // `overflow-x: hidden` on html/body; the responsive suite asserts
+          // no interactive element ever leaves the viewport.
+          overflow: "visible",
           paddingBlock: "0.5rem",
           paddingInline: isPhone ? "0.75rem" : "1rem",
           background: "var(--aq-surface)",

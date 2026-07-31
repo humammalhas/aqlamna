@@ -328,6 +328,69 @@ test.describe("editor layout", () => {
     expect(on.sort()).toEqual(m.panes.map((p) => p.name).sort());
   });
 
+  // A menu that opens behind a clipping ancestor is indistinguishable from a
+  // dead button. Both of these were broken by an `overflow: hidden` on the
+  // header and no test noticed, because no test had ever opened a menu.
+  test("phone: the ⋯ menu actually opens, fully visible", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await skipOnboarding(page);
+    await page.goto("/editor/", { waitUntil: "networkidle" });
+    await page.waitForTimeout(500);
+
+    await page.getByRole("button", { name: "المزيد" }).click();
+    await page.waitForTimeout(300);
+
+    const menu = page.locator('[role="menu"]');
+    await expect(menu).toBeVisible();
+
+    const box = (await menu.boundingBox())!;
+    expect(box.height, "menu has no height").toBeGreaterThan(100);
+    expect(box.x).toBeGreaterThanOrEqual(0);
+    expect(box.x + box.width).toBeLessThanOrEqual(390.5);
+
+    // Nothing may clip it: every item must be on screen and hit-testable.
+    for (const label of ["⬇ تصدير", "قصة جديدة", "افتح مثالًا"]) {
+      const item = page.getByRole("menuitem", { name: label });
+      await expect(item).toBeVisible();
+      const r = (await item.boundingBox())!;
+      expect(r.y + r.height, `${label} is painted below the fold`).toBeLessThanOrEqual(844);
+    }
+    // The documentation links live here on a phone too.
+    await expect(menu.locator("a")).toHaveCount(3);
+  });
+
+  for (const width of [768, 1440]) {
+    test(`${width}: the ❓ menu opens and its doc links are reachable`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await skipOnboarding(page);
+      await page.goto("/editor/", { waitUntil: "networkidle" });
+      await page.waitForTimeout(500);
+
+      await page.getByRole("button", { name: "مساعدة" }).click();
+      await page.waitForTimeout(300);
+
+      const links = page.locator("header a");
+      await expect(links).toHaveCount(3);
+
+      const headerBottom = await page
+        .locator("header")
+        .evaluate((el) => el.getBoundingClientRect().bottom);
+
+      for (let i = 0; i < 3; i++) {
+        const link = links.nth(i);
+        await expect(link).toBeVisible();
+        const r = (await link.boundingBox())!;
+        // The bug: links sat below the header, which clipped them away.
+        expect(r.y).toBeGreaterThanOrEqual(headerBottom - 1);
+        expect(r.height).toBeGreaterThan(0);
+        expect(r.x).toBeGreaterThanOrEqual(0);
+        expect(r.x + r.width).toBeLessThanOrEqual(width + 0.5);
+      }
+    });
+  }
+
   test("CodeMirror wraps long lines instead of scrolling sideways", async ({
     page,
   }) => {
