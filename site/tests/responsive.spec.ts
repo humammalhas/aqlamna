@@ -328,6 +328,31 @@ test.describe("editor layout", () => {
     expect(on.sort()).toEqual(m.panes.map((p) => p.name).sort());
   });
 
+  test("phone: you can actually run a story", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await skipOnboarding(page);
+    await page.goto("/editor/", { waitUntil: "networkidle" });
+    await page.waitForTimeout(500);
+
+    // The yellow ▶ شغّل lives in the desktop top bar, which has no room on a
+    // phone. If the شغّل TAB only switches panes and never compiles, the
+    // player sits on its empty state forever and a phone can write but never
+    // run — which is the whole complaint the responsive work started from.
+    await page.locator(".cm-content").click();
+    await page.keyboard.type("=== البداية ===\nالشمس عالية والطريق طويل.\n* [امضِ] -> النهاية\n\n=== النهاية ===\nوصلتَ.");
+    await page.waitForTimeout(400);
+
+    await page.locator('[data-pane-tab="player"]').click();
+    await page.waitForTimeout(600);
+
+    const player = page.locator('[data-pane="player"]');
+    await expect(player).toBeVisible();
+    await expect(player).not.toContainText("اضغط ▶ شغّل لتشغيل القصة");
+    await expect(player).toContainText("الشمس عالية");
+    // The story is playable, not just printed.
+    await expect(player.locator(".aq-choice-btn")).toHaveCount(1);
+  });
+
   // A menu that opens behind a clipping ancestor is indistinguishable from a
   // dead button. Both of these were broken by an `overflow: hidden` on the
   // header and no test noticed, because no test had ever opened a menu.

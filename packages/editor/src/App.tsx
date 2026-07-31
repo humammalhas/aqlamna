@@ -64,6 +64,7 @@ export default function App() {
   const ensurePaneLimit = useStore((s) => s.ensurePaneLimit);
   const loadSourceAction = useStore((s) => s.loadSource);
   const clearError = useStore((s) => s.clearError);
+  const compileSource = useStore((s) => s.compileSource);
   const initialized = useRef(false);
 
   const breakpoint = useBreakpoint();
@@ -294,7 +295,17 @@ export default function App() {
                 key={p.key}
                 data-pane-tab={p.key}
                 aria-pressed={active}
-                onClick={() => togglePane(p.key, 1)}
+                onClick={() => {
+                  // ▶ شغّل is the only run action on a phone — the yellow
+                  // button lives in the desktop top bar, which has no room
+                  // here. Without this the tab only switched to the player
+                  // pane, nothing ever compiled, and the pane sat on its
+                  // "press ▶ شغّل" empty state forever: you could write on a
+                  // phone and never run what you wrote. Tapping it again
+                  // re-runs, which is what a run button should do.
+                  if (p.key === "player") compileSource();
+                  togglePane(p.key, 1);
+                }}
                 style={{
                   flex: "1 1 0",
                   minBlockSize: "48px",
