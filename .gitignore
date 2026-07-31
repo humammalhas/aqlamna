@@ -14,8 +14,26 @@ npm_recovery_codes.txt
 *.key
 *.pem
 
-# codewhale local state
-.codewhale/state/
+# Internal working documents — they live on the owner's machine and are not
+# part of the published product. Untracked forward-only on 31 Jul 2026; they
+# remain visible in earlier commits, which is accepted.
+#
+# ARABIC_MASTERY.md is deliberately NOT here. It is a build input, not a
+# document: build-rules.mjs and build-mastery-prompt.mjs read it,
+# check-artifacts.mjs hashes it, and artifacts.manifest.mjs names it as the
+# source of both generated artifacts. Untrack it and npm test dies at step 2.
+# It also ships publicly under GPL by the owner's decision.
+CLAUDE.md
+DISTRIBUTION.md
+PHASE1_SPEC.md
+IMAGES_SPEC.md
+ARABIC_IF_ENGINE_DESIGN.md
+CANVAS_TODO.md
+.codewhale/
+.claude/
+
+# one-off probe scripts — write them, run them, let them disappear
+scripts/_*
 
 # editor generated assets
 packages/editor/src/generated/
