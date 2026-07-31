@@ -65,6 +65,21 @@ export default function SettingsPanel({ open, onClose }: SettingsPanelProps) {
     setSelectedId(getSelectedProviderId());
   }, [open]);
 
+  // Escape closes it. It used to close ONLY on the ✕ or on hitting the exact
+  // strip of backdrop around the card — and its full-viewport backdrop swallows
+  // every click behind it, so a reader who pressed Escape and then reached for
+  // ⚙️ again was clicking a button that could not be clicked, with nothing on
+  // screen saying why. The ❓ and ☰ menus in TopBar have closed on Escape all
+  // along; this is the one modal that did not.
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
+
   const currentProvider = getProviderSafe(selectedId);
 
   useEffect(() => {
