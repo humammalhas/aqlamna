@@ -207,8 +207,14 @@ let warnings = 0;
 let infos = 0;
 let filesWithFindings = 0;
 
+// README.md is the only document a visitor to the public repo reads, and since
+// the internal documents were untracked on 31 Jul it is the ONLY prose in the
+// tree outside docs/. It sat outside this gate while docs/ was covered.
+const MARKDOWN_SOURCES = ["README.md"];
+
 const targets = [
   ...files.map((f) => ({ label: `docs/${f}`, path: join(docsDir, f), html: false })),
+  ...MARKDOWN_SOURCES.map((p) => ({ label: p, path: join(root, p), html: false })),
   ...HTML_SOURCES.map((p) => ({ label: p, path: join(root, p), html: true })),
 ];
 
