@@ -263,28 +263,14 @@ export const STALENESS = [
  * silence a sweep: a new build output belongs in BUILD_DIRS as a real claim.
  */
 export const RETIRED = [
-  {
-    path: "packages/linter/src/generated/rules.md5",
-    supersededBy: "the provenance block inside packages/linter/src/generated/rules.ts",
-  },
-  {
-    path: "packages/editor/src/generated/mastery-prompt.md5",
-    supersededBy: "the provenance block inside packages/editor/src/generated/mastery-prompt.ts",
-  },
-  {
-    path: "packages/runtime/dist/export.js",
-    supersededBy: "nothing — packages/runtime/tsconfig.json has excluded src/export.ts since 6c99553",
-  },
-  {
-    path: "packages/runtime/dist/export.js.map",
-    supersededBy: "nothing — packages/runtime/tsconfig.json has excluded src/export.ts since 6c99553",
-  },
-  {
-    path: "packages/runtime/dist/export.d.ts",
-    supersededBy: "nothing — packages/runtime/tsconfig.json has excluded src/export.ts since 6c99553",
-  },
-  {
-    path: "packages/runtime/dist/export.d.ts.map",
-    supersededBy: "nothing — packages/runtime/tsconfig.json has excluded src/export.ts since 6c99553",
-  },
+  // Empty, and it should stay that way. Six entries lived here for exactly one
+  // session — the four packages/runtime/dist/export.* files orphaned when
+  // 6c99553 excluded src/export.ts from the tsconfig, and the rules.md5 /
+  // mastery-prompt.md5 sidecars that the in-artifact provenance replaced. All
+  // six were deleted on 31 Jul 2026 with the owner's approval.
+  //
+  // This list is a waiting room, not a filing cabinet. An entry here means a
+  // dead file is still on disk and the owner has not yet said "delete it".
+  // Every entry that outlives that answer is one more thing the manifest is
+  // wrong about, which is the same defect the manifest exists to prevent.
 ];

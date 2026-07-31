@@ -1,5 +1,14 @@
 # أقلامنا / Aqlamna — Arabic Interactive Fiction Engine
 
+> ## 🔴 RULE ZERO — NEVER WRITE ARABIC WITHOUT READING `ARABIC_MASTERY.md` FIRST
+>
+> Applies to every agent, every session, every time, with no exception. Docs, UI strings,
+> commit messages, story examples, error messages, a single sentence in a table cell —
+> if it is Arabic, read the corpus **before** you write it, not after.
+> This is not advice and it is not a style preference. It is the reason the corpus exists.
+> Anyone handing work to another agent must name this file in the prompt; omitting it is
+> the prompt's bug, not the writer's.
+
 Al-Maseer product. Open source **GPL-3.0**, public repo (Maskan model).
 Domains **aqlamna.org** (primary) + **aqlamna.com** (redirect) — both registered.
 npm scope **@aqlamna** reserved (org created, account `humammalhas`, 2FA on).
@@ -70,8 +79,11 @@ the whole point.
 
 **ARABIC_MASTERY → the AI, the loop that matters:**
 `packages/editor/scripts/build-mastery-prompt.mjs` reads `ARABIC_MASTERY.md` and emits
-`src/generated/mastery-prompt.ts` — 23 rules verbatim, 25 ❌→✅ pairs, the §6 checklist,
-~5,400 chars. Sent as the system prompt on every AI call. **Edit the markdown → rebuild →
+`src/generated/mastery-prompt.ts` — as of the 31 Jul 13:20 corpus (md5 `1d5c20ad…`):
+**30 rules verbatim, 94 ❌→✅ pairs, 23 checklist items, 10,295 chars.** These numbers grow
+with the corpus; the build prints them on every run and the pair-count test asserts they
+match the markdown — read them from the build output, never from this line.
+Sent as the system prompt on every AI call. **Edit the markdown → rebuild →
 every AI request carries the new rule.** Rules are never hardcoded in TypeScript.
 Phase 3's linter reads the same file: prompt prevents on the way in, linter detects on the
 way out.
@@ -79,11 +91,16 @@ way out.
 ## Phase 3 — polish (in progress)
 
 - ✅ **3.1 the Arabic quality linter** (`1d67edc`, `9d1cd45`) — `packages/linter`, zero deps.
-  `scripts/build-rules.mjs` reads `ARABIC_MASTERY.md` → `rules.json`:
-  **63 pair rules extracted from the ❌/✅ tables, 5 hand-written pattern rules
-  (`rules-extra.json`), 8 advisory rules that are never linted.**
-  **126 tests are GENERATED from the tables** — add a before/after row to the markdown and
-  you get a rule plus two tests for free. That is the whole design.
+  `scripts/build-rules.mjs` reads `ARABIC_MASTERY.md` → `src/generated/rules.ts` (NOT
+  `rules.json` — that format was retired and its fossil sat in `dist/` for a day answering
+  questions with stale data). As of the 31 Jul 13:20 corpus: **88 pair rules from the ❌/✅
+  tables, 5 hand-written pattern rules (`rules-extra.json`), 8 advisory rules never linted —
+  101 total, 0 with an empty message.** Tests are GENERATED from the tables — add a
+  before/after row and you get a rule plus two tests for free. That is the whole design.
+  Counts move with the corpus; `npm run check:artifacts` prints them, so read them there.
+  **The 5 struck-through §9.5 rows (`اعتبر`, `ساهم`, `بسيط`, `أثّر على`, `توهّم بأنّ`) are
+  correctly excluded** — verified 0 leak into rules. The corpus's subtlest instruction, "do
+  not over-correct", survives extraction.
   Lints **prose only** — reads TEXT tokens from the tokenizer, so it can never flag
   `===`, variable names or diverts. Verified: a syntax-only source yields 0 diagnostics.
   Pair rules can over-match (a table row is an example, not a regex) so §1b.5 verb-precision
@@ -200,6 +217,55 @@ free text tiers, so **images must stay strictly optional and never appear in onb
 ⚠️ **Ollama and LM Studio do not work on the deployed site** — `http://localhost` is blocked
 from an `https://` page (mixed content). They work only when running the editor locally. The
 settings panel still offers them as if they work; that needs a note.
+
+## 31 Jul 2026 — the bug sweep, mobile, and PWA install
+
+An independent sweep found **15 measured bugs**; all 15 are fixed and verified on the live
+site. The four that mattered:
+
+- **Welded prose.** The renderer pushed every text node into one run and only flushed on an
+  image or at the end, so N paragraphs always became one `<p>`. The JSON was always right —
+  a paragraph boundary is two adjacent prose text nodes with nothing between them, and
+  `{"value":null}` is a line break *inside* a paragraph. **Fixture 05_paragraphs is now the
+  contract.** Deployed: `p.aq-text` = 2, no `<p>` contains `عليها."وصفة`.
+- **`->` rendered as `<-`** on the landing page and all three docs pages. CSS cannot fix
+  this — the isolate must wrap the whole run, so generators emit `<span dir="ltr">`. The
+  CodeMirror plugin had the mirror-image bug: it isolated one character at a time, and two
+  adjacent isolates get reordered by the RTL paragraph. Verified: 39 arrows, 0 wrong (was 32
+  wrong of 39).
+- **No line wrapping in the editor.** Now `white-space: break-spaces`; `cm-scroller`
+  `clientWidth === scrollWidth` at every width. At 390px, wrapped lines measure 42px tall
+  against 21px for unwrapped — that, not the equality, is the proof.
+- **Two landing-page media queries were `@media(max-inline-size:…)`** — not a media feature,
+  so they had never matched in any browser. That is why the `تكتب هذا` / `يصير هذا` pair never
+  stacked on a phone.
+
+**The Cloudflare beacon was on the zone, not the Pages project.** `web_analytics_tag` and
+`web_analytics_token` were both null while `aqlamna.org` still served 2 beacon requests and
+`aqlamna.pages.dev` served 0. It was `zones/…/settings/rum`. Now off — the privacy page's
+"no tracking" wording is true, and it did not have to change.
+
+**Phone editor** — one pane, three-tab bottom bar, `⋯` menu holding تصدير · قصة جديدة ·
+افتح مثالًا · the three doc links. Top bar `scrollWidth` 390 / `clientWidth` 390 (was 592/390,
+with ⬇ تصدير and ▶ شغّل sitting at negative x, i.e. off-screen).
+
+**PWA install now works — and never had.** `sw.js` was a `.js` file full of TypeScript, so it
+threw on every registration, and Chrome will not fire `beforeinstallprompt` without a live
+worker. Scope was also `/editor/`, so the home page offered nothing. And the install button
+set `color: var(--aq-accent-text)` — the editor's variable name, which does not exist in
+`site/assets/aqlamna.css` — so the label inherited the dark ink and rendered at **1.29:1**.
+An undefined custom property is not an error and does not warn. `DISTRIBUTION.md` has the
+full account; `.codewhale/constitution` has the rules that came out of it.
+
+⚠️ **`packages/editor/public/{sw.js,manifest.webmanifest}` are dead but still deployed at
+`/editor/`** — the `sw.js` there still contains the TypeScript that threw. Delete them.
+
+⚠️ **`scripts/lint-html.mjs` is untracked and `npm test` depends on it** (`package.json`
+line 16 runs `lint:html` as the second step). A clean clone of the public repo fails
+immediately. Commit it or drop it from the chain.
+
+**486 tests green**, Playwright now runs as part of `npm test`. The harness was pointed at the
+deployed site *before* the fixes and reproduced all four measurable bugs — it can fail.
 
 ## Brand
 

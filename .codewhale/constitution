@@ -1,5 +1,26 @@
 # Aqlamna (أقلامنا) — CodeWhale Constitution
 
+> ## 🔴 RULE ZERO — NEVER WRITE ARABIC WITHOUT READING `ARABIC_MASTERY.md` FIRST
+>
+> Applies to every agent, every session, every time, with no exception. Docs, UI strings,
+> commit messages, story examples, error messages, a single sentence in a table cell —
+> if it is Arabic, read the corpus **before** you write it, not after.
+>
+> The corpus is 23 rules and 88 before/after pairs drawn from a Jordanian teacher's
+> corrections to 30 AI-written Arabic texts. It exists because the grammar in AI Arabic is
+> usually fine and the **craft** is not — and the specific failures are known, listed, and
+> repeatable. Writing Arabic without it means reproducing failures that were already
+> diagnosed.
+>
+> If a prompt asks you for Arabic and does not mention this file, the prompt is wrong.
+> Read the corpus anyway and say the prompt omitted it.
+>
+> **What "read it" means here:** §1b.1 (`""` not `«»`) and §4 (gender adaptation changes
+> EVERY verb, pronoun, adjective, and imperative — half-converted is worse than not
+> converted) are mechanical and have no excuse. §1.1–1.7 are craft and require judgement.
+> The generated linter catches roughly the mechanical half; passing the linter is not
+> evidence you read the corpus.
+
 ## What this project is
 
 Aqlamna is an Arabic-native interactive fiction engine: a scripting language (`.qalam`),
@@ -237,6 +258,42 @@ code comments and script output must say nothing about cost. Prices change; comm
 only and cannot generate images — it is constantly confused with xAI's Grok. Model display
 names are not model strings: `FLUX.1 [schnell]` is a label, `black-forest-labs/FLUX.1-schnell`
 is the identifier.
+
+## Lessons from the install work — 31 July 2026
+
+**An undefined CSS variable is silent.** The install button set
+`color: var(--aq-accent-text)`. That is the *editor's* name for the colour;
+`site/assets/aqlamna.css` calls it `--aq-on-accent`. A custom property that does not exist is
+not an error, does not warn, and does not fall back to anything sensible — it inherits. The
+cream label rendered as the dark ink on the ink-blue button: **1.29:1**, unreadable, and
+every test that read markup passed. Two stylesheets naming the same colour differently is the
+underlying fault; check the name against the sheet that will actually be in scope, and assert
+on the **computed colour of the rendered element**, never on the declaration.
+
+**Test pixels, not properties.** The only test that could catch the above reads
+`getComputedStyle` off the live button and computes the WCAG ratio. Same class as the cream
+palette that defined 46 variables no component used. If a bug can exist while the source
+reads correctly, the test must look at what the browser produced.
+
+**A `.js` file full of TypeScript fails silently in a service worker.** `sw.js` threw on every
+registration for as long as it existed. Nothing surfaced: the page loaded, HTTP returned 200,
+and Chrome simply never fired `beforeinstallprompt` — because it will not offer an install
+without a live worker. A registration that throws looks exactly like a browser that does not
+want to install. **Read `navigator.serviceWorker.getRegistrations()` and report the active
+`scriptURL`.** A file existing at a URL is not a worker running.
+
+**Scope is a decision, not a detail.** The manifest and worker were scoped to `/editor/`, so
+the home page — the front door, the thing people are sent — linked no manifest and registered
+no worker, and offered nothing. Ask which URL a stranger arrives at, and scope from there.
+Wide scope with narrow interception is the right shape: `scope: "/"` so it installs from
+anywhere, `isCacheable()` limited to the app shell, `/editor/*` and `/assets/*` so docs, legal
+pages and exported stories always hit the network. **Never cache an exported story** — that is
+someone's work, and a stale copy of it is a corruption.
+
+**Superseding a file is not deleting it.** Root `sw.js` and `manifest.webmanifest` replaced the
+`/editor/` copies, and both copies stayed deployed — including the broken worker. Rule 8 still
+holds: do not delete without asking. But say plainly, in the same report, which files are now
+dead and where they are still being served.
 
 ## When you are unsure
 

@@ -3,7 +3,7 @@
 // Machine-readable. Verified by scripts/check-artifacts.mjs. Do not hand-edit.
 // {
 //   "generator": "packages/linter/scripts/build-rules.mjs",
-//   "generatedAt": "2026-07-31T10:38:07.663Z",
+//   "generatedAt": "2026-07-31T10:47:59.300Z",
 //   "artifact": "packages/linter/src/generated/rules.ts",
 //   "source": "ARABIC_MASTERY.md",
 //   "sourceModified": "2026-07-31T10:29:38.484Z",
@@ -17,7 +17,7 @@ const rules: RulesFile = {
   "_meta": {
     "source": "ARABIC_MASTERY.md",
     "lastModified": "2026-07-31T10:29:38.484Z",
-    "generatedAt": "2026-07-31T10:38:07.663Z",
+    "generatedAt": "2026-07-31T10:47:59.300Z",
     "counts": {
       "pair": 88,
       "pattern": 5,
