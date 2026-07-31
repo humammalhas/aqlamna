@@ -13,13 +13,12 @@
 // enforced and what the cream-palette bug was about: 46 variables defined and
 // 189 hardcoded hex values still in the components.
 //
-// It is deliberately NOT extended to site/*.html, the exported stories or
-// scripts/. A wider scan written on 30 Jul (never wired into anything) reports
-// 164 hits there, and they are correct by design: the standalone export must
-// inline its themes because the runtime has zero dependencies (hard rule 4),
-// `<meta name="theme-color">` takes a literal hex and nothing else, and
-// scripts/replace-colors.mjs is a hex→variable mapping table. Whether any of
-// those deserve a gate of their own is Humam's call, not this script's.
+// It is deliberately NOT extended to site/*.html or the exported stories. A
+// wider scan written on 30 Jul (never wired into anything) reports 164 hits
+// there, and they are correct by design: the standalone export must inline its
+// themes because the runtime has zero dependencies (hard rule 4), and
+// `<meta name="theme-color">` takes a literal hex and nothing else. Whether
+// either deserves a gate of its own is Humam's call, not this script's.
 
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { resolve, dirname } from "node:path";
