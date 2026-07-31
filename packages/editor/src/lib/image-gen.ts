@@ -216,7 +216,13 @@ export interface ImageGenResult {
   dataUrl: string;
   /** The English prompt produced by the bridge (for review logging only). */
   englishPrompt: string;
+  /** Wall-clock ms for the translation call. */
+  translateMs: number;
+  /** Wall-clock ms for the image generation call. */
+  drawMs: number;
 }
+
+export type GenStep = "translate" | "draw";
 
 /**
  * Generate one image from an Arabic description.
@@ -229,11 +235,29 @@ export interface ImageGenResult {
  */
 export async function generateImage(
   arabicDescription: string,
+  imageStyle: string | null | undefined,
+  onProgress?: (step: GenStep) => void,
 ): Promise<ImageGenResult> {
-  // Call 1 — text model: Arabic → English
-  const englishPrompt = await arabicToEnglishPrompt(arabicDescription);
+  // Call 1 — text model: Arabic → English (description only, no style)
+  onProgress?.("translate");
+  const t0 = Date.now();
+  let translated: string;
+  try {
+    translated = await arabicToEnglishPrompt(arabicDescription);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "خطأ غير معروف";
+    throw new Error(`فشلت الترجمة: ${msg}`);
+  }
+  const translateMs = Date.now() - t0;
+
+  // Append story-level image style if the author set one
+  const englishPrompt = imageStyle
+    ? `${translated}, ${imageStyle}`
+    : translated;
 
   // Call 2 — image model: English → image
+  onProgress?.("draw");
+  const t1 = Date.now();
   const imageProvider = getImageProvider();
   const imageModel = getImageModel();
   const imageApiKey = getImageApiKey();
@@ -246,21 +270,27 @@ export async function generateImage(
 
   let dataUrl: string;
 
-  switch (imageProvider.id) {
-    case "together":
-      dataUrl = await togetherGenerateImage(imageApiKey!, imageModel, englishPrompt);
-      break;
-    case "openai":
-      dataUrl = await openaiGenerateImage(imageApiKey!, imageModel, englishPrompt);
-      break;
-    case "gemini":
-      dataUrl = await geminiGenerateImage(imageApiKey!, imageModel, englishPrompt);
-      break;
-    default:
-      throw new Error(
-        `المزوّد ${imageProvider.nameAr} لا يدعم توليد الصور.`,
-      );
+  try {
+    switch (imageProvider.id) {
+      case "together":
+        dataUrl = await togetherGenerateImage(imageApiKey!, imageModel, englishPrompt);
+        break;
+      case "openai":
+        dataUrl = await openaiGenerateImage(imageApiKey!, imageModel, englishPrompt);
+        break;
+      case "gemini":
+        dataUrl = await geminiGenerateImage(imageApiKey!, imageModel, englishPrompt);
+        break;
+      default:
+        throw new Error(
+          `المزوّد ${imageProvider.nameAr} لا يدعم توليد الصور.`,
+        );
+    }
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "خطأ غير معروف";
+    throw new Error(`فشل توليد الصورة: ${msg}`);
   }
+  const drawMs = Date.now() - t1;
 
-  return { dataUrl, englishPrompt };
+  return { dataUrl, englishPrompt, translateMs, drawMs };
 }
