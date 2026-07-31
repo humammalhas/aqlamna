@@ -2,11 +2,19 @@
 // TopBar.
 //
 //   desktop / tablet  title, pane toggles, ❓, ⚙️ الإعدادات, ▶ شغّل, ⬇ تصدير
-//   phone             أقلامنا, ⚙️ الإعدادات and a ☰ overflow menu
+//   phone             أقلامنا, ⚙️, ▶ شغّل, ⬇ تصدير and a ☰ overflow menu
 //
 // At 390px the old bar had scrollWidth 592 in clientWidth 390 while the page
 // itself did not scroll, so ⬇ تصدير and ▶ شغّل sat at NEGATIVE x — rendered,
 // focusable, and impossible to reach. Nothing here may overflow the viewport.
+//
+// ACCESSIBLE NAMES. The pane toggle for the player is labelled "شغّل" and the
+// run action reads "▶ شغّل", so `getByRole("button", {name: /شغّل/})` matched
+// both and every Playwright click on it died on strict mode. The two controls
+// do different things and must be nameable apart, so the ACTIONS carry an
+// explicit aria-label — "شغّل القصة" and "تصدير القصة" — while the toggles keep
+// their bare pane names. Both labels contain the visible text (WCAG 2.5.3).
+// The data-* hooks stay for geometry probes that do not care about roles.
 // ---------------------------------------------------------------------------
 
 import { useStore, type PaneKey } from "../store.js";
@@ -247,10 +255,11 @@ export default function TopBar({ breakpoint, maxPanes }: Props) {
             <button
               onClick={handlePhoneRun}
               data-run-button
+              aria-label="شغّل القصة"
               style={{
                 minBlockSize: "44px",
                 paddingBlock: "0.5rem",
-                paddingInline: "1rem",
+                paddingInline: "0.625rem",
                 fontSize: "0.9375rem",
                 fontWeight: 700,
                 fontFamily: "inherit",
@@ -263,6 +272,35 @@ export default function TopBar({ breakpoint, maxPanes }: Props) {
               }}
             >
               ▶ شغّل
+            </button>
+          )}
+
+          {/* ⬇ تصدير on a phone is an ADDITION, not a move: it is still in the
+              ☰ menu below. Export is the one action that produces the thing
+              the writer came for, and it was reachable only after two taps.
+              Padding is tighter than the desktop button because at 390px the
+              bar has to hold أقلامنا + four controls without scrolling. */}
+          {isPhone && (
+            <button
+              onClick={handleExport}
+              data-export-button
+              aria-label="تصدير القصة"
+              style={{
+                minBlockSize: "44px",
+                minInlineSize: "44px",
+                paddingBlock: "0.5rem",
+                paddingInline: "0.625rem",
+                fontSize: "0.9375rem",
+                fontFamily: "inherit",
+                color: "var(--aq-text)",
+                background: "var(--aq-surface-hi)",
+                border: "1px solid var(--aq-border-hi)",
+                borderRadius: "6px",
+                cursor: "pointer",
+                whiteSpace: "nowrap",
+              }}
+            >
+              ⬇ تصدير
             </button>
           )}
 
@@ -281,6 +319,8 @@ export default function TopBar({ breakpoint, maxPanes }: Props) {
             <>
               <button
                 onClick={handlePlay}
+                data-run-button
+                aria-label="شغّل القصة"
                 style={{
                   minBlockSize: "44px",
                   paddingBlock: "0.5rem",
@@ -301,6 +341,8 @@ export default function TopBar({ breakpoint, maxPanes }: Props) {
 
               <button
                 onClick={handleExport}
+                data-export-button
+                aria-label="تصدير القصة"
                 style={{
                   minBlockSize: "44px",
                   paddingBlock: "0.5rem",
@@ -335,7 +377,10 @@ export default function TopBar({ breakpoint, maxPanes }: Props) {
               {showMore && (
                 <div role="menu" style={dropdownStyle}>
                   {/* الإعدادات is NOT duplicated here — it has its own ⚙️
-                      button in the bar, next to ▶ شغّل. */}
+                      button in the bar, next to ▶ شغّل. تصدير IS duplicated,
+                      deliberately: it has a bar button now AND stays here,
+                      because this is where anyone who learned the menu first
+                      will keep looking for it. */}
                   <button
                     role="menuitem"
                     style={menuItemStyle}
