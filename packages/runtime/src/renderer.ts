@@ -3,7 +3,7 @@
 // Zero dependencies. Uses CSS logical properties only.
 // ---------------------------------------------------------------------------
 
-import type { StoryScene, AvailableChoice, OutputNode } from "./types.js";
+import type { StoryScene, AvailableChoice, OutputNode, ImageOutputNode } from "./types.js";
 
 export interface RendererOptions {
   /** Called when the player picks a choice. Passes the choice ID. */
@@ -71,6 +71,9 @@ export function renderScene(
       run.push(node.value);
     } else if (node.type === "linebreak") {
       run.push(null);
+    } else if (node.type === "image") {
+      flushRun();
+      outputEl.appendChild(renderImage(node));
     }
   }
   flushRun();
@@ -171,4 +174,24 @@ function showFeedback(toolbar: HTMLElement, msg: string) {
   setTimeout(() => {
     if (span.parentNode) span.remove();
   }, 2000);
+}
+
+/**
+ * Render an image output node.
+ * With `data`: emits <img src="data:..." alt="desc">.
+ * Without `data`: emits a bordered placeholder showing the Arabic description.
+ */
+function renderImage(node: ImageOutputNode): HTMLElement {
+  if (node.data) {
+    const img = document.createElement("img");
+    img.className = "aq-image";
+    img.src = node.data;
+    img.alt = node.alt;
+    return img;
+  }
+
+  const placeholder = document.createElement("div");
+  placeholder.className = "aq-image-placeholder";
+  placeholder.textContent = node.alt;
+  return placeholder;
 }

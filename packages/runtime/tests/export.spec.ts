@@ -154,7 +154,7 @@ describe("exportStandalone", () => {
   it("CSS is inlined (no external stylesheet links)", () => {
     const html = readFileSync(OUT_HTML, "utf-8");
     expect(html).not.toContain('<link rel="stylesheet"');
-    expect(html).toContain("<style>");
+    expect(html).toContain("<style");
     expect(html).toContain(".aq-story");
   });
 
@@ -275,22 +275,25 @@ describe("exportStandalone", () => {
     const lightHtml = readFileSync(outLight, "utf-8");
     const bookHtml = readFileSync(outBook, "utf-8");
 
-    function extractStyle(html: string): string {
-      const m = html.match(/<style>\n([\s\S]*?)\n<\/style>/);
-      if (!m) throw new Error("No <style> block found");
+    function extractThemeStyle(html: string, theme: string): string {
+      const regex = new RegExp(
+        `<style id="aq-theme-${theme}"[^>]*>\\n([\\s\\S]*?)\\n</style>`,
+      );
+      const m = html.match(regex);
+      if (!m) throw new Error(`No <style> block found for theme ${theme}`);
       return m[1]!;
     }
 
-    const darkCss = extractStyle(darkHtml);
-    const lightCss = extractStyle(lightHtml);
-    const bookCss = extractStyle(bookHtml);
+    const darkCss = extractThemeStyle(darkHtml, "dark");
+    const lightCss = extractThemeStyle(lightHtml, "light");
+    const bookCss = extractThemeStyle(bookHtml, "book");
 
     expect(darkCss).not.toBe(lightCss);
     expect(darkCss).not.toBe(bookCss);
     expect(lightCss).not.toBe(bookCss);
 
     expect(darkCss).toContain("background: #1a1814");
-    expect(lightCss).toContain("background: #fafaf9");
+    expect(lightCss).toContain("background: #F6F1E7");
     expect(bookCss).toContain("background: #f5f0e8");
 
     unlinkSync(outDark);

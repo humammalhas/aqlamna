@@ -83,6 +83,29 @@
   outline-offset: 2px;
 }
 
+/* --- Images --------------------------------------------------------------- */
+
+.aq-image {
+  display: block;
+  max-inline-size: 100%;
+  block-size: auto;
+  border-radius: 6px;
+  margin-block: 1rem;
+}
+
+.aq-image-placeholder {
+  display: block;
+  max-inline-size: 100%;
+  padding: 2rem;
+  border: 2px dashed #4a4030;
+  border-radius: 6px;
+  margin-block: 1rem;
+  text-align: center;
+  color: #9a8c70;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+
 /* --- End state ------------------------------------------------------------ */
 
 .aq-end {

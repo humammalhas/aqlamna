@@ -58,6 +58,29 @@
 .aq-choice-btn:hover { background: #E8E0CF; border-color: #5A5346; }
 .aq-choice-btn:focus-visible { outline: 2px solid #1F3A5F; outline-offset: 2px; }
 
+/* --- Images --------------------------------------------------------------- */
+
+.aq-image {
+  display: block;
+  max-inline-size: 100%;
+  block-size: auto;
+  border-radius: 6px;
+  margin-block: 1rem;
+}
+
+.aq-image-placeholder {
+  display: block;
+  max-inline-size: 100%;
+  padding: 2rem;
+  border: 2px dashed #D8CEBB;
+  border-radius: 6px;
+  margin-block: 1rem;
+  text-align: center;
+  color: #5A5346;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+
 /* --- End state ------------------------------------------------------------ */
 
 .aq-end { text-align: center; margin-block: 3rem; }

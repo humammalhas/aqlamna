@@ -65,6 +65,29 @@
 .aq-choice-btn:hover { background: #E8E0CF; border-color: #5A5346; }
 .aq-choice-btn:focus-visible { outline: 2px solid #1F3A5F; outline-offset: 2px; }
 
+/* --- Images --------------------------------------------------------------- */
+
+.aq-image {
+  display: block;
+  max-inline-size: 100%;
+  block-size: auto;
+  border-radius: 6px;
+  margin-block: 1rem;
+}
+
+.aq-image-placeholder {
+  display: block;
+  max-inline-size: 100%;
+  padding: 2rem;
+  border: 2px dashed #D8CEBB;
+  border-radius: 6px;
+  margin-block: 1rem;
+  text-align: center;
+  color: #5A5346;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+
 /* --- End state ------------------------------------------------------------ */
 
 .aq-end { text-align: center; margin-block: 3rem; }
@@ -184,6 +207,29 @@
 .aq-choice-btn:focus-visible {
   outline: 2px solid #d4a843;
   outline-offset: 2px;
+}
+
+/* --- Images --------------------------------------------------------------- */
+
+.aq-image {
+  display: block;
+  max-inline-size: 100%;
+  block-size: auto;
+  border-radius: 6px;
+  margin-block: 1rem;
+}
+
+.aq-image-placeholder {
+  display: block;
+  max-inline-size: 100%;
+  padding: 2rem;
+  border: 2px dashed #4a4030;
+  border-radius: 6px;
+  margin-block: 1rem;
+  text-align: center;
+  color: #9a8c70;
+  font-size: 0.9375rem;
+  line-height: 1.6;
 }
 
 /* --- End state ------------------------------------------------------------ */
@@ -336,6 +382,29 @@
   outline-offset: 2px;
 }
 
+/* --- Images --------------------------------------------------------------- */
+
+.aq-image {
+  display: block;
+  max-inline-size: 100%;
+  block-size: auto;
+  border-radius: 4px;
+  margin-block: 1rem;
+}
+
+.aq-image-placeholder {
+  display: block;
+  max-inline-size: 100%;
+  padding: 2rem;
+  border: 2px dashed #c4a97d;
+  border-radius: 4px;
+  margin-block: 1rem;
+  text-align: center;
+  color: #8b6f3a;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+
 /* --- End state ------------------------------------------------------------ */
 
 .aq-end {
@@ -434,7 +503,7 @@
 <body>
 <div id="qalam-player"></div>
 <script id="qalam-story" type="application/json">
-{"qalam_version":"0.1","title":"الرحيق","author":null,"language":"ar","direction":"rtl","start":"البداية","variables":{"الرحيق":{"type":"number","initial":0},"وجد_الخريطة":{"type":"boolean","initial":false},"اسم_البطل":{"type":"string","initial":"نحلة"}},"lists":{},"passages":{"البداية":{"tags":[],"content":[{"type":"conditional","condition":{"var":"وجد_الخريطة"},"then":[{"type":"text","value":"الخريطة معك."}],"else":[]},{"type":"text","value":"جمعتِ "},{"type":"interpolation","var":"الرحيق"},{"type":"text","value":" قطرة."},{"type":"choices","items":[{"id":"choice_1","label":"اجمع الرحيق","sticky":true,"condition":null,"content":[{"type":"set","var":"الرحيق","op":"+=","value":2}],"divert":"البداية"},{"id":"choice_2","label":"تحدثي مع النحلة الحكيمة","sticky":false,"condition":null,"content":[{"type":"set","var":"وجد_الخريطة","op":"=","value":true}],"divert":"البداية"},{"id":"choice_3","label":"عودي إلى الخلية","sticky":true,"condition":{"var":"الرحيق","op":">=","value":4},"content":[],"divert":"END"}]}]}},"metadata":{"created":"2026-07-30T15:46:43.462Z","modified":"2026-07-30T15:46:43.462Z","passage_count":1,"word_count":4}}
+{"qalam_version":"0.1","title":"الرحيق","author":null,"language":"ar","direction":"rtl","start":"البداية","variables":{"الرحيق":{"type":"number","initial":0},"وجد_الخريطة":{"type":"boolean","initial":false},"اسم_البطل":{"type":"string","initial":"نحلة"}},"lists":{},"passages":{"البداية":{"tags":[],"content":[{"type":"conditional","condition":{"var":"وجد_الخريطة"},"then":[{"type":"text","value":"الخريطة معك."}],"else":[]},{"type":"text","value":"جمعتِ "},{"type":"interpolation","var":"الرحيق"},{"type":"text","value":" قطرة."},{"type":"choices","items":[{"id":"choice_1","label":"اجمع الرحيق","sticky":true,"condition":null,"content":[{"type":"set","var":"الرحيق","op":"+=","value":2}],"divert":"البداية"},{"id":"choice_2","label":"تحدثي مع النحلة الحكيمة","sticky":false,"condition":null,"content":[{"type":"set","var":"وجد_الخريطة","op":"=","value":true}],"divert":"البداية"},{"id":"choice_3","label":"عودي إلى الخلية","sticky":true,"condition":{"var":"الرحيق","op":">=","value":4},"content":[],"divert":"END"}]}]}},"metadata":{"created":"2026-07-31T02:25:48.810Z","modified":"2026-07-31T02:25:48.810Z","passage_count":1,"word_count":4}}
 </script>
 <script>
 (function () {
@@ -657,6 +726,15 @@ class Engine {
                         return sub;
                     break;
                 }
+                case "image": {
+                    const asset = this.story.images?.[node.name];
+                    output.push({
+                        type: "image",
+                        alt: asset?.alt ?? node.name,
+                        data: asset?.data,
+                    });
+                    break;
+                }
                 case "choices": {
                     const available = node.items.filter((item) => this.isChoiceAvailable(item));
                     if (available.length > 0) {
@@ -863,6 +941,10 @@ function renderScene(container, scene, title, options) {
         else if (node.type === "linebreak") {
             run.push(null);
         }
+        else if (node.type === "image") {
+            flushRun();
+            outputEl.appendChild(renderImage(node));
+        }
     }
     flushRun();
     wrapper.appendChild(outputEl);
@@ -946,6 +1028,24 @@ function showFeedback(toolbar, msg) {
         if (span.parentNode)
             span.remove();
     }, 2000);
+}
+/**
+ * Render an image output node.
+ * With `data`: emits <img src="data:..." alt="desc">.
+ * Without `data`: emits a bordered placeholder showing the Arabic description.
+ */
+function renderImage(node) {
+    if (node.data) {
+        const img = document.createElement("img");
+        img.className = "aq-image";
+        img.src = node.data;
+        img.alt = node.alt;
+        return img;
+    }
+    const placeholder = document.createElement("div");
+    placeholder.className = "aq-image-placeholder";
+    placeholder.textContent = node.alt;
+    return placeholder;
 }
 // ---------------------------------------------------------------------------
 // Aqlamna runtime save/restore — localStorage + download/upload

@@ -15,6 +15,7 @@ export interface StoryJSON {
   start: string | null;
   variables: Record<string, VariableDecl>;
   lists: Record<string, ListDecl>;
+  images?: Record<string, ImageAsset>;
   passages: Record<string, Passage>;
   metadata?: Record<string, unknown>;
 }
@@ -34,6 +35,11 @@ export interface Passage {
   content: ContentNode[];
 }
 
+export interface ImageAsset {
+  alt: string;
+  data?: string; // absent when not yet generated
+}
+
 // ---- Content nodes (§4.2) -------------------------------------------------
 
 export type ContentNode =
@@ -45,6 +51,7 @@ export type ContentNode =
   | TunnelNode
   | DivertReturnNode
   | ThreadNode
+  | ImageContentNode
   | InterpolationNode;
 
 export interface TextNode {
@@ -97,6 +104,11 @@ export interface DivertReturnNode {
 export interface ThreadNode {
   type: "thread";
   target: string;
+}
+
+export interface ImageContentNode {
+  type: "image";
+  name: string;
 }
 
 export interface InterpolationNode {
@@ -155,8 +167,15 @@ export interface StoryScene {
 }
 
 export type OutputNode =
+  | ImageOutputNode
   | { type: "text"; value: string }
   | { type: "linebreak" };
+
+export interface ImageOutputNode {
+  type: "image";
+  alt: string;
+  data?: string;
+}
 
 export interface AvailableChoice {
   id: string;

@@ -276,6 +276,17 @@ export class Engine {
           break;
         }
 
+
+        case "image": {
+          const asset = this.story.images?.[node.name];
+          output.push({
+            type: "image",
+            alt: asset?.alt ?? node.name,
+            data: asset?.data,
+          });
+          break;
+        }
+
         case "choices": {
           const available = node.items.filter((item) =>
             this.isChoiceAvailable(item),
