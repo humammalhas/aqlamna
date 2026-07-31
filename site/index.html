@@ -38,8 +38,15 @@
 .loop-prose{font-size:.9375rem;margin-block-end:.75rem;line-height:1.75}
 .loop-choices button{display:block;inline-size:100%;padding:.5rem .75rem;margin-block-end:.375rem;font-size:.875rem;font-family:inherit;border-radius:6px;cursor:default}
 .features{margin-block:3rem;display:grid;grid-template-columns:1fr;gap:2rem}
+/* Four features, so the grid stops at TWO columns and squares off into 2x2.
+   It used to go to three at 64rem, which with a fourth card leaves one card
+   alone on a second row. Widening to four is not on the table either: .page is
+   capped at 48rem, so every viewport from 768px up shares the same 720px of
+   content and four columns would be 156px each. Both queries below are
+   `min-width` — a real media feature. Two queries on this page were once
+   written `@media(max-inline-size:…)`, which is not one, so they matched in no
+   browser ever and the pair they governed never stacked on a phone. */
 @media(min-width:40rem){.features{grid-template-columns:repeat(2,1fr)}}
-@media(min-width:64rem){.features{grid-template-columns:repeat(3,1fr)}}
 .feature h2{font-size:1.25rem;font-weight:700;margin-block-end:.5rem}
 .feature p{font-size:1rem;line-height:1.75}
 .privacy-line{margin-block:3rem 2rem;padding:1.5rem;border-radius:8px;text-align:center}
@@ -176,6 +183,14 @@
         <p>
           صدّر قصتك في ملف HTML واحد يعمل دون اتصال وبلا خادم وبلا تسجيل.
           أرسله لأصدقائك أو انشره على أي موقع.
+        </p>
+      </div>
+      <div class="feature">
+        <h2>تتبّع</h2>
+        <p>
+          كلّ مشهد بطاقة، وكلّ تحويلة سهم بين بطاقتين. الخريطة تُريك أين تلتقي
+          المسارات وأيّ مشهد لا يصل إليه أحد. وهي ليست مكانًا آخر للكتابة، بل
+          القصة نفسها من زاوية أخرى.
         </p>
       </div>
     </section>
