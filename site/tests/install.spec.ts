@@ -287,6 +287,71 @@ test.describe("install offer — home page", () => {
 });
 
 // ---------------------------------------------------------------------------
+// Readability
+//
+// The install button first shipped with `color: var(--aq-accent-text)` — the
+// EDITOR's variable name. site/assets/aqlamna.css calls the same colour
+// --aq-on-accent, so on the home page the variable was undefined, the text
+// fell back to the inherited dark ink, and the label was near-black on the
+// ink-blue button. An undefined custom property is invisible in source and in
+// any test that only checks the markup; it has to be measured after render.
+// ---------------------------------------------------------------------------
+
+/** WCAG 2.1 relative-luminance contrast ratio between two rgb() strings. */
+function contrastRatio(fg: string, bg: string): number {
+  const parse = (c: string) => (c.match(/[\d.]+/g) ?? []).slice(0, 3).map(Number);
+  const lum = (rgb: number[]) => {
+    const [r, g, b] = rgb.map((v) => {
+      const s = v / 255;
+      return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+    }) as [number, number, number];
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  };
+  const a = lum(parse(fg));
+  const b = lum(parse(bg));
+  return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+}
+
+test.describe("install offer — readable", () => {
+  test("the home page button clears WCAG AA", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/", { waitUntil: "networkidle" });
+    await fireBeforeInstallPrompt(page);
+    await page.mouse.wheel(0, 900);
+    await page.waitForTimeout(400);
+
+    const c = await page.locator("[data-install-button]").evaluate((el) => {
+      const s = getComputedStyle(el);
+      return { color: s.color, background: s.backgroundColor };
+    });
+
+    // A colour that resolved from an undefined variable shows up here as the
+    // inherited ink, not as cream.
+    const ratio = contrastRatio(c.color, c.background);
+    expect(
+      ratio,
+      `install button ${c.color} on ${c.background} = ${ratio.toFixed(2)}:1`,
+    ).toBeGreaterThanOrEqual(4.5);
+  });
+
+  test("the editor button clears WCAG AA", async ({ page }) => {
+    await freshEditor(page, { engaged: true });
+    await fireBeforeInstallPrompt(page);
+
+    const c = await page.locator(CHROMIUM_BUTTON).evaluate((el) => {
+      const s = getComputedStyle(el);
+      return { color: s.color, background: s.backgroundColor };
+    });
+
+    const ratio = contrastRatio(c.color, c.background);
+    expect(
+      ratio,
+      `install button ${c.color} on ${c.background} = ${ratio.toFixed(2)}:1`,
+    ).toBeGreaterThanOrEqual(4.5);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Installability inputs
 // ---------------------------------------------------------------------------
 
