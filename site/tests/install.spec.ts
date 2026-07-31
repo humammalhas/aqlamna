@@ -226,19 +226,80 @@ test.describe("install offer — iOS, non-Safari", () => {
 });
 
 // ---------------------------------------------------------------------------
+// The home page — where people actually arrive
+// ---------------------------------------------------------------------------
+
+test.describe("install offer — home page", () => {
+  test.use({ viewport: { width: 390, height: 844 } });
+
+  test("the home page links the manifest and is inside its scope", async ({ page }) => {
+    await page.goto("/", { waitUntil: "networkidle" });
+    const href = await page.getAttribute('link[rel="manifest"]', "href");
+    expect(href, "the home page linked no manifest at all").toBeTruthy();
+
+    const manifest = await page.evaluate(async (h) => (await fetch(h!)).json(), href);
+    expect(manifest.scope).toBe("/");
+    // The page being offered for install MUST be inside the manifest's scope,
+    // or Chrome ignores the manifest entirely and offers nothing.
+    expect(new URL("/", page.url()).pathname.startsWith(manifest.scope)).toBe(true);
+  });
+
+  test("registers a service worker at the site root", async ({ page }) => {
+    await page.goto("/", { waitUntil: "networkidle" });
+    const scope = await page.evaluate(async () => {
+      const reg = await Promise.race([
+        navigator.serviceWorker.ready,
+        new Promise<null>((r) => setTimeout(() => r(null), 10000)),
+      ]);
+      return reg?.scope ?? null;
+    });
+    expect(scope, "no service worker on the home page").not.toBeNull();
+    expect(new URL(scope!).pathname).toBe("/");
+  });
+
+  test("offers the install after the visitor has looked around", async ({ page }) => {
+    await page.goto("/", { waitUntil: "networkidle" });
+
+    // Nothing on arrival.
+    await expect(page.locator('[data-install-prompt][data-open="1"]')).toHaveCount(0);
+
+    await fireBeforeInstallPrompt(page);
+    await page.mouse.wheel(0, 900);
+    await page.waitForTimeout(400);
+
+    const bar = page.locator('[data-install-prompt][data-open="1"]');
+    await expect(bar).toBeVisible();
+    await expect(bar).toContainText("ثبّت التطبيق");
+  });
+
+  test("dismissing on the home page is remembered", async ({ page }) => {
+    await page.goto("/", { waitUntil: "networkidle" });
+    await fireBeforeInstallPrompt(page);
+    await page.mouse.wheel(0, 900);
+    await page.waitForTimeout(400);
+
+    await page.getByRole("button", { name: "أغلق" }).click();
+    expect(
+      await page.evaluate(() => localStorage.getItem("aqlamna-install-dismissed")),
+    ).toBe("1");
+    await expect(page.locator('[data-install-prompt][data-open="1"]')).toHaveCount(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Installability inputs
 // ---------------------------------------------------------------------------
 
 test.describe("installability", () => {
   test("the manifest is served and carries every required field", async ({ request }) => {
-    const res = await request.get("/editor/manifest.webmanifest");
+    const res = await request.get("/manifest.webmanifest");
     expect(res.status()).toBe(200);
 
     const m = await res.json();
     expect(m.name).toBeTruthy();
     expect(m.short_name).toBeTruthy();
     expect(m.start_url).toBe("/editor/");
-    expect(m.scope).toBe("/editor/");
+    expect(m.scope).toBe("/");
     expect(m.display).toBe("standalone");
     expect(m.theme_color).toBeTruthy();
     expect(m.background_color).toBeTruthy();
@@ -259,7 +320,7 @@ test.describe("installability", () => {
     page,
     request,
   }) => {
-    const res = await request.get("/editor/sw.js");
+    const res = await request.get("/sw.js");
     expect(res.status()).toBe(200);
     const source = await res.text();
     expect(source).toContain('addEventListener("fetch"');
@@ -281,6 +342,6 @@ test.describe("installability", () => {
       return reg?.scope ?? null;
     });
     expect(scope, "no service worker registered").not.toBeNull();
-    expect(scope!.endsWith("/editor/")).toBe(true);
+    expect(new URL(scope!).pathname).toBe("/");
   });
 });

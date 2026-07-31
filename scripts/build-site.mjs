@@ -34,6 +34,26 @@ if (!existsSync(editorDist)) {
 copyDir(editorDist, resolve(site, "editor"));
 console.log("✓ site/editor/");
 
+// Vite builds the editor with `--base /editor/` and rewrites every absolute
+// href in index.html to sit under that base — including the manifest link, so
+// `/manifest.webmanifest` came out as `/editor/manifest.webmanifest`. There is
+// exactly one manifest and it lives at the site root, because its scope is the
+// whole site. Point the tag back and fail loudly if the rewrite ever stops.
+{
+  const editorIndex = resolve(site, "editor", "index.html");
+  let html = readFileSync(editorIndex, "utf-8");
+  html = html.replace(
+    /href="\/editor\/manifest\.webmanifest"/,
+    'href="/manifest.webmanifest"',
+  );
+  if (!html.includes('href="/manifest.webmanifest"')) {
+    console.error("editor index.html does not link /manifest.webmanifest");
+    process.exit(1);
+  }
+  writeFileSync(editorIndex, html, "utf-8");
+  console.log("✓ site/editor/index.html → /manifest.webmanifest");
+}
+
 // 2. Story → site/
 const story = resolve(root, "stories", "العطر_المفقود.html");
 if (!existsSync(story)) {
@@ -44,16 +64,42 @@ copyFile(story, resolve(site, "العطر_المفقود.html"));
 console.log("✓ site/العطر_المفقود.html");
 
 // 3. Brand assets → site/assets/
-const brandAssets = ["icon-512.png", "favicon.ico", "logo-transparent.png"];
-for (const f of brandAssets) {
-  const src = resolve(root, "brand", f);
+// icon-192 and icon-512 are referenced by /manifest.webmanifest, whose scope
+// is the whole site — so they must exist at /assets/, not only under /editor/.
+// The manifest previously pointed at paths that 404'd, which is one reason
+// the app was never installable.
+const brandAssets = [
+  ["icon-512.png", "icon-512.png"],
+  ["icon-192.png", "icon-192.png"],
+  ["icon-180.png", "apple-touch-icon.png"],
+  ["favicon.ico", "favicon.ico"],
+  ["logo-transparent.png", "logo-transparent.png"],
+];
+for (const [from, to] of brandAssets) {
+  const src = resolve(root, "brand", from);
   if (!existsSync(src)) {
     console.error("brand asset not found:", src);
     process.exit(1);
   }
-  copyFile(src, resolve(site, "assets", f));
-  console.log(`✓ site/assets/${f}`);
+  copyFile(src, resolve(site, "assets", to));
+  console.log(`✓ site/assets/${to}`);
 }
+
+// Every icon the manifest names must actually resolve, or Chrome silently
+// refuses to install and never says why.
+const manifestPath = resolve(site, "manifest.webmanifest");
+if (!existsSync(manifestPath)) {
+  console.error("manifest not found:", manifestPath);
+  process.exit(1);
+}
+for (const icon of JSON.parse(readFileSync(manifestPath, "utf-8")).icons) {
+  const iconPath = resolve(site, icon.src.replace(/^\//, ""));
+  if (!existsSync(iconPath)) {
+    console.error(`manifest names ${icon.src} but ${iconPath} does not exist`);
+    process.exit(1);
+  }
+}
+console.log("✓ manifest icons all resolve");
 
 // 4. Demo prose — generated from stories/العطر_المفقود.qalam
 const qalamSrc = resolve(root, "stories", "العطر_المفقود.qalam");

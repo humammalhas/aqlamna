@@ -241,6 +241,7 @@ function legalPage(title, body) {
 "  <link rel=\"icon\" href=\"/assets/favicon.ico\" sizes=\"any\">\n" +
 "  <link rel=\"icon\" type=\"image/png\" sizes=\"512x512\" href=\"/assets/icon-512.png\">\n" +
 "  <title>" + esc(title) + " — أقلامنا</title>\n" +
+"  <link rel=\"manifest\" href=\"/manifest.webmanifest\">\n" +
 "  <link rel=\"stylesheet\" href=\"/assets/aqlamna.css\">\n" +
 "  <style>\n" +
 ".page{inline-size:100%;max-inline-size:48rem;padding-inline:1.5rem;padding-block:2rem}\n" +

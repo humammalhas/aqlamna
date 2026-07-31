@@ -12,6 +12,8 @@
   <link rel="icon" href="/assets/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" sizes="512x512" href="/assets/icon-512.png">
   <title>أقلامنا — محرك القصص التفاعلية بالعربية</title>
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
   <link rel="stylesheet" href="/assets/aqlamna.css">
   <style>
 .page{inline-size:100%;max-inline-size:48rem;padding-inline:1.5rem;padding-block:2rem}
@@ -55,6 +57,21 @@
 .docs-card{padding:1rem;border-radius:8px;text-decoration:none}
 .docs-card h3{font-size:1rem;font-weight:700;margin-block-end:.25rem}
 .docs-card-note{font-size:.75rem;margin:0}
+.install-bar{position:fixed;inset-inline:0;inset-block-end:0;z-index:50;display:none;
+ align-items:center;gap:.75rem;flex-wrap:wrap;padding:.75rem 1rem;
+ padding-block-end:calc(.75rem + env(safe-area-inset-bottom));
+ background:var(--aq-surface-hi);border-block-start:1px solid var(--aq-border);
+ color:var(--aq-text);font-size:.875rem}
+.install-bar[data-open="1"]{display:flex}
+.install-bar .grow{flex:1;min-inline-size:0}
+.install-bar button{font-family:inherit;cursor:pointer;border-radius:6px;min-block-size:44px}
+.install-cta{padding:.5rem 1rem;font-size:.875rem;font-weight:600;border:none;
+ color:var(--aq-accent-text);background:var(--aq-accent);white-space:nowrap}
+.install-close{min-inline-size:44px;font-size:1rem;color:var(--aq-muted);
+ background:transparent;border:1px solid var(--aq-border)}
+.install-steps{inline-size:100%;margin-block-start:.5rem;padding:.875rem 1rem;line-height:2;
+ background:var(--aq-surface);border:1px solid var(--aq-border);border-radius:8px}
+.install-steps[hidden]{display:none}
 @media(max-width:40rem){
  .page{padding-inline:1.125rem;padding-block:1.25rem}
  .hero{padding-block:2rem 1rem}
@@ -205,5 +222,87 @@
       <p class="company">المصير لبرامج وأنظمة الحاسوب</p>
     </footer>
   </main>
+
+  <!-- PWA install offer. Same behaviour, Arabic and localStorage keys as the
+       editor's InstallPrompt, so dismissing it in one place dismisses it in
+       both. Scope is "/" precisely so this page can offer it: the home page is
+       where people arrive, and it used to link no manifest at all. -->
+  <div class="install-bar" id="installBar" role="region" aria-label="تثبيت التطبيق" data-install-prompt>
+    <span class="grow" id="installText">ثبّت أقلامنا ليعمل دون اتصال.</span>
+    <button class="install-cta" id="installBtn" data-install-button>📲 ثبّت التطبيق</button>
+    <button class="install-close" id="installClose" aria-label="أغلق" title="أغلق">✕</button>
+    <div class="install-steps" id="installSteps" data-install-sheet hidden>
+      <div style="font-weight:700">لتثبيت أقلامنا على جهازك:</div>
+      <div>١. اضغط زر المشاركة <span aria-hidden="true">⬆️</span></div>
+      <div>٢. اختر «إضافة إلى الشاشة الرئيسية»</div>
+    </div>
+  </div>
+
+  <script>
+  (function () {
+    var DISMISSED = "aqlamna-install-dismissed";
+    var bar = document.getElementById("installBar");
+    var btn = document.getElementById("installBtn");
+    var steps = document.getElementById("installSteps");
+    var text = document.getElementById("installText");
+    var deferred = null;
+    var engaged = false;
+
+    function get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+    function set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+
+    function standalone() {
+      try {
+        if (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) return true;
+      } catch (e) {}
+      return navigator.standalone === true;
+    }
+
+    function ios() {
+      var ua = navigator.userAgent;
+      if (/iPad|iPhone|iPod/.test(ua)) return true;
+      return navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1;
+    }
+    // Add to Home Screen is Safari-only; Chrome/Firefox/Edge on iOS do not have it.
+    function iosSafari() { return ios() && !/CriOS|FxiOS|EdgiOS|OPiOS/i.test(navigator.userAgent); }
+
+    function refresh() {
+      if (!engaged || standalone() || get(DISMISSED) === "1") { bar.removeAttribute("data-open"); return; }
+      if (!iosSafari() && !deferred) { bar.removeAttribute("data-open"); return; }
+      if (iosSafari()) text.textContent = "ثبّت أقلامنا على شاشتك الرئيسية.";
+      bar.setAttribute("data-open", "1");
+    }
+
+    // Not on arrival: only once the visitor has actually looked around.
+    function engage() { if (!engaged) { engaged = true; refresh(); } }
+    addEventListener("scroll", function () { if (scrollY > 400) engage(); }, { passive: true });
+    addEventListener("click", engage, { once: true, capture: true });
+
+    addEventListener("beforeinstallprompt", function (e) { e.preventDefault(); deferred = e; refresh(); });
+    addEventListener("appinstalled", function () { bar.removeAttribute("data-open"); });
+
+    btn.addEventListener("click", function () {
+      if (iosSafari()) { steps.hidden = !steps.hidden; return; }
+      if (!deferred) return;
+      deferred.prompt();
+      deferred.userChoice.then(function (choice) {
+        text.textContent = choice.outcome === "accepted" ? "تم تثبيت أقلامنا." : "لم يتم التثبيت.";
+        btn.hidden = true;
+        deferred = null;
+      });
+    });
+
+    document.getElementById("installClose").addEventListener("click", function () {
+      set(DISMISSED, "1");
+      bar.removeAttribute("data-open");
+    });
+
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch(function (err) {
+        console.error("Service worker registration failed:", err);
+      });
+    }
+  })();
+  </script>
 </body>
 </html>
