@@ -47,6 +47,10 @@ export interface ProviderConfig {
   corsNoteAr?: string;
   instructionsEn: string;
   instructionsAr: string;
+  /** Whether this provider can generate images. */
+  supportsImages: boolean;
+  /** Model ID for image generation, or null if unsupported. */
+  imageModel: string | null;
 }
 
 export const DEEPSEEK: ProviderConfig = {
@@ -68,6 +72,8 @@ export const DEEPSEEK: ProviderConfig = {
     "Go to platform.deepseek.com and sign up or log in.\nNavigate to the \"API Keys\" section.\nCreate a new API key and copy it.\nPaste the key above — it is stored in this browser only.",
   instructionsAr:
     "اذهب إلى platform.deepseek.com وسجّل الدخول أو أنشئ حساباً.\nانتقل إلى قسم \"API Keys\".\nأنشئ مفتاح API جديداً وانسخه.\nالصق المفتاح أعلاه — يُخزَّن في هذا المتصفح فقط.",
+  supportsImages: false,
+  imageModel: null,
 };
 
 export const OPENAI: ProviderConfig = {
@@ -89,6 +95,8 @@ export const OPENAI: ProviderConfig = {
     "Go to platform.openai.com and sign up or log in.\nNavigate to \"API Keys\" in the dashboard.\nCreate a new secret key and copy it.\nPaste the key above — it is stored in this browser only.",
   instructionsAr:
     "اذهب إلى platform.openai.com وسجّل الدخول أو أنشئ حساباً.\nانتقل إلى \"API Keys\" في لوحة التحكم.\nأنشئ مفتاح سري جديداً وانسخه.\nالصق المفتاح أعلاه — يُخزَّن في هذا المتصفح فقط.",
+  supportsImages: true,
+  imageModel: "gpt-image-1",
 };
 
 export const GROQ: ProviderConfig = {
@@ -101,15 +109,17 @@ export const GROQ: ProviderConfig = {
   models: ["llama-3.3-70b-versatile", "llama-3.1-8b-instant", "qwen/qwen-3-32b"],
   defaultModel: "llama-3.3-70b-versatile",
   keyAcquisitionUrl: "https://console.groq.com/keys",
-  pricingInfo: "Free tier available",
-  pricingInfoAr: "باقة مجانية متوفرة",
-  hasFreeTier: true,
+  pricingInfo: "Pay-as-you-go",
+  pricingInfoAr: "الدفع حسب الاستخدام",
+  hasFreeTier: false,
   browserCors: "unknown",
   corsNoteAr: "قد يمنع المزوّد الطلبات المباشرة من المتصفح. إن فشل الاتصال، استخدم أوبن راوتر أو أولاما.",
   instructionsEn:
-    "Go to console.groq.com and sign up or log in.\nNavigate to \"API Keys\".\nCreate a new API key and copy it.\nGroq offers a generous free tier — great for trying out fast inference.",
+    "Go to console.groq.com and sign up or log in.\nNavigate to \"API Keys\".\nCreate a new API key and copy it.\nPaste the key above — it is stored in this browser only.",
   instructionsAr:
-    "اذهب إلى console.groq.com وسجّل الدخول أو أنشئ حساباً.\nانتقل إلى \"API Keys\".\nأنشئ مفتاح API جديداً وانسخه.\nجروك يوفر باقة مجانية سخية — ممتازة لتجربة الاستدلال السريع.",
+    "اذهب إلى console.groq.com وسجّل الدخول أو أنشئ حساباً.\nانتقل إلى \"API Keys\".\nأنشئ مفتاح API جديداً وانسخه.\nالصق المفتاح أعلاه — يُخزَّن في هذا المتصفح فقط.",
+  supportsImages: false,
+  imageModel: null,
 };
 
 export const TOGETHER: ProviderConfig = {
@@ -137,6 +147,8 @@ export const TOGETHER: ProviderConfig = {
     "Go to api.together.ai and sign up or log in.\nNavigate to Settings → API Keys.\nCreate a new API key and copy it.\nTogether AI offers affordable inference for open-source models.",
   instructionsAr:
     "اذهب إلى api.together.ai وسجّل الدخول أو أنشئ حساباً.\nانتقل إلى الإعدادات → API Keys.\nأنشئ مفتاح API جديداً وانسخه.\nتوجيذر يوفر استدلالاً بأسعار معقولة للنماذج مفتوحة المصدر.",
+  supportsImages: true,
+  imageModel: "black-forest-labs/FLUX.1-schnell",
 };
 
 export const MISTRAL: ProviderConfig = {
@@ -158,6 +170,8 @@ export const MISTRAL: ProviderConfig = {
     "Go to console.mistral.ai and sign up or log in.\nNavigate to \"API Keys\".\nCreate a new API key and copy it.\nMistral is EU-based and GDPR-friendly.",
   instructionsAr:
     "اذهب إلى console.mistral.ai وسجّل الدخول أو أنشئ حساباً.\nانتقل إلى \"API Keys\".\nأنشئ مفتاح API جديداً وانسخه.\nميسترال شركة أوروبية ومتوافقة مع GDPR.",
+  supportsImages: false,
+  imageModel: null,
 };
 
 export const VENICE: ProviderConfig = {
@@ -176,15 +190,17 @@ export const VENICE: ProviderConfig = {
   ],
   defaultModel: "llama-3.3-70b",
   keyAcquisitionUrl: "https://venice.ai/settings/api",
-  pricingInfo: "Credit-based, free tier available",
-  pricingInfoAr: "نظام رصيد، باقة مجانية متوفرة",
-  hasFreeTier: true,
+  pricingInfo: "Credit-based",
+  pricingInfoAr: "نظام رصيد",
+  hasFreeTier: false,
   browserCors: "unknown",
   corsNoteAr: "قد يمنع المزوّد الطلبات المباشرة من المتصفح. إن فشل الاتصال، استخدم أوبن راوتر أو أولاما.",
   instructionsEn:
     "Go to venice.ai and sign up or log in.\nNavigate to Settings → API.\nCreate a new API key and copy it.\nVenice is a privacy-focused provider with zero-retention policies.",
   instructionsAr:
     "اذهب إلى venice.ai وسجّل الدخول أو أنشئ حساباً.\nانتقل إلى الإعدادات → API.\nأنشئ مفتاح API جديداً وانسخه.\nفينيس مزوّد يركّز على الخصوصية مع سياسة عدم الاحتفاظ بالبيانات.",
+  supportsImages: false,
+  imageModel: null,
 };
 
 export const OPENROUTER: ProviderConfig = {
@@ -199,12 +215,14 @@ export const OPENROUTER: ProviderConfig = {
   keyAcquisitionUrl: "https://openrouter.ai/keys",
   pricingInfo: "Gateway to 100+ models",
   pricingInfoAr: "بوابة لأكثر من 100 نموذج",
-  hasFreeTier: true,
+  hasFreeTier: false,
   browserCors: "ok",
   instructionsEn:
     "Go to openrouter.ai and sign up or log in.\nNavigate to \"Keys\" in the dashboard.\nCreate a new API key and copy it.\nOpenRouter gives you access to 100+ models with one key, and works reliably from the browser.\nYou can type any model ID manually (e.g. anthropic/claude-3.5-sonnet).",
   instructionsAr:
     "اذهب إلى openrouter.ai وسجّل الدخول أو أنشئ حساباً.\nانتقل إلى \"Keys\" في لوحة التحكم.\nأنشئ مفتاح API جديداً وانسخه.\nأوبن راوتر يتيح الوصول لأكثر من 100 نموذج بمفتاح واحد، ويعمل من المتصفح بلا مشاكل.\nيمكنك كتابة معرّف أي نموذج يدوياً.",
+  supportsImages: false,
+  imageModel: null,
 };
 
 export const ANTHROPIC: ProviderConfig = {
@@ -226,6 +244,8 @@ export const ANTHROPIC: ProviderConfig = {
     "Go to console.anthropic.com and sign up or log in.\nNavigate to Settings → API Keys.\nCreate a new API key and copy it.\nPaste the key above — it is stored in this browser only.",
   instructionsAr:
     "اذهب إلى console.anthropic.com وسجّل الدخول أو أنشئ حساباً.\nانتقل إلى الإعدادات → API Keys.\nأنشئ مفتاح API جديداً وانسخه.\nالصق المفتاح أعلاه — يُخزَّن في هذا المتصفح فقط.",
+  supportsImages: false,
+  imageModel: null,
 };
 
 export const GEMINI: ProviderConfig = {
@@ -238,14 +258,16 @@ export const GEMINI: ProviderConfig = {
   models: ["gemini-2.5-flash", "gemini-3-flash", "gemini-3.1-pro"],
   defaultModel: "gemini-2.5-flash",
   keyAcquisitionUrl: "https://aistudio.google.com/apikey",
-  pricingInfo: "Free tier available (50 req/day)",
-  pricingInfoAr: "باقة مجانية متوفرة (50 طلب/يوم)",
-  hasFreeTier: true,
+  pricingInfo: "Pay-as-you-go",
+  pricingInfoAr: "الدفع حسب الاستخدام",
+  hasFreeTier: false,
   browserCors: "ok",
   instructionsEn:
-    "Go to aistudio.google.com and sign in with your Google account.\nClick \"Get API key\" in the top menu.\nCreate a new API key and copy it.\nGemini offers a free tier — great for trying AI without paying.",
+    "Go to aistudio.google.com and sign in with your Google account.\nClick \"Get API key\" in the top menu.\nCreate a new API key and copy it.\nPaste the key above — it is stored in this browser only.",
   instructionsAr:
-    "اذهب إلى aistudio.google.com وسجّل الدخول بحساب جوجل.\nاضغط على \"Get API key\" في القائمة العلوية.\nأنشئ مفتاح API جديداً وانسخه.\nجيميناي يوفر باقة مجانية — ممتاز لتجربة الذكاء الاصطناعي بدون دفع.",
+    "اذهب إلى aistudio.google.com وسجّل الدخول بحساب جوجل.\nاضغط على \"Get API key\" في القائمة العلوية.\nأنشئ مفتاح API جديداً وانسخه.\nالصق المفتاح أعلاه — يُخزَّن في هذا المتصفح فقط.",
+  supportsImages: true,
+  imageModel: "gemini-3.1-flash-image-preview",
 };
 
 export const OLLAMA: ProviderConfig = {
@@ -270,6 +292,8 @@ export const OLLAMA: ProviderConfig = {
     "Install Ollama from ollama.com/download.\nPull a model: ollama pull llama3.2\nStart it so the browser is allowed to connect:\n  OLLAMA_ORIGINS=* ollama serve\nNo API key needed — leave the key field empty.\nCompletely free and completely private: nothing leaves your computer.",
   instructionsAr:
     "ثبّت أولاما من ollama.com/download.\nحمّل نموذجاً: ollama pull llama3.2\nشغّله بصيغة تسمح للمتصفح بالاتصال:\n  OLLAMA_ORIGINS=* ollama serve\nلا حاجة لمفتاح API — اترك حقل المفتاح فارغاً.\nمجاني تماماً وخاصّ تماماً: لا يخرج شيء من جهازك.",
+  supportsImages: false,
+  imageModel: null,
 };
 
 export const LM_STUDIO: ProviderConfig = {
@@ -293,6 +317,8 @@ export const LM_STUDIO: ProviderConfig = {
     "Install LM Studio from lmstudio.ai.\nDownload a model and start the local server, with CORS enabled in the server settings.\nNo API key needed — leave the key field empty.\nType your model name in the model field.",
   instructionsAr:
     "ثبّت LM Studio من lmstudio.ai.\nحمّل نموذجاً وشغّل الخادم المحلي، مع تفعيل CORS في إعدادات الخادم.\nلا حاجة لمفتاح API — اترك حقل المفتاح فارغاً.\nاكتب اسم النموذج في حقل النموذج.",
+  supportsImages: false,
+  imageModel: null,
 };
 
 export const CUSTOM: ProviderConfig = {
@@ -316,6 +342,8 @@ export const CUSTOM: ProviderConfig = {
     "Enter the base URL of any OpenAI-compatible API server.\nThe server must support POST /v1/chat/completions and allow this site's origin.\nAdd an API key if your server requires authentication.\nType the model name you want to use.",
   instructionsAr:
     "أدخل رابط أي خادم API متوافق مع OpenAI.\nيجب أن يدعم الخادم POST /v1/chat/completions ويسمح بأصل هذا الموقع.\nأضف مفتاح API إذا كان خادمك يتطلب مصادقة.\nاكتب اسم النموذج الذي تريد استخدامه.",
+  supportsImages: false,
+  imageModel: null,
 };
 
 export const ALL_OPENAI_COMPATIBLE: ProviderConfig[] = [

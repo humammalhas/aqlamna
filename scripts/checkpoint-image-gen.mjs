@@ -5,7 +5,7 @@
 //
 // Prerequisites:
 //   DEEPSEEK_API_KEY  — for the Arabic→English bridge call
-//   TOGETHER_API_KEY  — for the image generation (FLUX.1 schnell, free)
+//   TOGETHER_API_KEY  — for the image generation (FLUX.1 schnell)
 //
 // If either is missing the script tells you and exits.
 // ---------------------------------------------------------------------------
@@ -123,7 +123,7 @@ async function main() {
   // ---- Summary ----------------------------------------------------------------
   console.log();
   console.log("=== CHECKPOINT SUMMARY ===");
-  console.log(`Provider used:        Together AI (FLUX.1 schnell, free)`);
+  console.log(`Provider used:        Together AI (FLUX.1 schnell)`);
   console.log(`English prompt:       "${englishPrompt}"`);
   console.log(`Raw PNG bytes:        ${pngBytes.toLocaleString()}`);
   console.log(`Translation:           ${translateMs}ms`);
