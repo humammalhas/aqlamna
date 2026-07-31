@@ -26,7 +26,7 @@
 // an example, not a regex, so those over-match by design.
 // ---------------------------------------------------------------------------
 
-import { readFileSync, readdirSync, existsSync } from "node:fs";
+import { readFileSync, readdirSync, existsSync, statSync } from "node:fs";
 import { join, dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
@@ -39,7 +39,29 @@ if (!existsSync(linterDist)) {
   console.error("linter dist not found — run `npm run build -w @aqlamna/linter` first");
   process.exit(1);
 }
-const { lint } = await import(pathToFileURL(linterDist).href);
+
+// A stale dist is silent and it already cost a full session: dist/generated/
+// rules.js was a day older than src/generated/rules.ts, so this gate ran with
+// 63 of 83 rules and reported clean. `npm test` runs typecheck, not build, so
+// nothing rebuilt it. Compare mtimes and refuse to run rather than under-report.
+{
+  const distRules = join(root, "packages", "linter", "dist", "generated", "rules.js");
+  const srcRules = join(root, "packages", "linter", "src", "generated", "rules.ts");
+  if (existsSync(distRules) && existsSync(srcRules)) {
+    const d = statSync(distRules).mtimeMs;
+    const s = statSync(srcRules).mtimeMs;
+    if (d < s) {
+      console.error(
+        "linter dist is STALE — dist/generated/rules.js is older than src/generated/rules.ts.\n" +
+          `  dist: ${new Date(d).toISOString()}\n  src:  ${new Date(s).toISOString()}\n` +
+          "  Run `npm run build -w @aqlamna/linter`. Refusing to lint with an unknown rule set.",
+      );
+      process.exit(1);
+    }
+  }
+}
+
+const { lint, getRulesMeta } = await import(pathToFileURL(linterDist).href);
 
 // ---- Arabic detection ------------------------------------------------------
 
@@ -234,7 +256,8 @@ for (const target of targets) {
 }
 
 console.log(
-  `\nlint-docs-arabic: ${targets.length} file(s) checked, ` +
+  `\nlint-docs-arabic: ${targets.length} file(s) checked against ` +
+    `${getRulesMeta().totalActive} active rules, ` +
     `${filesWithFindings} with findings — ${warnings} warning(s), ${infos} info.`,
 );
 

@@ -58,8 +58,17 @@ function splitCells(row) {
 }
 
 /**
- * Parse a table header to find the column index of ❌ and ✅.
- * Returns { badIdx, goodIdx } or null if not a pair table.
+ * Parse a table header to find the column index of ❌ and ✅, plus the
+ * per-row explanation column if the table has one.
+ *
+ * The explanation column has a different header in every section — `السبب`
+ * in §1b.2 and §2.4, `ملاحظة` in §2.1, `القاعدة` in §2.2 — so it is found
+ * structurally, as the first column that is neither ❌ nor ✅, rather than by
+ * matching a list of header words. A new table with a new header name is
+ * picked up without touching this script.
+ *
+ * Returns { badIdx, goodIdx, reasonIdx } — reasonIdx is -1 for a two-column
+ * table. Null if not a pair table at all.
  */
 function parseHeader(headerRow) {
   const cells = splitCells(headerRow);
@@ -73,7 +82,25 @@ function parseHeader(headerRow) {
   }
 
   if (badIdx === -1 || goodIdx === -1) return null;
-  return { badIdx, goodIdx };
+
+  let reasonIdx = -1;
+  for (let i = 0; i < cells.length; i++) {
+    if (i === badIdx || i === goodIdx) continue;
+    if (cells[i].length === 0) continue;
+    reasonIdx = i;
+    break;
+  }
+
+  return { badIdx, goodIdx, reasonIdx };
+}
+
+/** Heading text with the leading number stripped: "### 2.5 أخطاء تشكيلية" → "أخطاء تشكيلية". */
+function headingText(line) {
+  return line
+    .replace(/^#+\s*/, "")
+    .replace(/^[\d]+[a-z]*(?:\.[\d]+[a-z]*)?\s*/, "")
+    .replace(/\s*\(\d+[^)]*\)\s*$/, "") // drop trailing counts like "(79 تصحيحًا صامتًا)"
+    .trim();
 }
 
 /** Remove only markdown formatting (**, *, `, links) from cell text.
@@ -130,6 +157,8 @@ const rawPairs = []; // { bad, good, section }
 const advisoryRules = [];
 
 let currentSection = null;
+/** Nearest preceding heading text — the last-resort message source. */
+let currentHeading = "";
 let inTable = false;
 let tableHeader = null;
 let tableRows = [];
@@ -161,7 +190,7 @@ function flushTable() {
     return;
   }
 
-  const { badIdx, goodIdx } = indices;
+  const { badIdx, goodIdx, reasonIdx } = indices;
 
   for (const row of tableRows) {
     // Skip rows with ~~ (strikethrough = "don't correct")
@@ -179,7 +208,17 @@ function flushTable() {
     if (bad === good) continue; // skip identical pairs
     if (bad.startsWith("⚠️") || good.startsWith("⚠️")) continue;
 
-    rawPairs.push({ bad, good, section: currentSection });
+    // The row's own explanation, when the table carries one. This is the most
+    // specific message available and it beats the section-wide القاعدة.
+    const reason = reasonIdx >= 0 && cells[reasonIdx] ? cleanCell(cells[reasonIdx]) : "";
+
+    rawPairs.push({
+      bad,
+      good,
+      section: currentSection,
+      reason: reason.startsWith("⚠️") ? "" : reason,
+      heading: currentHeading,
+    });
   }
 
   tableHeader = null;
@@ -195,6 +234,10 @@ for (let i = 0; i < lines.length; i++) {
     flushTable();
     const sid = sectionId(line);
     if (sid) currentSection = sid;
+    // Tracked for ALL headings, numbered or not: §3's tashkeel table sits
+    // under "### تشكيل أفعال وأسماء شائعة", which carries no section number
+    // but is the only description that table has.
+    currentHeading = headingText(line);
     continue;
   }
 
@@ -243,6 +286,8 @@ for (let i = 0; i < lines.length; i++) {
 // Assemble pair rules with ids and qaedas
 const pairRules = [];
 const sectionCounters = new Map();
+/** rule id → which level of the chain supplied its message. Reported below. */
+const messageSource = new Map();
 
 for (const p of rawPairs) {
   const count = (sectionCounters.get(p.section) || 0) + 1;
@@ -251,13 +296,26 @@ for (const p of rawPairs) {
   // §1b.5 verb-precision rules are judgment calls — downgrade to info
   const severity = p.section === "1b.5" ? "info" : "warning";
 
+  // Message provenance, most specific first. Every level reads OUT of
+  // ARABIC_MASTERY.md — nothing is authored here (hard rule 1).
+  //   1. the row's own reason column       (§1b.2 السبب, §2.1 ملاحظة, §2.4 السبب)
+  //   2. the section's **القاعدة:** line   (§1b.1, §1b.3, §1b.4, …)
+  //   3. the nearest heading text          (§2.5, §3 — two-column tables with
+  //                                         no القاعدة paragraph)
+  // 26 of 76 rules used to fall off the end of this chain and ship "".
+  const message = p.reason || qaedaBySection.get(p.section) || p.heading || "";
+  messageSource.set(
+    `${p.section}.${count}`,
+    p.reason ? "reason-column" : qaedaBySection.get(p.section) ? "qaeda" : p.heading ? "heading" : "NONE",
+  );
+
   pairRules.push({
     id: `${p.section}.${count}`,
     kind: "pair",
     bad: p.bad,
     good: p.good,
     severity,
-    messageAr: qaedaBySection.get(p.section) || "",
+    messageAr: message,
     section: p.section,
   });
 }
@@ -337,3 +395,28 @@ writeFileSync(md5File, masteryMd5 + "\n", "utf-8");
 console.log(
   `✓ rules.ts written — ${pairRules.length} pair, ${extraRules.length} pattern, ${advisoryRules.length} advisory (${output._meta.counts.total} total, md5 ${masteryMd5})`
 );
+
+// ---- Message provenance ----------------------------------------------------
+// A rule that fires without a sentence teaches nothing and trains authors to
+// ignore the linter. Report where every message came from, and name any rule
+// the corpus cannot explain — that is a gap in ARABIC_MASTERY.md for the owner
+// to fill, never a sentence for this script to invent (hard rule 1).
+
+const provenance = { "reason-column": 0, qaeda: 0, heading: 0, NONE: 0 };
+for (const src of messageSource.values()) provenance[src]++;
+console.log(
+  `  messages: ${provenance["reason-column"]} from a reason column, ` +
+    `${provenance.qaeda} from **القاعدة:**, ${provenance.heading} from a heading`,
+);
+
+const unexplained = output.rules.filter(
+  (r) => typeof r.messageAr !== "string" || r.messageAr.trim().length === 0,
+);
+if (unexplained.length > 0) {
+  console.error(
+    `\n⚠️  ${unexplained.length} rule(s) have no explanation anywhere in ARABIC_MASTERY.md.\n` +
+      `   Add a reason column or a **القاعدة:** line to the section — do NOT write the\n` +
+      `   sentence in this script.\n` +
+      unexplained.map((r) => `     ${r.id}  §${r.section}  ${r.bad ?? r.pattern ?? ""}`).join("\n"),
+  );
+}
