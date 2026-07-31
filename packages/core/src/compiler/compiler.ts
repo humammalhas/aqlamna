@@ -177,5 +177,9 @@ export function compileStory(ast: StoryAST, _filename: string): Record<string, u
     result.images = ast.images;
   }
 
+  if (ast.imageStyle !== null) {
+    result.imageStyle = ast.imageStyle;
+  }
+
   return result;
 }

@@ -11,6 +11,7 @@ export const TokenKind = {
   KEYWORD_VAR: "KEYWORD_VAR",
   KEYWORD_LIST: "KEYWORD_LIST",
   KEYWORD_IMAGE: "KEYWORD_IMAGE",
+  KEYWORD_IMAGE_STYLE: "KEYWORD_IMAGE_STYLE",
   KEYWORD_TRUE: "KEYWORD_TRUE",
   KEYWORD_FALSE: "KEYWORD_FALSE",
   KEYWORD_NOT: "KEYWORD_NOT",
@@ -129,6 +130,7 @@ const DECL_KEYWORDS: Record<string, TokenKind> = {
 
 const IMAGE_KEYWORDS: Record<string, TokenKind> = {
   "صورة": TokenKind.KEYWORD_IMAGE, "image": TokenKind.KEYWORD_IMAGE,
+  "أسلوب_الصور": TokenKind.KEYWORD_IMAGE_STYLE, "image_style": TokenKind.KEYWORD_IMAGE_STYLE,
 };
 
 const BOOL_KEYWORDS: Record<string, TokenKind> = {

@@ -46,7 +46,26 @@ An image is declared at the top of the file, in the same region as `متغير` 
 - An image reference is a **node in the passage body**, ordered with prose and choices exactly
   as written. It is not metadata and not a passage-level property.
 
-### 1.3 Errors
+### 1.3 Story-level image style
+
+Optional. One per story. Declared in the same region as `متغير` and `صورة`:
+
+```qalam
+أسلوب_الصور: "رسم كتب أطفال، ألوان ترابية هادئة، خطوط ناعمة"
+```
+
+English alias: `image_style`.
+
+- The style string is Arabic and stays Arabic. It is authored once and applied to every image.
+- At generation time, the bridge translates the image DESCRIPTION ONLY, then appends the style
+  verbatim in English. The text model is explicitly instructed to translate the subject
+  faithfully and invent NO style, NO lighting, NO mood, NO composition.
+- Without this declaration, the text model volunteers a different style every time — ten images
+  get ten different visual treatments and the book looks inconsistent.
+- The style is compiled into the story JSON so a re-export preserves it. It is not a UI toggle
+  that resets.
+
+### 1.4 Errors
 
 Message strings are fixed here, as in `PHASE1_SPEC.md` §1.15. Nobody paraphrases them.
 
@@ -123,7 +142,7 @@ provider's own pricing page and record the date.
 
 | Provider | Images? | Model | Cost |
 |---|---|---|---|
-| Together | ✅ | FLUX.1 [schnell] | **free endpoint exists** (`FLUX.1-schnell-Free`, Black Forest Labs partnership); paid schnell ≈ $0.003/image |
+| Together | ✅ | FLUX.1 [schnell] | **$0.0027 / megapixel** → ≈ **$0.0016 per 768px image**. No free tier as of 31 Jul 2026; the account is read-only until a deposit is made. THE DEFAULT — 30× cheaper than Gemini. |
 | Gemini | ✅ | ⚠️ see note | `gemini-2.5-flash-image` ≈ $0.039/image, **no free tier**, **shuts down 2 Oct 2026** |
 | OpenAI | ✅ | `gpt-image-1` | paid, no free tier |
 | Venice | ❓ | unverified | could not confirm — **check before implementing** |
@@ -136,9 +155,34 @@ about two months from this spec. Use `gemini-3.1-flash-image-preview` or whateve
 current image model is at implementation time, and put the model id in provider config so it
 can be changed without touching code.
 
-**Recommended default: Together FLUX.1 [schnell]** — it is the only one with a genuinely free
-path, and free matters for a GPL tool aimed at teachers and students who will not buy API
-credit to try a feature.
+### 4.1 Exact identifiers — copy these, do not retype
+
+| what | value |
+|---|---|
+| Together image endpoint | `https://api.together.xyz/v1/images/generations` |
+| model string | `black-forest-labs/FLUX.1-schnell` |
+| auth header | `Authorization: Bearer $TOGETHER_API_KEY` |
+| response | base64 or a URL depending on `response_format` — request **base64** so nothing has to be re-fetched |
+
+`FLUX.1 [schnell]` is the display name on the pricing page. The model string is the one above.
+A wrong character returns 404, and that is the most common failure when wiring a provider.
+Verify each identifier against Together's Models page before shipping; they rename models.
+
+The key is the author's own, entered in الإعدادات and stored in localStorage only — never in
+the repo, never in an env var baked into the build, never sent anywhere but the provider.
+
+**Recommended default: Together FLUX.1 [schnell]** — at ≈$0.0016 per 768px image, a 10-image
+story costs under two cents and a $5 deposit buys roughly 3,000 images.
+
+⚠️ **CORRECTION, 31 Jul 2026.** An earlier version of this table said Together had a free
+endpoint (`FLUX.1-schnell-Free`). That was a 2024 promotional offer and it no longer exists —
+verified against the live pricing page and a real account, which sits in read-only mode until
+a deposit is made. **NOTHING on the provider list is free today.** Do not reintroduce a "free"
+claim without checking the provider's own pricing page and recording the date.
+
+This matters for the product, not just the bill: a teacher or student cannot try image
+generation without a card. Text co-writing still works with any free-tier text provider, so
+images must remain strictly optional — never a step in the onboarding path.
 
 Add a `supportsImages` field to the provider config in `providers.ts`, in the same style as
 the existing `browserCors` field.

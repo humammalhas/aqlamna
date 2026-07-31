@@ -43,6 +43,7 @@ class ParserState {
   lists: Record<string, ListDecl> = {};
   images: Record<string, ImageDecl> = {};
   imageNames: Set<string> = new Set();
+  imageStyle: string | null = null;
   passages: PassageNode[] = [];
   passageNames: Set<string> = new Set();
   inPassage: boolean = false;
@@ -87,6 +88,8 @@ class ParserState {
         this.parseDeclaration();
       } else if (t.kind === K.KEYWORD_IMAGE) {
         this.parseImageDeclaration();
+      } else if (t.kind === K.KEYWORD_IMAGE_STYLE) {
+        this.parseImageStyle();
       } else if (t.kind === K.CHOICE_STAR || t.kind === K.CHOICE_PLUS) {
         throw qalamError("E104", t.line, t.column, {});
       } else {
@@ -118,6 +121,7 @@ class ParserState {
       start,
       variables: this.variables,
       lists: this.lists,
+      imageStyle: this.imageStyle,
       images: this.images,
       passages: this.passages,
     };
@@ -198,6 +202,13 @@ class ParserState {
     const alt = strTok.value;
     this.images[nameTok.value] = { alt };
     this.imageNames.add(nameTok.value);
+  }
+
+  parseImageStyle(): void {
+    this.advance(); // consume KEYWORD_IMAGE_STYLE
+    this.expect(K.COLON);
+    const val = this.expect(K.STRING);
+    this.imageStyle = val.value;
   }
 
   // ---- passage ------------------------------------------------------------

@@ -12,6 +12,8 @@ export interface StoryAST {
   start: string | null;
   variables: Record<string, VariableDecl>;
   lists: Record<string, ListDecl>;
+  /** Optional story-level image style — appended to each English prompt. */
+  imageStyle: string | null;
   images: Record<string, ImageDecl>;
   passages: PassageNode[];
 }
