@@ -4,6 +4,10 @@ Phase 3.3. Written 30 July 2026. Decisions below were made by the project owner;
 not open for reinterpretation. Where this document and an implementation disagree, this
 document wins — same standing as `PHASE1_SPEC.md`.
 
+**STATUS: IMPLEMENTED 31 Jul 2026** across four sessions. This document remains the
+authority — if the code and this file disagree, the code is wrong. Measured on the real
+pipeline: 5.5s per image, 1,202,085 raw bytes → 10,440 after 768px WebP.
+
 ## The four decisions
 
 1. **The `.qalam` source holds a reference, never image bytes.** Bytes live beside the

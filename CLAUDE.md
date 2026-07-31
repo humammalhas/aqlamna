@@ -136,6 +136,71 @@ component; save/load feedback lives in a file the exported story never loads. Se
 Also: a CodeWhale commit silently reverted six files edited in parallel by the reviewer.
 **Do not run CodeWhale and a Cowork session against `C:\aqlamna` at the same time.**
 
+## Updating ARABIC_MASTERY.md — the runbook
+
+**Canonical copy: `C:\Users\asus\Documents\Claude\Projects\teachaiarabic\ARABIC_MASTERY.md`.**
+That is where Elham's corrections land. The copy in this repo is a SYNCED MIRROR — it exists
+here because the file ships publicly under GPL. Never edit the Aqlamna copy directly; it will
+be overwritten and the edit lost.
+
+When new corrections arrive:
+
+1. Work on the canonical file in the `teachaiarabic` project.
+2. Copy it over `C:\aqlamna\ARABIC_MASTERY.md`.
+3. `cd C:\aqlamna && npm run build:all` — regenerates the AI prompt, the linter rules, the
+   generated linter tests, and all three exported story files.
+4. `npm test` — the integrity tests fail if the markdown changed without a rebuild, and if the
+   pair count in the prompt does not equal the pair count in the markdown.
+5. `npm run deploy`.
+
+**What each edit buys you, automatically:** a new `❌/✅` table row becomes a linter rule plus
+two generated tests plus a line in the AI system prompt. A new `### 1b.N` rule becomes a rule
+in the prompt. Nothing is hardcoded in TypeScript; that indirection is the whole design.
+
+**History, so it is not repeated:** `build-mastery-prompt.mjs` used to keep only the first 25
+of 88 pairs, so every correction after roughly story 8 reached the linter and never reached the
+AI — for weeks, silently, while CLAUDE.md claimed the opposite. Fixed 31 Jul 2026 (`ebbb89a`)
+along with md5 sidecars and a pair-count equality test. **Never truncate a source-of-truth
+document to fit a budget.** Raise the budget or fail loudly.
+
+## Phase 3.3 — images: COMPLETE (31 Jul 2026)
+
+Four sessions, all shipped. `IMAGES_SPEC.md` is the authority; it was written before any code
+and every decision in it was made by Humam, not inferred.
+
+- **Session 1** — language: `صورة الاسم = "وصف"` declaration, `صورة: الاسم` body node,
+  errors E106/E107/E108 in both languages, fixture 06.
+- **Session 2** — runtime: `<img src=dataURI alt=arabicDescription>`, bordered placeholder
+  carrying the Arabic description when an image was never generated, export still zero-network.
+- **Session 3** — generation: `supportsImages`/`imageModel` per provider; **text provider and
+  image provider are configured independently** (write with DeepSeek, draw with Together);
+  the **two-call bridge** — Arabic description → text model → English prompt → image model;
+  768px WebP into IndexedDB keyed by project+name.
+- **Session 4** — `أسلوب_الصور` story-level style, two-step progress, budget UI
+  (warn 1MB / block 2MB), privacy + terms updated in the same commit, custom
+  OpenAI-compatible provider removed (12 → 11), price badges stripped from cloud providers.
+
+**The bridge is not optional, and here is the evidence.** Asked in Arabic for
+`دكان عطّار قديم في عمّان`, FLUX returned **a mosque with gibberish script**. The same scene
+in English returned the shop, correctly. Arabic straight to an image model does not produce a
+worse picture — it produces **the wrong subject**.
+
+**Never let the text model invent style.** Given one gate description, DeepSeek volunteered
+"cinematic composition, rich amber and deep violet sky, soft rim lighting". Ten images would
+get ten invented styles and the book would look like five illustrators worked on it. Hence
+`أسلوب_الصور`: the bridge translates the subject only and appends the author's style verbatim.
+
+**Measured:** 5.5s per image (two sequential calls), 1,202,085 raw bytes → 10,440 bytes after
+768px WebP. Image models cannot render Arabic script — tell authors to describe scenes, never
+signs or writing.
+
+**Not free.** No provider on the list has a free image tier. Text co-writing still works on
+free text tiers, so **images must stay strictly optional and never appear in onboarding.**
+
+⚠️ **Ollama and LM Studio do not work on the deployed site** — `http://localhost` is blocked
+from an `https://` page (mixed content). They work only when running the editor locally. The
+settings panel still offers them as if they work; that needs a note.
+
 ## Brand
 
 `brand/` — `logo-transparent.png` (823², background flood-filled and feathered),

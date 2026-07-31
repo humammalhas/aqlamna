@@ -187,6 +187,57 @@ you deliberately changed. If a file you did not touch appears, stop and ask.
 Control Department license. Not `المسير`, not `لبرمجيات`, not `لأنظمة البرمجيات`. Never
 retype it from memory; copy it.
 
+## Lessons from day two — 31 July 2026
+
+**Environment variables do not survive a new session.** They live in the shell process that
+set them. Every new terminal, and every CodeWhale started from one, begins empty. The load
+script is `C:\Users\asus\load_env.ps1` and it is now dot-sourced from the PowerShell
+`$PROFILE`, so a NEW window has everything. An OLD window opened before that change does not.
+If a Cloudflare or provider call fails with "not set", the fix is a fresh terminal, not code.
+
+**Do not claim you added something to package.json without reading it back.** `npm run deploy`
+was reported as added twice, across two sessions, and was absent both times. The owner
+discovered it by running the command. `grep` the file after writing it and paste the line.
+
+**A checkpoint you did not execute is not a checkpoint.** Session 3 ended by printing the
+command for the owner to run. The instruction was to generate one image and report four
+numbers. Handing the run to the human and reporting "ready" is not the same as reporting a
+result. If you cannot run it — no key, no network — say exactly that in one sentence.
+
+**`build:all` exists because artifacts drifted three times in one evening.** Run it before any
+deploy. Never regenerate one artifact by hand and assume the others followed.
+
+**Measure the layout in EVERY view, not the one you changed.** A pane can have the right width
+and contain nothing; a container can be 720px wide and 0px tall; a hidden pane can keep its
+grid column and squeeze its neighbour to 4px. All three shipped as "verified" because one
+combination was measured. Report x, width, height and computed `position` for every pane in
+every combination, and add them up.
+
+**Two elements only overlap if you compare them.** The editor painted over the player for
+hours because it was `position: relative` and the player was `static` — positioned elements
+paint after non-positioned ones regardless of DOM order. When panes sit side by side, assert
+`paneA.x + paneA.width <= paneB.x` and assert every pane has the same `position` value.
+
+**A React hook can blank the entire app.** `useReactFlow()` called outside `<ReactFlowProvider>`
+throws during render; React unmounts everything and the page goes white while every HTTP check
+still returns 200. **Read the browser console on the deployed page before reporting a UI change
+done.** Console error count is a number — report it.
+
+**Never truncate a source-of-truth document to fit a budget.** `build-mastery-prompt.mjs` kept
+`slice(0, 25)` of 88 correction pairs, so every correction after roughly story 8 reached the
+linter and never reached the AI — silently, for weeks, while `CLAUDE.md` claimed the opposite.
+Raise the budget or fail loudly. Both generated artifacts now carry an md5 sidecar and a test
+asserting the counts match.
+
+**Do not print prices anywhere except a dated block in a spec.** "Free" was true about Together
+in 2024 and false today; the owner discovered it when his account sat read-only. UI badges,
+code comments and script output must say nothing about cost. Prices change; comments do not.
+
+**Verify provider facts against the provider, and record the date.** Groq does vision INPUT
+only and cannot generate images — it is constantly confused with xAI's Grok. Model display
+names are not model strings: `FLUX.1 [schnell]` is a label, `black-forest-labs/FLUX.1-schnell`
+is the identifier.
+
 ## When you are unsure
 
 Say "I don't know" or "the design document doesn't specify this" and ask.
