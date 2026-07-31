@@ -7,8 +7,9 @@
 //   2. Every ❌/✅ before-after table row → terse do-not/do pair
 //   3. The §6 checklist items
 //
-// Target: under 6000 characters (Arabic). If the markdown changes and this
+// Target: under 20,000 characters (Arabic). If the markdown changes and this
 // script is re-run, the prompt changes with it — rules are NEVER hardcoded.
+// A warning is printed above 20,000 chars; pairs are NEVER silently truncated.
 //
 // Run: node scripts/build-mastery-prompt.mjs
 // ---------------------------------------------------------------------------
@@ -16,6 +17,7 @@
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { createHash } from "node:crypto";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, "..");
@@ -151,11 +153,12 @@ if (qawaid.length > 0) {
 }
 
 // Before/after pairs as terse corrections
+// EVERY pair is sent — the markdown is the source of truth.
+// If a cap is ever genuinely required (API context limits), take the
+// NEWEST pairs (slice(-N)) so the AI learns the freshest corrections.
 if (tablePairs.length > 0) {
   const pairLines = [];
-  // Limit to 25 most valuable pairs to stay under 6000 chars
-  const sliced = tablePairs.slice(0, 25);
-  for (const p of sliced) {
+  for (const p of tablePairs) {
     pairLines.push(`❌ لا: "${p.before}"  →  ✅ بل: "${p.after}"`);
   }
   if (pairLines.length > 0) {
@@ -179,9 +182,9 @@ const prompt = sections.join("\n\n---\n\n");
 
 // ---- Step 5: Validate character count --------------------------------------
 const charCount = [...prompt].length; // Proper Unicode count
-if (charCount > 6000) {
+if (charCount > 20000) {
   console.warn(
-    `[build-mastery-prompt] WARNING: prompt is ${charCount} chars (limit 6000). ` +
+    `[build-mastery-prompt] WARNING: prompt is ${charCount} chars (limit 20000). ` +
       `Consider trimming.`,
   );
 }
@@ -200,11 +203,17 @@ const output = [
 
 writeFileSync(outFile, output, "utf-8");
 
+// ---- Step 7: Record md5 of ARABIC_MASTERY.md alongside the prompt ---------
+const masteryMd5 = createHash("md5").update(text).digest("hex");
+const md5File = join(outDir, "mastery-prompt.md5");
+writeFileSync(md5File, masteryMd5 + "\n", "utf-8");
+
 console.log(
-  "[build-mastery-prompt] Wrote %s (%d chars, %d rules, %d pairs, %d checklist items)",
+  "[build-mastery-prompt] Wrote %s (%d chars, %d rules, %d pairs, %d checklist items, md5 %s)",
   outFile,
   charCount,
   qawaid.length,
   tablePairs.length,
   checklist.length,
+  masteryMd5,
 );

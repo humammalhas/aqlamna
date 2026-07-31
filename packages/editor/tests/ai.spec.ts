@@ -78,12 +78,12 @@ describe("build-mastery-prompt output", () => {
     expect(bulletCount).toBeGreaterThanOrEqual(20);
   });
 
-  it("is under 6000 characters (Unicode-aware count)", async () => {
+  it("is under 20000 characters (Unicode-aware count)", async () => {
     const mod = await import("../src/generated/mastery-prompt.js");
     const prompt: string = mod.MASTERY_SYSTEM_PROMPT;
     const charCount = [...prompt].length;
 
-    expect(charCount).toBeLessThanOrEqual(6000);
+    expect(charCount).toBeLessThanOrEqual(20000);
   });
 
   it("contains key ARABIC_MASTERY.md concepts", async () => {

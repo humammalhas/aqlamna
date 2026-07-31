@@ -12,6 +12,7 @@
 import { readFileSync, writeFileSync, statSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { createHash } from "node:crypto";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const MASTERY_PATH = resolve(__dirname, "..", "..", "..", "ARABIC_MASTERY.md");
@@ -327,6 +328,12 @@ const rules: RulesFile = ${JSON.stringify(output, null, 2)} as const;
 export default rules;
 `;
 writeFileSync(OUT_PATH, tsContent, "utf-8");
+
+// Record md5 of ARABIC_MASTERY.md alongside the generated rules
+const masteryMd5 = createHash("md5").update(masteryText).digest("hex");
+const md5File = resolve(__dirname, "..", "src", "generated", "rules.md5");
+writeFileSync(md5File, masteryMd5 + "\n", "utf-8");
+
 console.log(
-  `✓ rules.ts written — ${pairRules.length} pair, ${extraRules.length} pattern, ${advisoryRules.length} advisory (${output._meta.counts.total} total)`
+  `✓ rules.ts written — ${pairRules.length} pair, ${extraRules.length} pattern, ${advisoryRules.length} advisory (${output._meta.counts.total} total, md5 ${masteryMd5})`
 );
