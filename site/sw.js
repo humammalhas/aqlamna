@@ -10,17 +10,21 @@
 // people actually arrive. What it INTERCEPTS is deliberately much narrower
 // than its scope:
 //
-//   cached   the editor app shell and static assets (/editor/*, /assets/*)
-//   never    every content page — /, /docs/*, /privacy, /terms, the exported
-//            stories. Those must always be fresh. Privacy and terms are legal
-//            documents; serving a stale copy from a cache is not acceptable,
-//            and this project has already lost an evening to stale artifacts.
-//   never    AI provider API calls. A cached AI response is a correctness bug.
+//   cache-first   fingerprinted assets only (/editor/assets/*, /assets/*).
+//                 Their filenames change with their bytes, so a hit is never
+//                 stale.
+//   network-first  the editor document. Its URL never changes, so caching it
+//                 first would pin a returning visitor to the build they first
+//                 loaded. Cache is the OFFLINE fallback, not the default.
+//   never         every content page — /, /docs/*, /privacy, /terms, the
+//                 exported stories. Those must always be fresh; privacy and
+//                 terms are legal documents.
+//   never         AI provider API calls. A cached AI response is a bug.
 //
 // Bump CACHE_VERSION on every deploy to replace the old cache.
 // ---------------------------------------------------------------------------
 
-const CACHE_VERSION = "aqlamna-v6";
+const CACHE_VERSION = "aqlamna-v7";
 const CACHE_NAME = `aqlamna-app-${CACHE_VERSION}`;
 
 // ---- Resources to precache on install --------------------------------------
@@ -78,27 +82,49 @@ function isAIProviderCall(url) {
 }
 
 /**
- * Only the editor application and the shared static assets are cached.
- * Everything else — content pages, docs, legal pages, exported stories — goes
- * straight to the network every time.
+ * Fingerprinted assets: the filename changes whenever the bytes change, so a
+ * cache hit can never be stale. These are safe to serve cache-first.
  */
-function isCacheable(request) {
-  const url = new URL(request.url);
-  if (url.origin !== self.location.origin) return false;
+function isImmutableAsset(url) {
+  return url.pathname.startsWith("/editor/assets/") || url.pathname.startsWith("/assets/");
+}
 
-  const path = url.pathname;
-  if (APP_SHELL.includes(path)) return true;
-  if (path.startsWith("/editor/")) return true;
-  if (path.startsWith("/assets/")) return true;
-  return false;
+/**
+ * The editor document itself. Its filename never changes, so serving it
+ * cache-first would pin a returning visitor to whatever build they first
+ * loaded — a second, worse copy of the four-hour edge cache this project
+ * already got bitten by. Network-first, cache only as the offline fallback.
+ */
+function isAppDocument(url) {
+  return url.pathname === "/editor/" || url.pathname === "/editor/index.html";
 }
 
 self.addEventListener("fetch", (event) => {
   const request = event.request;
-
   if (request.method !== "GET") return;
   if (isAIProviderCall(request.url)) return;
-  if (!isCacheable(request)) return;
+
+  const url = new URL(request.url);
+  if (url.origin !== self.location.origin) return;
+
+  // ---- Documents: network first, cache as the offline fallback -------------
+  if (isAppDocument(url)) {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          if (response && response.status === 200) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+          }
+          return response;
+        })
+        .catch(() => caches.match(request).then((c) => c || Response.error())),
+    );
+    return;
+  }
+
+  // ---- Fingerprinted assets and precached icons: cache first ---------------
+  if (!isImmutableAsset(url) && !APP_SHELL.includes(url.pathname)) return;
 
   event.respondWith(
     caches.match(request).then((cached) => {
@@ -107,18 +133,18 @@ self.addEventListener("fetch", (event) => {
       return fetch(request).then((response) => {
         if (!response || response.status !== 200) return response;
 
-        // If we asked for JS/CSS but got HTML, it is an SPA fallback for a
-        // missing asset — caching it would persist the 404 as a broken page.
+        // If we asked for JS/CSS but got HTML, it is a fallback for a missing
+        // asset — caching it would persist the 404 as a broken page.
         const ct = response.headers.get("Content-Type") || "";
-        const path = new URL(request.url).pathname;
-        if ((path.endsWith(".js") || path.endsWith(".css")) && ct.includes("text/html")) {
+        if (
+          (url.pathname.endsWith(".js") || url.pathname.endsWith(".css")) &&
+          ct.includes("text/html")
+        ) {
           return response;
         }
 
         const clone = response.clone();
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(request, clone);
-        });
+        caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
         return response;
       });
     }),
