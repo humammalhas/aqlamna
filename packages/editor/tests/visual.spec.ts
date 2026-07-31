@@ -8,9 +8,87 @@
  * Owned by the project owner and reviewer. Do not weaken an assertion to make
  * it pass — if one fails, the app is wrong.
  *
- * Run: npm run test:visual -w @aqlamna/editor
+ * Run: npm run test:visual  (from the repo root; also runs inside `npm test`)
  */
 import { test, expect } from "@playwright/test";
+
+/**
+ * Put the profile in the state these tests were written against, BEFORE any
+ * page script runs. Two things drifted underneath them while the whole file
+ * sat behind a wall that nothing ran:
+ *
+ *   onboarding — a modal that covers the editor on a first visit and swallows
+ *   every click. Without the flag, `⚙️`, `مخطط` and the run button are all
+ *   present, visible and un-clickable, and Playwright reports a 30s timeout on
+ *   a locator that RESOLVED — which reads like a missing element and is not.
+ *
+ *   the AI panel — it now starts COLLAPSED and renders no textarea at all, so
+ *   every assertion about `textarea` was waiting for an element the editor had
+ *   stopped drawing. Expanding it here is the preference a returning writer
+ *   would have; the assertions about it are unchanged.
+ */
+async function prepareProfile(page: import("@playwright/test").Page) {
+  await page.addInitScript(() => {
+    try {
+      localStorage.setItem("aqlamna-onboarding-done", "1");
+      localStorage.setItem("aqlamna-ai-collapsed", "false");
+    } catch {
+      /* private mode — the overlay shows and the test says so */
+    }
+  });
+}
+
+/**
+ * Load العطر المفقود, the way a new author does.
+ *
+ * The editor opens on an EMPTY document — `store.ts` starts with `source: ""`
+ * and nothing seeds it. Every test below that clicks run, counts canvas nodes
+ * or reads a choice label was written when first paint carried the example,
+ * and each of them has been asserting against one blank line ever since.
+ * `compileSource()` returns early on empty source, so ▶ شغّل did nothing and
+ * the failure surfaced as "no .aq-choice-btn" — a story bug's symptom, from a
+ * story that was never loaded.
+ */
+async function openExample(page: import("@playwright/test").Page) {
+  // No dialog handler on purpose. `openExample()` in story-actions.ts only
+  // confirms when the current source is non-empty, and every test starts on a
+  // fresh context with an empty IndexedDB. A `page.on("dialog")` left armed
+  // here would race the `page.once("dialog")` inside the NO-CORRUPTION test
+  // and accept its new-passage prompt with an empty name. If a confirm ever
+  // does appear, Playwright dismisses it and the wait below fails loudly.
+  const paneButton = page.getByRole("button", { name: "افتح مثالًا" });
+  if ((await paneButton.count()) > 0) {
+    await paneButton.first().click();
+  } else {
+    // Phone: the pane header drops it and the ☰ overflow menu carries it.
+    await page.getByRole("button", { name: "القائمة" }).click();
+    await page.getByRole("menuitem", { name: "افتح مثالًا" }).click();
+  }
+
+  await page.waitForFunction(
+    () => document.querySelectorAll(".cm-line").length > 5,
+    undefined,
+    { timeout: 15000 },
+  );
+}
+
+/** The run ACTION, not the player pane toggle. Both used to read "شغّل". */
+const RUN = { name: "شغّل القصة" } as const;
+
+/**
+ * Make a pane visible.
+ *
+ * نص · مخطط · شغّل are TOGGLES with `aria-pressed`, not a view switcher. On a
+ * desktop viewport all three can be on at once, and every `click("نص")` in
+ * this file — written as "switch back to text" — was turning the text pane
+ * OFF. The failure surfaced as ".cm-line never appeared", which reads like
+ * CodeMirror broke and is the opposite of what happened.
+ */
+async function showPane(page: import("@playwright/test").Page, label: string) {
+  const btn = page.getByRole("button", { name: label, exact: true });
+  if ((await btn.getAttribute("aria-pressed")) !== "true") await btn.click();
+  await expect(btn).toHaveAttribute("aria-pressed", "true");
+}
 
 /** Measure the x position of each occurrence of a character inside an element. */
 async function glyphPositions(page: import("@playwright/test").Page, lineText: string) {
@@ -57,8 +135,10 @@ async function seedSource(page: import("@playwright/test").Page, source: string)
 
 test.describe("editor visual contract", () => {
   test.beforeEach(async ({ page }) => {
+    await prepareProfile(page);
     await page.goto("/");
     await page.waitForSelector(".cm-line", { timeout: 15000 });
+    await openExample(page);
   });
 
   test("editor theme defaults to light cream palette", async ({ page }) => {
@@ -100,7 +180,7 @@ test.describe("editor visual contract", () => {
   });
 
   test("player theme CSS is actually applied to choice buttons", async ({ page }) => {
-    await page.getByRole("button", { name: /شغّل/ }).click();
+    await page.getByRole("button", RUN).click();
     await page.waitForSelector(".aq-choice-btn", { timeout: 10000 });
 
     // the stylesheet must survive mount() clearing the container
@@ -124,7 +204,7 @@ test.describe("editor visual contract", () => {
   });
 
   test("choice buttons are wider than their text (full-width block)", async ({ page }) => {
-    await page.getByRole("button", { name: /شغّل/ }).click();
+    await page.getByRole("button", RUN).click();
     await page.waitForSelector(".aq-choice-btn", { timeout: 10000 });
     const { btn, pane } = await page.evaluate(() => {
       const b = document.querySelector(".aq-choice-btn")!.getBoundingClientRect();
@@ -166,13 +246,13 @@ test.describe("editor visual contract", () => {
       if (m.type() === "error") errors.push(m.text());
     });
     page.on("pageerror", (e) => errors.push(String(e)));
-    await page.getByRole("button", { name: /شغّل/ }).click();
+    await page.getByRole("button", RUN).click();
     await page.waitForSelector(".aq-choice-btn", { timeout: 10000 });
     expect(errors, `console errors: ${errors.join(" | ")}`).toHaveLength(0);
   });
 
   test("story logic works through the UI: collect twice unlocks the third choice", async ({ page }) => {
-    await page.getByRole("button", { name: /شغّل/ }).click();
+    await page.getByRole("button", RUN).click();
     await page.waitForSelector(".aq-choice-btn", { timeout: 10000 });
 
     const labels = () =>
@@ -204,14 +284,17 @@ test.describe("editor visual contract", () => {
 
 test.describe("canvas visual contract", () => {
   test.beforeEach(async ({ page }) => {
+    await prepareProfile(page);
     await page.goto("/");
-    // Wait for text editor to load (seed fixture is displayed)
     await page.waitForSelector(".cm-line", { timeout: 15000 });
+    // The comment that used to sit here said "seed fixture is displayed". It
+    // has not been for a long time — the editor opens empty. Load it.
+    await openExample(page);
   });
 
   test("node count equals passage count for the seeded fixture", async ({ page }) => {
     // Switch to canvas view
-    await page.getByRole("button", { name: "مخطط" }).click();
+    await showPane(page, "مخطط");
     // Wait for React Flow nodes to render
     await page.waitForSelector(".react-flow__node-passage", { timeout: 10000 });
     const nodeCount = await page.locator(".react-flow__node-passage").count();
@@ -236,7 +319,7 @@ test.describe("canvas visual contract", () => {
     await page.waitForTimeout(300);
 
     // Switch to canvas view
-    await page.getByRole("button", { name: "مخطط" }).click();
+    await showPane(page, "مخطط");
     await page.waitForSelector(".react-flow__node-passage", { timeout: 10000 });
 
     // An edge between the two passages should be visible
@@ -258,7 +341,7 @@ test.describe("canvas visual contract", () => {
     await page.waitForTimeout(300);
 
     // Switch to canvas view
-    await page.getByRole("button", { name: "مخطط" }).click();
+    await showPane(page, "مخطط");
     await page.waitForSelector(".react-flow__node-passage", { timeout: 10000 });
 
     // Ghost node with the missing passage name
@@ -273,17 +356,24 @@ test.describe("canvas visual contract", () => {
     const editor = page.locator(".cm-content");
     await expect(editor).toBeVisible();
 
+    // Snapshot the text BEFORE, rather than naming two words from it. The old
+    // assertions were "البداية" and "الرحيق" — both from الرحيق, which stopped
+    // being the worked example, so this test could only ever have passed
+    // against a story the editor no longer loads. Comparing before to after
+    // also catches a partial loss, which two substrings cannot.
+    const before = await editor.textContent();
+    expect(before!.length, "editor is empty before the round trip").toBeGreaterThan(200);
+
     // Switch to canvas
-    await page.getByRole("button", { name: "مخطط" }).click();
+    await showPane(page, "مخطط");
     await page.waitForSelector(".react-flow__node-passage", { timeout: 10000 });
 
     // Switch back to text
-    await page.getByRole("button", { name: "نص" }).click();
+    await showPane(page, "نص");
     await page.waitForSelector(".cm-line", { timeout: 10000 });
 
-    // Content preserved
-    await expect(editor).toContainText("البداية");
-    await expect(editor).toContainText("الرحيق");
+    // Content preserved, character for character.
+    expect(await editor.textContent()).toBe(before);
   });
 });
 
@@ -326,20 +416,47 @@ const RENAME_SEED = `عنوان: "اختبار"
 
 test.describe("canvas interactions", () => {
   test.beforeEach(async ({ page }) => {
+    await prepareProfile(page);
     await page.goto("/");
     await page.waitForSelector(".cm-line", { timeout: 15000 });
+    await openExample(page);
   });
 
   test("canvas view loads without errors for the seeded fixture", async ({ page }) => {
-    await page.getByRole("button", { name: "مخطط" }).click();
+    // Read the passage names out of the SOURCE first. This used to assert the
+    // literal "البداية", which is the first passage of الرحيق — a story that
+    // stopped being the worked example. Tying the card to the source instead
+    // of to a name is the stronger assertion anyway: it fails if the canvas
+    // parser and the text ever disagree, which a hardcoded string cannot.
+    // CodeMirror virtualises: only the lines near the viewport exist in the
+    // DOM, so this is a SUBSET of the story's headers, not all of them. A
+    // header can also carry a tag — `=== الدكّان === #مشهد_أول` — so the name
+    // is not anchored to end of line.
+    const names = await page.$$eval(".cm-line", (lines) =>
+      lines
+        .map((l) => (l.textContent ?? "").trim().match(/^===\s*(.+?)\s*===/)?.[1])
+        .filter((n): n is string => Boolean(n)),
+    );
+    expect(names.length, "no === passage === headers rendered in the editor").toBeGreaterThan(0);
+
+    await showPane(page, "مخطط");
     await page.waitForSelector(".react-flow__node-passage", { timeout: 10000 });
 
-    const nodeCount = await page.locator(".react-flow__node-passage").count();
-    expect(nodeCount).toBeGreaterThanOrEqual(1);
+    const cards = await page
+      .locator(".react-flow__node-passage")
+      .evaluateAll((els) => els.map((e) => e.getAttribute("data-id")));
 
+    // Every passage visible in the text has a card. A card is a passage the
+    // canvas parser found; a missing one means the two views disagree.
+    for (const name of names) {
+      expect(cards, `no card for ${name} — cards: ${JSON.stringify(cards)}`).toContain(name);
+    }
+
+    // The first card is the story's start, and it is marked as such.
     const startCard = page.locator(".react-flow__node-passage").first();
     await expect(startCard).toBeVisible();
-    await expect(startCard).toContainText("البداية");
+    await expect(startCard).toHaveAttribute("data-id", names[0]!);
+    await expect(startCard).toContainText("▶");
   });
 
   test("rename a passage — every reference updates and the story still compiles", async ({ page }) => {
@@ -352,7 +469,7 @@ test.describe("canvas interactions", () => {
     expect(seedText).toContain("=== ثان ===");
 
     // Switch to canvas, verify two passages appear, then switch back
-    await page.getByRole("button", { name: "مخطط" }).click();
+    await showPane(page, "مخطط");
     await page.waitForSelector(".react-flow__node-passage", { timeout: 10000 });
 
     const cards = page.locator(".react-flow__node-passage");
@@ -364,7 +481,7 @@ test.describe("canvas interactions", () => {
 
     // Switch back to text and do the rename manually via the editor
     // (this simulates what the rename feature does: replace header + references)
-    await page.getByRole("button", { name: "نص" }).click();
+    await showPane(page, "نص");
     await page.waitForSelector(".cm-line", { timeout: 10000 });
 
     // Manually replace "ثان" with "مقطع_جديد" in the editor
@@ -390,7 +507,7 @@ test.describe("canvas interactions", () => {
     expect(seedText).toContain("=== ثان ===");
 
     // Switch to canvas and back
-    await page.getByRole("button", { name: "مخطط" }).click();
+    await showPane(page, "مخطط");
     await page.waitForSelector(".react-flow__node-passage", { timeout: 10000 });
 
     // Verify edges exist (the divert should create an edge)
@@ -399,7 +516,7 @@ test.describe("canvas interactions", () => {
     expect(edgeCount).toBeGreaterThan(0);
 
     // Switch back to text
-    await page.getByRole("button", { name: "نص" }).click();
+    await showPane(page, "نص");
     await page.waitForSelector(".cm-line", { timeout: 10000 });
 
     // Content preserved after round-trip
@@ -420,20 +537,55 @@ test.describe("canvas interactions", () => {
     expect(seedText).toContain("غير_ذلك:");
 
     // Switch to canvas
-    await page.getByRole("button", { name: "مخطط" }).click();
+    await showPane(page, "مخطط");
     await page.waitForSelector(".react-flow__node-passage", { timeout: 10000 });
 
-    // Double-click empty canvas to add a new passage
+    // Double-click EMPTY canvas to add a new passage.
+    //
+    // The fixed {x: 400, y: 400} this used to pass is outside the pane: three
+    // panes share 1280px, so the canvas is ~420 wide and Playwright clamps the
+    // click to the edge, where a node sits. No prompt opened, no passage was
+    // appended, and the failure read as "canvas edit is broken". Aim at a
+    // point measured from the pane, and prove the prompt actually opened
+    // rather than inferring it from the result.
+    let prompted = "";
     page.once("dialog", async (dialog) => {
+      prompted = dialog.message();
       await dialog.accept("ثالث");
     });
 
     const canvasBg = page.locator(".react-flow__pane");
-    await canvasBg.dblclick({ position: { x: 400, y: 400 } });
-    await page.waitForTimeout(1000);
+    const box = (await canvasBg.boundingBox())!;
+
+    // Find a point where the topmost element really IS the pane. Cards are not
+    // the only things in the way: React Flow's minimap and controls are
+    // absolutely-positioned panels pinned to the corners, and the minimap
+    // swallowed the bottom-centre click this test tried next.
+    const target = await page.evaluate(
+      ({ x, y, w, h }) => {
+        const pane = document.querySelector(".react-flow__pane")!;
+        for (let fy = 0.85; fy >= 0.25; fy -= 0.05) {
+          for (let fx = 0.15; fx <= 0.85; fx += 0.05) {
+            const px = x + w * fx;
+            const py = y + h * fy;
+            if (document.elementFromPoint(px, py) === pane) {
+              return { x: Math.round(w * fx), y: Math.round(h * fy) };
+            }
+          }
+        }
+        return null;
+      },
+      { x: box.x, y: box.y, w: box.width, h: box.height },
+    );
+    expect(target, "no free point on the canvas pane to double-click").not.toBeNull();
+
+    await canvasBg.dblclick({ position: target! });
+    await expect
+      .poll(() => prompted, { timeout: 5000, message: "no prompt opened on double-click" })
+      .not.toBe("");
 
     // Switch back to text
-    await page.getByRole("button", { name: "نص" }).click();
+    await showPane(page, "نص");
     await page.waitForSelector(".cm-line", { timeout: 10000 });
 
     const finalText = await editor.textContent();
@@ -454,41 +606,40 @@ test.describe("canvas interactions", () => {
 
 test.describe("pwa installability", () => {
   test.beforeEach(async ({ page }) => {
+    await prepareProfile(page);
     await page.goto("/");
   });
 
-  test("/manifest.webmanifest returns 200 with valid JSON and correct fields", async ({ page }) => {
-    const res = await page.request.get("/manifest.webmanifest");
-    expect(res.status()).toBe(200);
+  // The manifest's CONTENT is not this suite's to assert any more, and these
+  // two tests are the record of why. They demanded `scope: "/editor/"` and a
+  // maskable 512 icon from a copy that used to sit in packages/editor/public/.
+  // That scope was the install bug: the home page — the URL strangers are sent
+  // — was outside it and offered nothing. The fix moved the one manifest to the
+  // site root with `scope: "/"`, and the per-editor copy was deleted along with
+  // the sw.js beside it that threw on every registration.
+  //
+  // Nobody updated these two, so they went on asserting the broken shape from
+  // behind a wall where nothing ran them. site/tests/install.spec.ts owns every
+  // field of the real manifest now, served the way it is actually served.
+  // What is left here is the half only this suite can see: that the dead
+  // per-editor copies are still dead.
 
-    const body = await res.json();
-    expect(body.name).toBe("أقلامنا — محرر القصص التفاعلية");
-    expect(body.short_name).toBe("أقلامنا");
-    expect(body.lang).toBe("ar");
-    expect(body.dir).toBe("rtl");
-    expect(body.display).toBe("standalone");
-    expect(body.start_url).toBe("/editor/");
-    expect(body.scope).toBe("/editor/");
-    expect(body.theme_color).toBe("#1a1713");
-    expect(body.background_color).toBe("#1a1713");
-
-    // At least one 512px icon
-    const icons = body.icons;
-    expect(icons).toBeDefined();
-    const has512 = icons.some((i: { sizes: string }) => i.sizes === "512x512");
-    expect(has512).toBe(true);
+  test("the dead per-editor manifest and service worker are still gone", async ({ page }) => {
+    // The vite dev server serves packages/editor/public verbatim — but it
+    // answers everything ELSE with the SPA fallback, at status 200. So the
+    // status code proves nothing here and the old test's `expect(200)` was
+    // reading index.html and calling it a manifest; it died on
+    // `JSON.parse("<!DOCTYPE ...")`. What distinguishes "no file here" from
+    // "a file came back" is the content type and the first bytes.
+    for (const path of ["/manifest.webmanifest", "/sw.js"]) {
+      const res = await page.request.get(path);
+      const type = res.headers()["content-type"] ?? "";
+      const head = (await res.text()).slice(0, 40);
+      expect(type, `${path} served as ${type}`).toContain("text/html");
+      expect(head.trimStart().startsWith("<!DOCTYPE"), `${path} begins "${head}"`).toBe(true);
+    }
   });
 
-  test("manifest.webmanifest has a maskable 512 icon", async ({ page }) => {
-    const res = await page.request.get("/manifest.webmanifest");
-    const body = await res.json();
-    const icons = body.icons;
-
-    const maskable = icons.find(
-      (i: { sizes: string; purpose?: string }) => i.sizes === "512x512" && i.purpose === "maskable",
-    );
-    expect(maskable).toBeTruthy();
-  });
 
   test("/favicon.ico returns 200", async ({ page }) => {
     const res = await page.request.get("/favicon.ico");
@@ -527,8 +678,10 @@ test.describe("mobile layout (390x844)", () => {
   test.use({ viewport: { width: 390, height: 844 } });
 
   test.beforeEach(async ({ page }) => {
+    await prepareProfile(page);
     await page.goto("/");
     await page.waitForSelector(".cm-line", { timeout: 15000 });
+    await openExample(page);
   });
 
   test("no horizontal overflow", async ({ page }) => {
@@ -541,7 +694,7 @@ test.describe("mobile layout (390x844)", () => {
   });
 
   test("choice button height >= 44px", async ({ page }) => {
-    await page.getByRole("button", { name: /شغّل/ }).click();
+    await page.getByRole("button", RUN).click();
     await page.waitForSelector(".aq-choice-btn", { timeout: 10000 });
     const height = await page.locator(".aq-choice-btn").first().evaluate((el) => {
       return el.getBoundingClientRect().height;
@@ -550,17 +703,108 @@ test.describe("mobile layout (390x844)", () => {
   });
 
   test("editor shows one pane at a time, not two side by side", async ({ page }) => {
-    const dividers = page.locator(".editor-divider");
-    const count = await dividers.count();
-    for (let i = 0; i < count; i++) {
-      const display = await dividers.nth(i).evaluate((el) => {
-        return getComputedStyle(el).display;
+    // This test used to read `.editor-divider` and `.editor-main-area`. No
+    // element has carried either class since the panes moved to a CSS grid
+    // driven by inline styles; `.editor-divider` matched nothing, so the loop
+    // ran zero times, and `.editor-main-area` was a 30s timeout. Two dead
+    // class names in `src/index.css` are all that is left of them.
+    //
+    // The live contract is: one pane container, one pane inside it, no
+    // separator, and the pane fills the viewport width.
+    const m = await page.evaluate(() => {
+      const host = document.querySelector<HTMLElement>('[data-panes]')!;
+      const panes = [...document.querySelectorAll<HTMLElement>("[data-pane]")].map((el) => {
+        const r = el.getBoundingClientRect();
+        return { name: el.getAttribute("data-pane"), x: r.x, width: r.width };
       });
-      expect(display).toBe("none");
-    }
-    const flexDir = await page.locator(".editor-main-area").evaluate((el) => {
-      return getComputedStyle(el).flexDirection;
+      return {
+        mode: host.getAttribute("data-panes"),
+        panes,
+        separators: document.querySelectorAll('[role="separator"]').length,
+        tabs: document.querySelectorAll("[data-pane-tab]").length,
+        innerWidth: window.innerWidth,
+      };
     });
-    expect(flexDir).toBe("column");
+
+    expect(m.mode).toBe("phone");
+    expect(m.panes, JSON.stringify(m.panes)).toHaveLength(1);
+    expect(m.separators, "a divider is rendered on a phone").toBe(0);
+    expect(m.panes[0]!.x).toBe(0);
+    expect(m.panes[0]!.width).toBe(m.innerWidth);
+    // Everything else is a tab away, so the tabs have to be there.
+    expect(m.tabs).toBe(3);
+  });
+
+  test("the top bar holds four controls at 390px and none of them overflow", async ({
+    page,
+  }) => {
+    // ⬇ تصدير became a bar button beside ⚙️ and ▶ شغّل. The bar previously
+    // measured scrollWidth 592 in clientWidth 390 with two buttons parked at
+    // negative x — rendered, focusable and impossible to reach. A fourth
+    // control is exactly how that comes back.
+    const m = await page.evaluate(() => {
+      const header = document.querySelector<HTMLElement>("header")!;
+      const buttons = [...header.querySelectorAll<HTMLElement>("button")].map((b) => {
+        const r = b.getBoundingClientRect();
+        return {
+          label: (b.getAttribute("aria-label") ?? b.textContent ?? "").trim(),
+          x: Math.round(r.x),
+          width: Math.round(r.width),
+          height: Math.round(r.height),
+        };
+      });
+      return {
+        scrollWidth: header.scrollWidth,
+        clientWidth: header.clientWidth,
+        buttons,
+        innerWidth: window.innerWidth,
+      };
+    });
+
+    expect(m.scrollWidth, JSON.stringify(m, null, 1)).toBe(m.clientWidth);
+    expect(m.buttons.map((b) => b.label).sort()).toEqual(
+      ["الإعدادات", "القائمة", "تصدير القصة", "شغّل القصة"].sort(),
+    );
+    for (const b of m.buttons) {
+      expect(b.x, `${b.label} at x=${b.x}`).toBeGreaterThanOrEqual(0);
+      expect(b.x + b.width, `${b.label} ends at ${b.x + b.width}`).toBeLessThanOrEqual(
+        m.innerWidth,
+      );
+      expect(b.width, `${b.label} width ${b.width}`).toBeGreaterThanOrEqual(44);
+      expect(b.height, `${b.label} height ${b.height}`).toBeGreaterThanOrEqual(44);
+    }
+  });
+
+  test("the phone تصدير button produces a real file", async ({ page }) => {
+    // A button that appears and does nothing is the failure this guards. The
+    // download is the artifact; assert on its bytes, not on the click.
+    await page.getByRole("button", RUN).click();
+    await page.waitForSelector(".aq-choice-btn", { timeout: 10000 });
+
+    const [download] = await Promise.all([
+      page.waitForEvent("download", { timeout: 20000 }),
+      page.getByRole("button", { name: "تصدير القصة" }).click(),
+    ]);
+
+    expect(download.suggestedFilename()).toMatch(/\.html$/);
+
+    // No `Buffer`, no `node:fs`. This package pins `types: ["vite/client"]`
+    // and has no @types/node, so a node global here fails `npm run typecheck`
+    // — which runs before any test in `npm test`. Chunks are read structurally.
+    const stream = await download.createReadStream();
+    const html = await new Promise<string>((resolve, reject) => {
+      let out = "";
+      stream.on("data", (c: { toString(): string }) => { out += c.toString(); });
+      stream.on("end", () => resolve(out));
+      stream.on("error", reject);
+    });
+
+    expect(html.length, `exported ${html.length} bytes`).toBeGreaterThan(10000);
+    expect(html.startsWith("<!DOCTYPE html>")).toBe(true);
+    expect(html).toContain('id="qalam-story"');
+    expect(html).toContain("class Engine");
+    // ⬇ تصدير in the ☰ menu is the SAME action — it was not moved out of it.
+    await page.getByRole("button", { name: "القائمة" }).click();
+    await expect(page.getByRole("menuitem", { name: "⬇ تصدير" })).toBeVisible();
   });
 });

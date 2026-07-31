@@ -327,8 +327,9 @@ test.describe("editor player pane — the toolbar's other home", () => {
       { timeout: 15000 },
     );
 
-    // Two buttons match /شغّل/ — the top bar's "▶ شغّل" and a pane tab.
-    await page.getByRole("button", { name: "▶ شغّل" }).click();
+    // The player PANE TOGGLE is also called "شغّل", so the run ACTION carries
+    // an explicit aria-label to keep the two nameable apart — see TopBar.tsx.
+    await page.getByRole("button", { name: "شغّل القصة" }).click();
     await page.waitForSelector(".player-pane .aq-toolbar", { timeout: 15000 });
 
     const labels = await page.$$eval(".player-pane .aq-toolbar button", (bs) =>
