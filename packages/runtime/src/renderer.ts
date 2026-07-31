@@ -128,49 +128,77 @@ export function renderScene(
     wrapper.appendChild(endEl);
   }
 
-  // Toolbar
-  const toolbar = document.createElement("div");
-  toolbar.className = "aq-toolbar";
+  // Toolbar — save / restore / restart.
+  //
+  // Omitted entirely when the story is running inside a frame. An embedded
+  // story is a preview of what the engine does, not somebody's reading
+  // session: there is no progress worth saving, "restore" would load a save
+  // made on a different page, and the three buttons add 69px of chrome to a
+  // box that is already shorter than its content, so their confirmations
+  // render below the fold and they read as dead.
+  //
+  // Not an empty toolbar — no element at all, so the border, the 3rem margin
+  // and the height all go with it.
+  if (!isEmbedded()) {
+    const toolbar = document.createElement("div");
+    toolbar.className = "aq-toolbar";
 
-  const saveBtn = document.createElement("button");
-  saveBtn.className = "aq-btn aq-save-btn";
-  saveBtn.textContent = "💾 حفظ";
-  saveBtn.addEventListener("click", () => {
-    const msg = options.onSave();
-    showFeedback(toolbar, msg);
-  });
+    const saveBtn = document.createElement("button");
+    saveBtn.className = "aq-btn aq-save-btn";
+    saveBtn.textContent = "💾 حفظ";
+    saveBtn.addEventListener("click", () => {
+      const msg = options.onSave();
+      showFeedback(toolbar, msg);
+    });
 
-  const loadBtn = document.createElement("button");
-  loadBtn.className = "aq-btn aq-load-btn";
-  loadBtn.textContent = "📂 استعادة";
-  loadBtn.addEventListener("click", async () => {
-    const msg = await options.onLoad();
-    showFeedback(toolbar, msg);
-  });
+    const loadBtn = document.createElement("button");
+    loadBtn.className = "aq-btn aq-load-btn";
+    loadBtn.textContent = "📂 استعادة";
+    loadBtn.addEventListener("click", async () => {
+      const msg = await options.onLoad();
+      showFeedback(toolbar, msg);
+    });
 
-  toolbar.appendChild(saveBtn);
-  toolbar.appendChild(loadBtn);
+    toolbar.appendChild(saveBtn);
+    toolbar.appendChild(loadBtn);
 
-  // Theme toggle button — only shown if callback is provided
-  if (options.onThemeToggle) {
-    const themeBtn = document.createElement("button");
-    themeBtn.className = "aq-btn aq-theme-btn";
-    themeBtn.textContent = "🎨";
-    themeBtn.title = "تغيير المظهر";
-    themeBtn.addEventListener("click", options.onThemeToggle);
-    toolbar.appendChild(themeBtn);
+    // Theme toggle button — only shown if callback is provided
+    if (options.onThemeToggle) {
+      const themeBtn = document.createElement("button");
+      themeBtn.className = "aq-btn aq-theme-btn";
+      themeBtn.textContent = "🎨";
+      themeBtn.title = "تغيير المظهر";
+      themeBtn.addEventListener("click", options.onThemeToggle);
+      toolbar.appendChild(themeBtn);
+    }
+
+    if (scene.choices.length > 0 || !scene.ended) {
+      const restartBtn = document.createElement("button");
+      restartBtn.className = "aq-btn aq-restart-btn";
+      restartBtn.textContent = "⟲ أعد";
+      restartBtn.addEventListener("click", options.onRestart);
+      toolbar.appendChild(restartBtn);
+    }
+
+    wrapper.appendChild(toolbar);
   }
 
-  if (scene.choices.length > 0 || !scene.ended) {
-    const restartBtn = document.createElement("button");
-    restartBtn.className = "aq-btn aq-restart-btn";
-    restartBtn.textContent = "⟲ أعد";
-    restartBtn.addEventListener("click", options.onRestart);
-    toolbar.appendChild(restartBtn);
-  }
-
-  wrapper.appendChild(toolbar);
   container.appendChild(wrapper);
+}
+
+/**
+ * True when this document is running inside a frame.
+ *
+ * Comparing `window.self` to `window.top` is safe across origins — it compares
+ * two references and never reads a property of the other document, so it does
+ * not throw the way `window.top.location` would.
+ *
+ * The `typeof` guard is not defensive padding: the runtime's own tests execute
+ * the shipped bundle in plain Node against a DOM stub, with no `window` in
+ * scope at all. Without it every renderer test throws ReferenceError.
+ */
+function isEmbedded(): boolean {
+  return typeof window !== "undefined" && window.self !== window.top;
 }
 
 function showFeedback(toolbar: HTMLElement, msg: string) {
