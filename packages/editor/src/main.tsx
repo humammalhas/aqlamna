@@ -24,6 +24,11 @@ if (import.meta.env.PROD && "serviceWorker" in navigator) {
   navigator.serviceWorker
     .register(`${import.meta.env.BASE_URL}sw.js`)
     .catch((err) => {
-      console.warn("Service worker registration failed:", err);
+      // console.error, not warn: a failed registration means no offline mode
+      // AND no install prompt, because Chrome requires a live service worker
+      // before it will fire `beforeinstallprompt`. This was a warning for
+      // weeks while sw.js failed to parse and nobody noticed. The test suite
+      // asserts zero console errors, so this now fails the build.
+      console.error("Service worker registration failed:", err);
     });
 }
