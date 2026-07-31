@@ -1,7 +1,10 @@
 // scripts/build-all.mjs — one command regenerates every shipped artifact.
 //
-// Order: core → runtime → all three exported story HTMLs → editor → site → docs.
-// Nobody should ever again ship a file older than the fix it needs.
+// Order: core → runtime → linter → editor → all three exported story HTMLs →
+// site → docs. Nobody should ever again ship a file older than the fix it needs.
+//
+// `npm run check:artifacts` is the gate that proves this ran. See
+// scripts/artifacts.manifest.mjs for the invariant it enforces.
 //
 // Usage: node scripts/build-all.mjs
 //   npm run build:all
@@ -21,19 +24,41 @@ function run(cmd, cwd = root) {
 }
 
 // ── 1. Core ─────────────────────────────────────────────────────────────────
-console.log("══ Step 1/6: core");
+console.log("══ Step 1/7: core");
 run("npm run build -w @aqlamna/core");
 
 // ── 2. Runtime ──────────────────────────────────────────────────────────────
-console.log("══ Step 2/6: runtime");
+console.log("══ Step 2/7: runtime");
 run("npm run build -w @aqlamna/runtime");
 
-// ── 3. Export story HTMLs ───────────────────────────────────────────────────
-console.log("══ Step 3/6: export story HTMLs");
+// ── 3. Linter ───────────────────────────────────────────────────────────────
+// Rules first, then tsc — the compiler reads src/generated/rules.ts.
+// This step was missing until 31 Jul 2026, so `build:all` rebuilt every shipped
+// artifact except the one generated from ARABIC_MASTERY.md. The editor picked
+// up new corrections (build-mastery-prompt runs inside the editor build) while
+// the linter kept the previous ones, from the same corpus, in the same commit.
+console.log("══ Step 3/7: linter (rules from ARABIC_MASTERY.md, then tsc)");
+run("npm run build:rules -w @aqlamna/linter");
+run("npm run build -w @aqlamna/linter");
+
+// ── 4. Editor ───────────────────────────────────────────────────────────────
+// BEFORE the story exports, not after. `build:site` starts by rebuilding
+// @aqlamna/runtime, so running it later rewrote dist/aqlamna-runtime.js after
+// the stories had already been wrapped around it — leaving every exported story
+// permanently older than the bundle inside it. Identical bytes, but the
+// timestamps said "stale" and they were right to: nothing guaranteed the two
+// runs produced the same output. check:artifacts caught this.
+console.log("══ Step 4/7: editor");
+run("npm run build:site -w @aqlamna/editor");
+
+// ── 5. Export story HTMLs ───────────────────────────────────────────────────
+// Must follow every step that can touch packages/runtime/dist, and precede
+// build-site.mjs, which copies stories/العطر_المفقود.html into site/.
+console.log("══ Step 5/7: export story HTMLs");
 
 const cliPath = join(root, "packages", "runtime", "scripts", "cli.mjs");
 
-// 3a. العطر_المفقود → stories/ and site/
+// 5a. العطر_المفقود → stories/ and site/
 const qalamSource = join(root, "stories", "العطر_المفقود.qalam");
 if (!existsSync(qalamSource)) {
   console.error("Missing story source: " + qalamSource);
@@ -42,21 +67,17 @@ if (!existsSync(qalamSource)) {
 run(`node "${cliPath}" "${qalamSource}" -o "${join(root, "stories", "العطر_المفقود.html")}"`);
 run(`node "${cliPath}" "${qalamSource}" -o "${join(root, "site", "العطر_المفقود.html")}"`);
 
-// 3b. الرحيق — no .qalam source; extract JSON from existing HTML and re-wrap
+// 5b. الرحيق — no .qalam source; extract JSON from existing HTML and re-wrap
 //     with the freshly-built runtime.
 console.log("\n  → rebuild الرحيق.html (extract JSON + fresh runtime)");
 rebuildNectar();
 
-// ── 4. Editor ───────────────────────────────────────────────────────────────
-console.log("══ Step 4/6: editor");
-run("npm run build:site -w @aqlamna/editor");
-
-// ── 5. Site ─────────────────────────────────────────────────────────────────
-console.log("══ Step 5/6: site");
+// ── 6. Site ─────────────────────────────────────────────────────────────────
+console.log("══ Step 6/7: site");
 run("node scripts/build-site.mjs");
 
-// ── 6. Docs ─────────────────────────────────────────────────────────────────
-console.log("══ Step 6/6: docs");
+// ── 7. Docs ─────────────────────────────────────────────────────────────────
+console.log("══ Step 7/7: docs");
 run("node scripts/build-docs.mjs");
 
 // ── Timestamp check ─────────────────────────────────────────────────────────

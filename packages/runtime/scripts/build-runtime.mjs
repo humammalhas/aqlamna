@@ -8,7 +8,7 @@
 // ---------------------------------------------------------------------------
 
 import { execSync } from "node:child_process";
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -114,5 +114,16 @@ const bootstrap = `
 const wrapped =
   "(function () {\n" + combined + "\n" + bootstrap + "\n})();\n";
 
-writeFileSync(outFile, wrapped, "utf-8");
-console.log("[build-runtime] Wrote " + outFile + " (" + wrapped.length + " bytes)");
+// Write only when the bytes actually changed. This script runs three times in
+// one `npm run build:all` and again inside `npm run test:site`, and an
+// unconditional write moved the bundle's mtime past every story exported
+// against it — while the contents were identical. A timestamp that moves
+// without a change makes every timestamp here worthless, and "check the
+// timestamps" is a rule this project earned the hard way.
+const unchanged = existsSync(outFile) && readFileSync(outFile, "utf-8") === wrapped;
+if (unchanged) {
+  console.log("[build-runtime] Unchanged — " + outFile + " (" + wrapped.length + " bytes)");
+} else {
+  writeFileSync(outFile, wrapped, "utf-8");
+  console.log("[build-runtime] Wrote " + outFile + " (" + wrapped.length + " bytes)");
+}

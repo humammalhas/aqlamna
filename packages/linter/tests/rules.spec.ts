@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// rules.spec.ts — GENERATED at test time from rules.json.
+// rules.spec.ts — GENERATED at test time from src/generated/rules.ts.
 //
 // For every pair rule:
 //   - the ❌ text produces a diagnostic with that ruleId

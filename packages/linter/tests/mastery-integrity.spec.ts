@@ -3,6 +3,13 @@
 // mastery prompt and the linter rules. This test fails if:
 //   1. ARABIC_MASTERY.md changed but no rebuild was run (md5 mismatch)
 //   2. The mastery prompt was truncated (pair counts don't match)
+//   3. Either artifact carries no provenance block, i.e. cannot be audited
+//
+// The md5 is read out of the artifact itself, not from a `.md5` sidecar. A
+// sidecar can be separated from the file it describes; an embedded block
+// cannot. Same check, run in the same breath and at greater depth, by
+// scripts/check-artifacts.mjs — see scripts/artifacts.manifest.mjs for the
+// invariant both enforce.
 // ---------------------------------------------------------------------------
 
 import { describe, it, expect } from "vitest";
@@ -10,6 +17,9 @@ import { readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+// @ts-expect-error — plain .mjs helper, shared with the build scripts; it has
+// no .d.ts because it is build plumbing, not shipped code.
+import { parseProvenance } from "../../../scripts/artifact-provenance.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..", "..", "..");
@@ -17,12 +27,15 @@ const MASTERY_PATH = resolve(ROOT, "ARABIC_MASTERY.md");
 const PROMPT_PATH = resolve(
   ROOT, "packages", "editor", "src", "generated", "mastery-prompt.ts",
 );
-const PROMPT_MD5_PATH = resolve(
-  ROOT, "packages", "editor", "src", "generated", "mastery-prompt.md5",
+const RULES_PATH = resolve(
+  ROOT, "packages", "linter", "src", "generated", "rules.ts",
 );
-const RULES_MD5_PATH = resolve(
-  ROOT, "packages", "linter", "src", "generated", "rules.md5",
-);
+
+/** The md5 the artifact says its source had when it was generated. */
+function recordedSourceMd5(artifactPath: string): string | undefined {
+  const prov = parseProvenance(readFileSync(artifactPath, "utf-8"));
+  return prov?.sourceMd5;
+}
 
 /** Count ❌/✅ data rows in the markdown tables. */
 function countPairsInMarkdown(text: string): number {
@@ -76,18 +89,25 @@ describe("ARABIC_MASTERY.md integrity", () => {
     const masteryText = readFileSync(MASTERY_PATH, "utf-8");
     const actualMd5 = createHash("md5").update(masteryText).digest("hex");
 
-    const storedMd5 = readFileSync(PROMPT_MD5_PATH, "utf-8").trim();
-
-    expect(actualMd5).toBe(storedMd5);
+    expect(recordedSourceMd5(PROMPT_PATH)).toBe(actualMd5);
   });
 
   it("linter rules md5 matches ARABIC_MASTERY.md (rebuild if this fails)", () => {
     const masteryText = readFileSync(MASTERY_PATH, "utf-8");
     const actualMd5 = createHash("md5").update(masteryText).digest("hex");
 
-    const storedMd5 = readFileSync(RULES_MD5_PATH, "utf-8").trim();
+    expect(recordedSourceMd5(RULES_PATH)).toBe(actualMd5);
+  });
 
-    expect(actualMd5).toBe(storedMd5);
+  it("both artifacts carry an identically-shaped provenance block", () => {
+    const a = parseProvenance(readFileSync(PROMPT_PATH, "utf-8"));
+    const b = parseProvenance(readFileSync(RULES_PATH, "utf-8"));
+
+    expect(a, "mastery-prompt.ts has no AQLAMNA-PROVENANCE block").toBeTruthy();
+    expect(b, "rules.ts has no AQLAMNA-PROVENANCE block").toBeTruthy();
+    expect(Object.keys(a).sort()).toEqual(Object.keys(b).sort());
+    expect(a.source).toBe("ARABIC_MASTERY.md");
+    expect(b.source).toBe("ARABIC_MASTERY.md");
   });
 
   it("mastery prompt pair count matches ARABIC_MASTERY.md pair count", () => {

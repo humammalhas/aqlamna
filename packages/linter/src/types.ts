@@ -23,7 +23,7 @@ export interface Diagnostic {
   suggestion?: string;
 }
 
-/** A linter rule as stored in rules.json */
+/** A linter rule as stored in src/generated/rules.ts */
 export interface LintRule {
   id: string;
   kind: "pair" | "pattern" | "advisory";
@@ -42,7 +42,7 @@ export interface LintRule {
   note?: string;
 }
 
-/** The full rules.json structure */
+/** The full structure of src/generated/rules.ts, written by scripts/build-rules.mjs */
 export interface RulesFile {
   _meta: {
     source: string;
