@@ -17,26 +17,70 @@
   <link rel="stylesheet" href="/assets/aqlamna.css">
   <style>
 .page{inline-size:100%;max-inline-size:48rem;padding-inline:1.5rem;padding-block:2rem}
-.hero{text-align:center;padding-block:3rem 1.5rem}
-.hero-logo{display:block;max-inline-size:180px;margin-inline:auto;margin-block-end:1.5rem}
+/* Trimmed from `3rem 1.5rem` / 180px. Every pixel here pushes افتح المحرر —
+   the one thing a visitor can click — further down; it used to be at y=1759 on
+   a 1280x800 viewport, two and a half screens below anything actionable. */
+.hero{text-align:center;padding-block:1.75rem 1rem}
+.hero-logo{display:block;max-inline-size:132px;block-size:auto;margin-inline:auto;margin-block-end:1rem}
 .hero-title{font-size:2.25rem;font-weight:700}
 .hero-subtitle{font-size:1.125rem;max-inline-size:32rem;margin-inline:auto}
-.demo-section{margin-block:2rem}
-.demo-heading{font-size:1.125rem;font-weight:700;margin-block-end:.75rem;text-align:center}
-.demo-label{font-size:.875rem;margin-block-end:.75rem;text-align:center}
-.demo-frame{inline-size:100%;block-size:520px;border-radius:8px;overflow:hidden}
-@media(max-width:40rem){.demo-frame{block-size:70dvh;min-block-size:380px}}
 .cta-wrap{text-align:center;margin-block:2rem}
 .cta-button{display:inline-block;font-size:1.125rem;font-weight:700;padding-inline:2.5rem;padding-block:.875rem;border-radius:8px;text-decoration:none;transition:background .2s;background:var(--aq-accent);color:var(--aq-on-accent)}
 .cta-button:hover{background:var(--aq-accent-hi)}
-.loop-section{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-block:2rem}
-@media(max-width:40rem){.loop-section{grid-template-columns:1fr}}
-.loop-card{border-radius:8px;overflow:hidden}
-.loop-card h3{font-size:.8125rem;font-weight:700;padding:.625rem .875rem;margin:0}
-.loop-source{padding:.75rem;margin:0;font-size:.8125rem;line-height:1.7;overflow-x:auto;max-inline-size:100%;direction:rtl;text-align:start;font-family:"Courier New",monospace;white-space:pre-wrap;overflow-wrap:break-word}
-.loop-result{padding:.75rem}
-.loop-prose{font-size:.9375rem;margin-block-end:.75rem;line-height:1.75}
-.loop-choices button{display:block;inline-size:100%;padding:.5rem .75rem;margin-block-end:.375rem;font-size:.875rem;font-family:inherit;border-radius:6px;cursor:default}
+
+/* ---- The glance: تكتب هذا / يصير هذا, in the hero ----
+   The pair is the pitch and it only works while both halves are on screen at
+   once, so it is short and it is high. The tabbed box below is the proof. */
+.glance{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-block:1.5rem}
+@media(max-width:40rem){.glance{grid-template-columns:1fr}}
+.glance-card{border:1px solid var(--aq-border);border-radius:8px;overflow:hidden;background:var(--aq-surface)}
+.glance-card h2{font-size:.8125rem;font-weight:700;color:var(--aq-muted);background:var(--aq-highlight);margin:0;padding:.5rem .75rem;border:none;border-block-end:1px solid var(--aq-border)}
+.glance-source{margin:0;padding:.75rem;border:none;border-radius:0;background:var(--aq-code-bg);font-size:.75rem;line-height:1.9;direction:rtl;text-align:start;font-family:"Courier New",monospace;white-space:pre-wrap;overflow-wrap:break-word;overflow-x:auto;max-inline-size:100%}
+.glance-result{padding:.75rem}
+.glance-result p{font-size:.875rem;line-height:1.8;margin-block:0 .625rem}
+.glance-result button{display:block;inline-size:100%;padding:.5rem .75rem;margin-block-end:.375rem;font-size:.8125rem;font-family:inherit;text-align:start;border-radius:6px;cursor:default;color:var(--aq-accent);background:var(--aq-bg);border:1px solid var(--aq-border)}
+
+/* ---- The preview: the editor's own three tabs, same words, same order ---- */
+.preview{margin-block:2.5rem}
+.preview-title{font-size:1.125rem;text-align:center;margin-block:0 .75rem;padding:0;border:none}
+.tabs{display:flex;justify-content:center;flex-wrap:wrap;gap:.375rem;margin-block-end:.75rem}
+.tab{min-block-size:44px;padding-block:.5rem;padding-inline:1.25rem;font-size:.9375rem;font-family:inherit;color:var(--aq-muted);background:var(--aq-surface);border:1px solid var(--aq-border);border-radius:6px;cursor:pointer}
+.tab:hover{color:var(--aq-text)}
+.tab[aria-selected="true"]{font-weight:700;color:var(--aq-on-accent);background:var(--aq-accent);border-color:var(--aq-accent)}
+.tab:focus-visible,.panel:focus-visible{outline:3px solid var(--aq-accent-hi);outline-offset:2px}
+.panel{border:1px solid var(--aq-border);border-radius:8px;background:var(--aq-surface);padding:.875rem}
+.panel[hidden]{display:none}
+.panel-note{font-size:.8125rem;color:var(--aq-muted);text-align:center;margin-block:0 .75rem}
+.panel-source-code{margin:0;font-size:.8125rem;line-height:1.8;max-block-size:26rem;overflow:auto}
+.panel-frame{position:relative;background:var(--aq-code-bg);border:1px solid var(--aq-code-border);border-radius:6px;overflow:hidden}
+.panel-frame iframe{display:block;inline-size:100%;block-size:520px;border:none}
+.panel-frame iframe[hidden]{display:none}
+.frame-status{margin:0;padding:2rem 1rem;text-align:center;font-size:.9375rem;color:var(--aq-muted)}
+.frame-status[hidden]{display:none}
+@media(max-width:40rem){.panel-frame iframe{block-size:70dvh;min-block-size:380px}}
+
+/* ---- The map ----
+   Inline SVG generated at build time by scripts/build-site.mjs from the
+   editor's own canvas parser. No React Flow, no editor bundle: see the comment
+   on generateMap() for the byte count that decision is about. Only variables
+   declared in /assets/aqlamna.css appear here — the editor's node colours
+   (--aq-node-green and friends) are not in scope on this page, and an
+   undefined custom property does not warn, it inherits. */
+.panel-map{overflow-x:auto;overflow-y:hidden}
+.map{display:block;inline-size:100%;block-size:auto;min-inline-size:37rem;color:var(--aq-dim)}
+.map .edges path{fill:none;stroke:var(--aq-dim);stroke-width:2;marker-end:url(#mapArrow)}
+.map .card rect{fill:var(--aq-bg);stroke:var(--aq-border);stroke-width:2}
+.map .card.is-start rect{fill:var(--aq-highlight);stroke:var(--aq-accent);stroke-width:3}
+.map .card.is-end rect{fill:var(--aq-code-bg);stroke:var(--aq-dim)}
+.map .card.is-ghost{opacity:.65}
+.map .card.is-ghost rect{stroke:var(--aq-dim);stroke-dasharray:7 5}
+.map text{text-anchor:middle;font-family:inherit}
+.map .t{font-size:22px;font-weight:700;fill:var(--aq-accent)}
+.map .p{font-size:16px;fill:var(--aq-muted)}
+.map .tag{font-size:15px;fill:var(--aq-dim)}
+.map .tag-start{font-weight:700;fill:var(--aq-accent)}
+.map .badge rect{fill:var(--aq-surface);stroke:var(--aq-border);stroke-width:1}
+.map .badge text{font-size:14px;fill:var(--aq-muted)}
 .features{margin-block:3rem;display:grid;grid-template-columns:1fr;gap:2rem}
 /* Four features, so the grid stops at TWO columns and squares off into 2x2.
    It used to go to three at 64rem, which with a fourth card leaves one card
@@ -89,7 +133,8 @@
  .site-footer a,.back-link a,.english-link a,.docs-card{display:inline-flex;align-items:center;min-block-size:44px}
  .docs-card{display:block;padding-block:1rem}
  .cta-button{inline-size:100%;min-block-size:48px}
- .loop-choices button{min-block-size:44px}
+ .glance-result button{min-block-size:44px}
+ .tab{flex:1 1 0;padding-inline:.5rem}
 }
   
   </style>
@@ -102,8 +147,8 @@
         class="hero-logo"
         src="/assets/logo-transparent.png"
         alt="شعار أقلامنا"
-        width="180"
-        height="180"
+        width="132"
+        height="132"
       >
       <h1 class="hero-title">أقلامنا</h1>
       <p class="hero-subtitle">
@@ -112,12 +157,51 @@
       </p>
     </header>
 
-    <!-- DEMO_START — generated from stories/العطر_المفقود.qalam by build-site.mjs -->
-    <!-- Source / result side-by-side -->
-    <section class="loop-section">
-      <div class="loop-card">
-        <h3>تكتب هذا</h3>
-        <pre class="loop-source"><span dir="ltr">===</span> الدكّان <span dir="ltr">===</span>
+    <!-- GLANCE_START — generated from stories/العطر_المفقود.qalam by build-site.mjs -->
+    <section class="glance" aria-label="مثال قصير">
+      <div class="glance-card">
+        <h2>تكتب هذا</h2>
+        <pre class="glance-source"><span dir="ltr">===</span> الدكّان <span dir="ltr">===</span>
+
+رفوف الخشب تصطفّ حتى السقف، وفي كلّ جرّة رائحةٌ تنتظر<span dir="ltr">.</span>
+
+<span dir="ltr">*</span> <span dir="ltr">[</span>اسأليه عن الثلاثة<span dir="ltr">]</span>
+<span dir="ltr">*</span> <span dir="ltr">[</span>تأمّلي الدكّان أولًا<span dir="ltr">]</span></pre>
+      </div>
+      <div class="glance-card">
+        <h2>يصير هذا</h2>
+        <div class="glance-result">
+          <p>رفوف الخشب تصطفّ حتى السقف، وفي كلّ جرّة رائحةٌ تنتظر.</p>
+          <button type="button" disabled>اسأليه عن الثلاثة</button>
+          <button type="button" disabled>تأمّلي الدكّان أولًا</button>
+        </div>
+      </div>
+    </section>
+    <!-- GLANCE_END -->
+
+    <!-- CTA. It sits here, directly under the glance, because the glance is
+         the whole promise and there is nothing to gain by making someone who
+         is already convinced scroll past the proof to find the button. -->
+    <div class="cta-wrap">
+      <a class="cta-button" href="/editor">افتح المحرر</a>
+    </div>
+
+    <!-- PREVIEW_START — generated from stories/العطر_المفقود.qalam by build-site.mjs -->
+    <section class="preview" aria-labelledby="preview-title">
+      <h2 class="preview-title" id="preview-title">القصة نفسها من ثلاث زوايا</h2>
+
+      <div class="tabs" role="tablist" aria-label="الأقسام">
+        <button type="button" class="tab" role="tab" id="tab-source"
+                aria-controls="panel-source" aria-selected="true" tabindex="0">قصتك</button>
+        <button type="button" class="tab" role="tab" id="tab-play"
+                aria-controls="panel-play" aria-selected="false" tabindex="-1">شغّل</button>
+        <button type="button" class="tab" role="tab" id="tab-map"
+                aria-controls="panel-map" aria-selected="false" tabindex="-1">مخطط</button>
+      </div>
+
+      <div class="panel" role="tabpanel" id="panel-source" aria-labelledby="tab-source" tabindex="0">
+        <p class="panel-note">هذا ما تكتبه — أوّل مقطع من قصة "العطر المفقود".</p>
+        <pre class="panel-source-code"><span dir="ltr">===</span> الدكّان <span dir="ltr">===</span>
 
 رفوف الخشب تصطفّ حتى السقف، وفي كلّ جرّة رائحةٌ تنتظر<span dir="ltr">.</span> المعلّم سليم يجلس وراء ميزانٍ نحاسيّ، وأمامه ورقة صفراء لا شيء عليها<span dir="ltr">.</span>
 
@@ -132,42 +216,39 @@
   <span dir="ltr">&quot;</span>عينكِ حادّة،<span dir="ltr">&quot;</span> قال<span dir="ltr">.</span> <span dir="ltr">&quot;</span>لكن ابدئي من الأسفل<span dir="ltr">.&quot;</span>
   <span dir="ltr">-&gt;</span> الجرار</pre>
       </div>
-      <div class="loop-card">
-        <h3>يصير هذا</h3>
-        <div class="loop-result">
-<p class="loop-prose">رفوف الخشب تصطفّ حتى السقف، وفي كلّ جرّة رائحةٌ تنتظر. المعلّم سليم يجلس وراء ميزانٍ نحاسيّ، وأمامه ورقة صفراء لا شيء عليها.</p>
-<p class="loop-prose">&quot;وصفة جدّتي ضاعت،&quot; قال دون أن يرفع عينيه. &quot;أعرف أنّ فيها أربعة أشياء. أذكر ثلاثة، والرابع يهرب منّي كلّما اقتربتُ.&quot;</p>
-          <div class="loop-choices">
-            <button disabled>اسأليه عن الثلاثة</button>
-            <button disabled>تأمّلي الدكّان أولًا</button>
-          </div>
+
+      <div class="panel" role="tabpanel" id="panel-play" aria-labelledby="tab-play" tabindex="0" hidden>
+        <p class="panel-note">وهذا ما يقرؤه من يفتح الملفّ.</p>
+        <div class="panel-frame">
+          <p class="frame-status" id="playStatus">جاري تحميل القصة...</p>
+          <iframe
+            id="playFrame"
+            data-src="/العطر_المفقود.html"
+            title="العطر المفقود — قصة تفاعلية تجريبية"
+            hidden
+          ></iframe>
+        </div>
+      </div>
+
+      <div class="panel" role="tabpanel" id="panel-map" aria-labelledby="tab-map" tabindex="0" hidden>
+        <p class="panel-note">وهذا شكل القصة كلّها: كلّ مقطع بطاقة، وكلّ تحويلة سهم.</p>
+        <div class="panel-map">
+          <svg class="map" viewBox="0 0 1340 540" role="img" aria-label="مخطط قصة &quot;العطر المفقود&quot;: ١١ مقطعًا و١٥ تحويلةً بينها." xmlns="http://www.w3.org/2000/svg"><defs><marker id="mapArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="currentColor"/></marker></defs><g class="edges"><path d="M1142 70 C1112 70, 1132 70, 1102 70" /><path d="M916 70 C886 70, 906 70, 876 70" /><path d="M690 59 C660 59, 680 59, 650 59" /><path d="M690 59 C660 59, 680 163, 650 163" /><path d="M690 59 C660 59, 680 267, 650 267" /><path d="M690 70 C660 70, 680 382, 650 382" /><path d="M690 59 C660 59, 680 475, 650 475" /><path d="M650 81 C680 81, 660 81, 690 81" /><path d="M650 185 C680 185, 660 81, 690 81" /><path d="M650 289 C680 289, 660 81, 690 81" /><path d="M464 382 C434 382, 454 174, 424 174" /><path d="M464 382 C434 382, 454 70, 424 70" /><path d="M424 70 C514 70, 600 70, 690 70" /><path d="M238 70 C208 70, 228 70, 198 70" /><path d="M650 497 C680 497, 660 81, 690 81" /></g><g class="cards"><g class="card is-start"><text class="tag tag-start" x="1235" y="21">البداية</text><rect x="1142" y="30" width="186" height="80" rx="9"/><text class="t" x="1235" y="58">الدكّان</text><text class="p" x="1235" y="80">#مشهد_أول
+
+رفوف الخش…</text><g class="badge"><rect x="1150" y="86" width="42" height="17" rx="8"/><text x="1171" y="99">٢ ↯</text></g></g><g class="card"><rect x="916" y="30" width="186" height="80" rx="9"/><text class="t" x="1009" y="58">الجرار</text><text class="p" x="1009" y="80">فتح ثلاث جرارٍ ووضعه…</text></g><g class="card"><rect x="690" y="30" width="186" height="80" rx="9"/><text class="t" x="783" y="58">المهمّة</text><text class="p" x="783" y="80">المكوّنات:
+المكوّنات…</text><g class="badge"><rect x="698" y="86" width="42" height="17" rx="8"/><text x="719" y="99">٥ ↯</text></g></g><g class="card"><rect x="464" y="30" width="186" height="80" rx="9"/><text class="t" x="557" y="58">السوق</text><text class="p" x="557" y="80">الشمس عمودية والدرج …</text></g><g class="card"><rect x="464" y="134" width="186" height="80" rx="9"/><text class="t" x="557" y="162">البيت</text><text class="p" x="557" y="184">باب البيت القديم يصر…</text><g class="badge"><rect x="472" y="190" width="42" height="17" rx="8"/><text x="493" y="203">٢ ↯</text></g></g><g class="card"><rect x="464" y="238" width="186" height="80" rx="9"/><text class="t" x="557" y="266">المخزن</text><text class="p" x="557" y="288">المخزن بارد ولا نافذ…</text><g class="badge"><rect x="472" y="294" width="42" height="17" rx="8"/><text x="493" y="307">٢ ↯</text></g></g><g class="card"><rect x="464" y="342" width="186" height="80" rx="9"/><text class="t" x="557" y="370">الخلط</text><text class="p" x="557" y="392">قطرتان من ماء الورد.…</text><g class="badge"><rect x="472" y="398" width="42" height="17" rx="8"/><text x="493" y="411">٢ ↯</text></g></g><g class="card"><rect x="238" y="30" width="186" height="80" rx="9"/><text class="t" x="331" y="58">بعد_الفشل</text><text class="p" x="331" y="80">الورقة الصفراء ما زا…</text><g class="badge"><rect x="246" y="86" width="42" height="17" rx="8"/><text x="267" y="99">٢ ↯</text></g></g><g class="card is-end"><text class="tag" x="105" y="21">نهاية</text><rect x="12" y="30" width="186" height="80" rx="9"/><text class="t" x="105" y="58">الخاتمة_الناقصة</text><text class="p" x="105" y="80">طوى المعلّم الورقة ا…</text></g><g class="card"><rect x="464" y="446" width="186" height="80" rx="9"/><text class="t" x="557" y="474">الجرّة_العليا</text><text class="p" x="557" y="496">سألتِه عن الجرّة الت…</text></g><g class="card is-end"><text class="tag" x="331" y="125">نهاية</text><rect x="238" y="134" width="186" height="80" rx="9"/><text class="t" x="331" y="162">الخاتمة_الكاملة</text><text class="p" x="331" y="184">الثقة:
+الثقة &lt; 3: كت…</text></g></g></svg>
         </div>
       </div>
     </section>
-    <!-- DEMO_END -->
-
-    <!-- Demo -->
-    <section class="demo-section">
-      <h2 class="demo-heading">أو جرّب قصة كاملة</h2>
-      <iframe
-        class="demo-frame"
-        src="/العطر_المفقود.html"
-        title="العطر المفقود — قصة تفاعلية تجريبية"
-        loading="lazy"
-      ></iframe>
-    </section>
-
-    <!-- CTA -->
-    <div class="cta-wrap">
-      <a class="cta-button" href="/editor">افتح المحرر</a>
-    </div>
+    <!-- PREVIEW_END -->
 
     <!-- Features -->
     <section class="features">
       <div class="feature">
         <h2>اكتب</h2>
         <p>
-          اكتب قصتك بلغة أقلامنا النصية، أو ارسمها كخريطة مشاهد في المحرر البصري.
+          اكتب قصتك بلغة أقلامنا النصية، أو ارسمها مقاطع وأسهمًا في المخطط.
           الكلمات المفتاحية والرموز كلها بالعربية.
         </p>
       </div>
@@ -185,11 +266,14 @@
           أرسله لأصدقائك أو انشره على أي موقع.
         </p>
       </div>
+      <!-- مخطط, not تتبّع. There is no تتبّع in the product: a visitor read
+           about it here, opened the editor, and looked for a tab that does not
+           exist. The word on the card is now the word on the tab. -->
       <div class="feature">
-        <h2>تتبّع</h2>
+        <h2>مخطط</h2>
         <p>
-          كلّ مشهد بطاقة، وكلّ تحويلة سهم بين بطاقتين. الخريطة تُريك أين تلتقي
-          المسارات وأيّ مشهد لا يصل إليه أحد. وهي ليست مكانًا آخر للكتابة، بل
+          كلّ مقطع بطاقة، وكلّ تحويلة سهم بين بطاقتين. المخطط يُريك أين تلتقي
+          المسارات وأيّ مقطع لا يصل إليه أحد. وهو ليس مكانًا آخر للكتابة، بل
           القصة نفسها من زاوية أخرى.
         </p>
       </div>
@@ -252,6 +336,87 @@
       <div>٢. اختر "إضافة إلى الشاشة الرئيسية"</div>
     </div>
   </div>
+
+  <!-- Preview tabs. Same three words, same order, same behaviour as the tab
+       bar in the editor. Deliberately tiny and inline: this is a hand-authored
+       static page and nothing here is worth a bundle.
+
+       The قصتك panel is the default because that is what makes Aqlamna
+       different from Twine, and because the editor also opens on the text
+       pane — the first thing a visitor sees here is the first thing they see
+       there. -->
+  <script>
+  (function () {
+    var tablist = document.querySelector(".preview .tabs");
+    if (!tablist) return;
+    var tabs = Array.prototype.slice.call(tablist.querySelectorAll('[role="tab"]'));
+    if (tabs.length === 0) return;
+
+    function panelOf(tab) { return document.getElementById(tab.getAttribute("aria-controls")); }
+
+    function select(tab, moveFocus) {
+      for (var i = 0; i < tabs.length; i++) {
+        var on = tabs[i] === tab;
+        tabs[i].setAttribute("aria-selected", on ? "true" : "false");
+        tabs[i].tabIndex = on ? 0 : -1;
+        var panel = panelOf(tabs[i]);
+        if (panel) panel.hidden = !on;
+      }
+      if (moveFocus) tab.focus();
+      if (tab.id === "tab-play") loadStory();
+    }
+
+    for (var i = 0; i < tabs.length; i++) {
+      (function (tab) {
+        tab.addEventListener("click", function () { select(tab, false); });
+        tab.addEventListener("keydown", function (e) {
+          var at = tabs.indexOf(tab), n = tabs.length, next = null;
+          // The bar reads right to left, so ArrowLeft advances and
+          // ArrowRight goes back — the opposite of an LTR tab bar.
+          if (e.key === "ArrowLeft") next = tabs[(at + 1) % n];
+          else if (e.key === "ArrowRight") next = tabs[(at - 1 + n) % n];
+          else if (e.key === "Home") next = tabs[0];
+          else if (e.key === "End") next = tabs[n - 1];
+          if (!next) return;
+          e.preventDefault();
+          select(next, true);
+        });
+      })(tabs[i]);
+    }
+
+    // The exported story is a separate 58KB document and nobody who never
+    // opens شغّل should pay for it. `hidden` alone would defer it, but then
+    // there is no loading state and no way to notice a failure, so the src is
+    // set by hand on first activation.
+    var loaded = false;
+    function loadStory() {
+      if (loaded) return;
+      loaded = true;
+      var frame = document.getElementById("playFrame");
+      var status = document.getElementById("playStatus");
+      if (!frame || !status) return;
+
+      function fail() {
+        status.textContent = "لم نستطع تحميل القصة. جرّب تحديث الصفحة.";
+        status.hidden = false;
+      }
+      // A cross-document HTTP error still fires `load`, not `error`, so the
+      // watchdog is the only thing that can report a story that never arrives.
+      // Silence here would read as "the demo is just slow", forever.
+      var watchdog = setTimeout(fail, 12000);
+      frame.addEventListener("load", function () {
+        clearTimeout(watchdog);
+        status.hidden = true;
+        frame.hidden = false;
+      });
+      frame.addEventListener("error", function () {
+        clearTimeout(watchdog);
+        fail();
+      });
+      frame.src = frame.getAttribute("data-src");
+    }
+  })();
+  </script>
 
   <script>
   (function () {

@@ -153,7 +153,9 @@ export const BUILD_DIRS = [
       },
       {
         kind: "source",
-        note: "hand-authored; index.html additionally has its DEMO block injected by build-site.mjs",
+        note:
+          "hand-authored; index.html additionally has its GLANCE and PREVIEW blocks " +
+          "injected by build-site.mjs",
         paths: [
           "index.html",
           "_headers",
