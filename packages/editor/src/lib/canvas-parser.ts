@@ -42,8 +42,21 @@ const DIVERT_RE = /^\s*->\s+(\S+)/gm;
 const TUNNEL_RE = /^~>\s+(\S+)/gm;
 const THREAD_RE = /^<-\s+(\S+)/gm;
 const CHOICE_RE = /^[*+]\s+/gm;
-const CONDITIONAL_RE = /\{\S+[:}]/g;
-const END_RE = /->\s+(?:نهاية|END)\b/g;
+
+// NOT global. These two are used with `.test()` inside the per-passage loop, and
+// a `g` regex carries `lastIndex` from call to call — the next passage would be
+// searched from wherever the previous match ended. `CHOICE_RE` above is fine
+// because it is used with `.match()`, which resets.
+const CONDITIONAL_RE = /\{\S+[:}]/;
+
+// `\b` is an ASCII word boundary: `\w` is [A-Za-z0-9_], and Arabic letters are
+// not in it. `-> نهاية\n` therefore has a non-word char on BOTH sides of the
+// position after `نهاية`, so no boundary exists and the pattern never matched —
+// for any Arabic story, ever. `-> END` matched, because `D` is a word char.
+// Consequence: the red "this passage ends the story" colour has never appeared
+// on the canvas for a story written in the language's own keywords. Measured on
+// stories/العطر_المفقود.qalam: 2 passages end with `-> نهاية`, 0 were marked.
+const END_RE = /->\s*(?:نهاية|END)\s*$/m;
 
 const END_KEYWORDS = new Set(["نهاية", "END"]);
 
