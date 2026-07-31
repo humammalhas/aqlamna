@@ -1,0 +1,360 @@
+// ---------------------------------------------------------------------------
+// Responsive + layout regression suite.
+//
+// Every assertion is a NUMBER read out of a rendered page. Run against the
+// local build by default; point BASE_URL at the deployed site to check what
+// actually shipped:
+//
+//   BASE_URL=https://aqlamna.org npx playwright test \
+//     --config site/playwright.config.ts responsive.spec.ts
+//
+// The three breakpoints are the only three that exist:
+//   phone < 40rem (640px) · tablet 40–64rem · desktop >= 64rem (1024px)
+// ---------------------------------------------------------------------------
+
+import { test, expect, type Page } from "@playwright/test";
+import {
+  measurePage,
+  measureArrow,
+  measureEditorPanes,
+  BEACON,
+} from "./measure-lib.mjs";
+
+const WIDTHS = [390, 768, 1024, 1440];
+
+const PAGES = [
+  { path: "/", label: "landing" },
+  { path: "/docs/" + encodeURIComponent("البداية") + ".html", label: "docs-bidaya" },
+  { path: "/docs/" + encodeURIComponent("المرجع") + ".html", label: "docs-marja" },
+  { path: "/docs/" + encodeURIComponent("الأخطاء") + ".html", label: "docs-akhta" },
+  { path: "/privacy.html", label: "privacy" },
+  { path: "/terms.html", label: "terms" },
+  { path: "/editor/", label: "editor" },
+  { path: "/" + encodeURIComponent("العطر_المفقود") + ".html", label: "story" },
+];
+
+/**
+ * The onboarding overlay is a modal dialog that covers the editor on a first
+ * visit and swallows every click. Mark it seen BEFORE the page scripts run.
+ */
+async function skipOnboarding(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    try {
+      localStorage.setItem("aqlamna-onboarding-done", "1");
+    } catch {
+      /* private mode — the overlay will show and the test will say so */
+    }
+  });
+}
+
+/** Collect console errors, ignoring the Cloudflare beacon we do not control. */
+function watchConsole(page: Page): string[] {
+  const errors: string[] = [];
+  page.on("console", (m) => {
+    if (m.type() === "error" && !m.text().includes(BEACON)) errors.push(m.text());
+  });
+  page.on("pageerror", (e) => errors.push(String(e)));
+  return errors;
+}
+
+// ---------------------------------------------------------------------------
+// Every page, every width
+// ---------------------------------------------------------------------------
+
+for (const width of WIDTHS) {
+  test.describe(`${width}px`, () => {
+    test.use({ viewport: { width, height: 900 } });
+
+    for (const { path, label } of PAGES) {
+      test(`${label} — no horizontal scroll, nothing off-screen, no console errors`, async ({
+        page,
+      }) => {
+        const errors = watchConsole(page);
+        await page.goto(path, { waitUntil: "networkidle" });
+        await page.waitForTimeout(400);
+
+        const m = await measurePage(page);
+
+        // document.scrollWidth === window.innerWidth
+        expect(
+          m.documentScrollWidth,
+          `${label} @${width}: document scrolls sideways`,
+        ).toBe(m.viewportWidth);
+
+        // Every interactive element: x >= 0 and x + width <= viewport width.
+        // This is what caught ▶ شغّل at x = -113.
+        expect(
+          m.overflowing,
+          `${label} @${width}: interactive elements outside the viewport`,
+        ).toEqual([]);
+
+        expect(errors, `${label} @${width}: console errors`).toEqual([]);
+
+        // One document, one top-level heading.
+        expect(m.h1Count, `${label} @${width}: h1 count`).toBe(1);
+
+        // Icon-only buttons must still have an accessible name.
+        expect(
+          m.unlabelledControls,
+          `${label} @${width}: buttons with no text, aria-label or title`,
+        ).toEqual([]);
+
+        if (width < 640) {
+          // Controls must be tappable. Links inside a sentence are excluded —
+          // a 44px inline link would wreck the paragraph it sits in.
+          expect(
+            m.smallestControlTarget!.min,
+            `${label} @390: smallest control is ${m.smallestControlTarget!.tag} "${m.smallestControlTarget!.text}"`,
+          ).toBeGreaterThanOrEqual(44);
+        }
+      });
+    }
+  });
+}
+
+// ---------------------------------------------------------------------------
+// A2 — operator runs render left-to-right
+// ---------------------------------------------------------------------------
+
+test.describe("bidi: ASCII operator runs", () => {
+  for (const { path, label } of PAGES.filter((p) => p.label.startsWith("docs") || p.label === "landing")) {
+    test(`${label}: the dash of -> is painted LEFT of the >`, async ({ page }) => {
+      await page.goto(path, { waitUntil: "networkidle" });
+      const arrow = await measureArrow(page);
+      expect(arrow, `${label}: no -> found in any <pre>`).not.toBeNull();
+      expect(
+        arrow!.dashX,
+        `${label}: dashX=${arrow!.dashX} gtX=${arrow!.gtX}`,
+      ).toBeLessThan(arrow!.gtX);
+    });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// A1 + A4 — the exported story
+// ---------------------------------------------------------------------------
+
+test.describe("exported story", () => {
+  const STORY = "/" + encodeURIComponent("العطر_المفقود") + ".html";
+
+  test("prose is split into paragraphs, not welded into one", async ({ page }) => {
+    await page.goto(STORY, { waitUntil: "networkidle" });
+    const m = await measurePage(page);
+
+    expect(m.paragraphCount, "p.aq-text count").toBeGreaterThan(1);
+
+    // Per paragraph. Concatenating them back together recreates the weld and
+    // proves nothing — the bug was two sentences inside ONE <p>.
+    for (const p of m.paragraphTexts) {
+      expect(p, "welded sentences inside one paragraph").not.toMatch(
+        /[.؟!]"?[ء-ي]/,
+      );
+    }
+    expect(m.paragraphTexts[0]).toMatch(/لا شيء عليها\.$/);
+    expect(m.paragraphTexts[1]).toMatch(/^"وصفة جدّتي ضاعت،/);
+  });
+
+  test("html and body carry the page background", async ({ page }) => {
+    await page.goto(STORY, { waitUntil: "networkidle" });
+    const m = await measurePage(page);
+    // Cream, the default light theme: #F6F1E7.
+    expect(m.bodyBackground).toBe("rgb(246, 241, 231)");
+    expect(m.htmlBackground).toBe("rgb(246, 241, 231)");
+  });
+
+  test("choice buttons are at least 48px tall on a phone", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(STORY, { waitUntil: "networkidle" });
+    const heights = await page
+      .locator(".aq-choice-btn")
+      .evaluateAll((els) => els.map((e) => e.getBoundingClientRect().height));
+    expect(heights.length).toBeGreaterThan(0);
+    for (const h of heights) expect(h).toBeGreaterThanOrEqual(48);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// A3 / A6 / B1–B3 — the editor
+// ---------------------------------------------------------------------------
+
+test.describe("editor layout", () => {
+  test("phone: one pane, full width, with a bottom tab bar", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await skipOnboarding(page);
+    await page.goto("/editor/", { waitUntil: "networkidle" });
+    await page.waitForTimeout(500);
+
+    const m = await measureEditorPanes(page);
+    expect(m.paneCount).toBe(1);
+    expect(m.panes[0]!.x).toBe(0);
+    expect(m.panes[0]!.width).toBe(390);
+    expect(m.panes[0]!.hasContent).toBe(true);
+
+    // Three tabs, each at least 48px tall, none off-screen.
+    expect(m.tabBar).toHaveLength(3);
+    for (const tab of m.tabBar) {
+      expect(tab.height).toBeGreaterThanOrEqual(48);
+      expect(tab.x).toBeGreaterThanOrEqual(0);
+      expect(tab.x + tab.width).toBeLessThanOrEqual(390.5);
+    }
+    // Exactly one tab is pressed, and it is the pane that is rendered.
+    const pressed = m.tabBar.filter((t) => t.pressed === "true");
+    expect(pressed).toHaveLength(1);
+    expect(pressed[0]!.name).toBe(m.panes[0]!.name);
+  });
+
+  test("tablet: at most two panes, and a third selection replaces one", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 768, height: 900 });
+    await skipOnboarding(page);
+    await page.goto("/editor/", { waitUntil: "networkidle" });
+    await page.waitForTimeout(500);
+
+    let m = await measureEditorPanes(page);
+    expect(m.paneCount).toBeLessThanOrEqual(2);
+
+    await page.getByRole("button", { name: "مخطط", exact: true }).click();
+    await page.waitForTimeout(300);
+
+    m = await measureEditorPanes(page);
+    expect(m.paneCount, "a third pane was added instead of replacing one").toBe(2);
+  });
+
+  for (const width of [1024, 1440]) {
+    test(`desktop ${width}: columns sum to the viewport and no pane is 0px`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await skipOnboarding(page);
+    await page.goto("/editor/", { waitUntil: "networkidle" });
+      await page.waitForTimeout(500);
+
+      // Turn every pane on, one at a time — the bug was that a pane enabled
+      // after a manual drag got a column of exactly 0px.
+      for (const name of ["شغّل", "نص", "مخطط"]) {
+        const btn = page.getByRole("button", { name, exact: true });
+        if ((await btn.getAttribute("aria-pressed")) === "false") {
+          await btn.click();
+          await page.waitForTimeout(250);
+        }
+      }
+
+      const m = await measureEditorPanes(page);
+      expect(m.paneCount).toBe(3);
+
+      const cols = m.gridTemplateColumns!.split(" ").map(parseFloat);
+      const sum = cols.reduce((a, b) => a + b, 0);
+      expect(sum, `columns "${m.gridTemplateColumns}" sum to ${sum}`).toBeCloseTo(
+        width,
+        0,
+      );
+
+      for (const pane of m.panes) {
+        expect(pane.width, `pane ${pane.name} is ${pane.width}px wide`).toBeGreaterThan(0);
+        expect(pane.height, `pane ${pane.name} is ${pane.height}px tall`).toBeGreaterThan(0);
+        expect(pane.hasContent, `pane ${pane.name} is an empty box`).toBe(true);
+        // Every pane is positioned the same way, or the positioned one paints
+        // over its neighbour regardless of DOM order.
+        expect(pane.position).toBe("relative");
+      }
+
+      // Panes are laid out side by side and never overlap.
+      const sorted = [...m.panes].sort((a, b) => a.x - b.x);
+      for (let i = 1; i < sorted.length; i++) {
+        expect(sorted[i - 1]!.x + sorted[i - 1]!.width).toBeLessThanOrEqual(
+          sorted[i]!.x + 0.5,
+        );
+      }
+    });
+  }
+
+  test("dividers follow the cursor instead of running away from it", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await skipOnboarding(page);
+    await page.goto("/editor/", { waitUntil: "networkidle" });
+    await page.waitForTimeout(500);
+
+    const divider = page.locator('[role="separator"]').first();
+    await expect(divider).toBeVisible();
+
+    const box = (await divider.boundingBox())!;
+    const startX = box.x + box.width / 2;
+    const y = box.y + box.height / 2;
+
+    await page.mouse.move(startX, y);
+    await page.mouse.down();
+    await page.mouse.move(startX + 100, y, { steps: 10 });
+    await page.mouse.up();
+    await page.waitForTimeout(300);
+
+    const endX = (await divider.boundingBox())!.x + box.width / 2;
+    const moved = endX - startX;
+
+    // It used to move -100 for +100: exactly inverted, because the handler
+    // added a raw screen delta to the width of the pane on the RIGHT.
+    expect(moved, `cursor moved +100, divider moved ${moved.toFixed(1)}`).toBeGreaterThan(50);
+  });
+
+  test("the editor never lets every pane be switched off", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await skipOnboarding(page);
+    await page.goto("/editor/", { waitUntil: "networkidle" });
+    await page.waitForTimeout(500);
+
+    for (const name of ["شغّل", "نص", "مخطط"]) {
+      const btn = page.getByRole("button", { name, exact: true });
+      if ((await btn.getAttribute("aria-pressed")) === "true") {
+        await btn.click();
+        await page.waitForTimeout(200);
+      }
+    }
+
+    const m = await measureEditorPanes(page);
+    expect(m.paneCount, "every pane switched off").toBeGreaterThanOrEqual(1);
+
+    // The toggle that is still ON must be the pane that is rendered.
+    const on: string[] = [];
+    for (const [name, key] of [
+      ["شغّل", "player"],
+      ["نص", "text"],
+      ["مخطط", "canvas"],
+    ] as const) {
+      const btn = page.getByRole("button", { name, exact: true });
+      if ((await btn.getAttribute("aria-pressed")) === "true") on.push(key);
+    }
+    expect(on.sort()).toEqual(m.panes.map((p) => p.name).sort());
+  });
+
+  test("CodeMirror wraps long lines instead of scrolling sideways", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1024, height: 900 });
+    await skipOnboarding(page);
+    await page.goto("/editor/", { waitUntil: "networkidle" });
+    await page.waitForTimeout(500);
+
+    // Make sure the text pane is on.
+    const textBtn = page.getByRole("button", { name: "نص", exact: true });
+    if ((await textBtn.getAttribute("aria-pressed")) === "false") {
+      await textBtn.click();
+      await page.waitForTimeout(300);
+    }
+
+    await page.locator(".cm-content").click();
+    await page.keyboard.type(
+      "=== البداية === ARABIC_MASTERY.md وهذا سطر طويل جدًّا يتجاوز عرض العمود بكثير حتى يضطر المحرّر إلى لفّه على أكثر من سطر واحد",
+    );
+    await page.waitForTimeout(400);
+
+    const m = await measureEditorPanes(page);
+    expect(m.codeMirror).not.toBeNull();
+    expect(
+      m.codeMirror!.scrollWidth,
+      `scroller ${m.codeMirror!.clientWidth} client / ${m.codeMirror!.scrollWidth} scroll`,
+    ).toBe(m.codeMirror!.clientWidth);
+    expect(m.codeMirror!.widestLine).toBeLessThanOrEqual(m.codeMirror!.clientWidth);
+  });
+});

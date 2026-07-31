@@ -2,9 +2,9 @@ import { defineConfig } from "@playwright/test";
 
 export default defineConfig({
   testDir: "./tests",
-  testMatch: "site.spec.ts",
+  testMatch: /(site|responsive).spec.ts/,
   use: {
-    baseURL: "http://localhost:8765",
+    baseURL: process.env.BASE_URL ?? "http://localhost:8765",
   },
   webServer: {
     command: "node tests/server.mjs",

@@ -31,9 +31,11 @@
  code{font-family:"Courier New",monospace;font-size:.9em;
    padding:.1em .35em;border-radius:.25rem;unicode-bidi:isolate}
  pre{border:1px solid;border-radius:.5rem;
-   padding:1rem 1.15rem;margin-block:1rem;overflow-x:auto;direction:rtl;text-align:start}
+   padding:1rem 1.15rem;margin-block:1rem;overflow-x:auto;overflow-wrap:break-word;
+   max-inline-size:100%;direction:rtl;text-align:start}
  pre code{background:none;padding:0;font-size:.9375rem;line-height:1.8;
-   white-space:pre-wrap;unicode-bidi:plaintext;display:block}
+   white-space:pre-wrap;unicode-bidi:isolate;display:block}
+ pre span[dir=ltr],code span[dir=ltr]{unicode-bidi:isolate}
  blockquote{border-inline-start:3px solid;
    padding:.75rem 1rem;margin-block:1rem;border-radius:0 .35rem .35rem 0}
  table{inline-size:100%;border-collapse:collapse;margin-block:1.25rem;font-size:.9375rem}
@@ -41,7 +43,16 @@
  th{font-weight:700}
  footer{margin-block-start:3.5rem;padding-block-start:1.25rem;border-block-start:1px solid;
    font-size:.875rem;display:flex;flex-wrap:wrap;gap:.75rem 1.25rem}
- @media(max-width:34rem){html{font-size:1rem}nav.top .home{inline-size:100%;margin-block-end:.5rem}}</style>
+ table{display:block;overflow-x:auto;max-inline-size:100%}
+ @media(max-width:40rem){
+  html{font-size:1rem}
+  .wrap{padding-inline:1.125rem}
+  nav.top .home{inline-size:100%;margin-block-end:.5rem}
+  nav.top a,footer a{display:inline-flex;align-items:center;justify-content:center;
+   min-block-size:44px;min-inline-size:44px;flex-shrink:0}
+  h1{font-size:1.5rem}
+  footer{gap:.5rem 1rem}
+ }</style>
 </head>
 <body>
 <div class="wrap">
@@ -60,98 +71,149 @@
 <p>هذه الأخطاء تظهر قبل أن تعمل القصة. سببها خطأ في كتابة الرموز.</p>
 <hr>
 <h3 id="E101-مقطع-غير-موجود">E101 — مقطع غير موجود</h3>
-<blockquote><strong>الرسالة:</strong> <code>لا يوجد مقطع بهذا الاسم: {name}</code></blockquote>
-<p><strong>السبب:</strong> أحلت إلى مقطع (<code>-&gt; اسم</code>) لكن هذا المقطع غير موجود في الملف.</p>
+<blockquote><strong>الرسالة:</strong> <code>لا يوجد مقطع بهذا الاسم<span dir="ltr">:</span> <span dir="ltr">{name}</span></code></blockquote>
+<p><strong>السبب:</strong> أحلت إلى مقطع (<code><span dir="ltr">-&gt;</span> اسم</code>) لكن هذا المقطع غير موجود في الملف.</p>
 <p><strong>مثال الخطأ:</strong></p>
-<pre><code>=== البداية ===
+<pre><code><span dir="ltr">===</span> البداية <span dir="ltr">===</span>
 
--&gt; القصر</code></pre>
-<p>لا يوجد <code>=== القصر ===</code> في الملف.</p>
+<span dir="ltr">-&gt;</span> القصر</code></pre>
+<p>لا يوجد <code><span dir="ltr">===</span> القصر <span dir="ltr">===</span></code> في الملف.</p>
 <p><strong>الحل:</strong> تأكد أن اسم المقطع مكتوب بشكل مطابق. تذكر أن التشكيل يُنزع تلقائيًا.</p>
 <hr>
 <h3 id="E102-اسم-مقطع-مكرر">E102 — اسم مقطع مكرر</h3>
-<blockquote><strong>الرسالة:</strong> <code>اسم المقطع مكرّر: {name}</code></blockquote>
+<blockquote><strong>الرسالة:</strong> <code>اسم المقطع مكرّر<span dir="ltr">:</span> <span dir="ltr">{name}</span></code></blockquote>
 <p><strong>السبب:</strong> عرّفت مقطعين أو أكثر بنفس الاسم.</p>
 <p><strong>مثال الخطأ:</strong></p>
-<pre><code>=== الغابة ===
-الأشجار كثيفة.
+<pre><code><span dir="ltr">===</span> الغابة <span dir="ltr">===</span>
+الأشجار كثيفة<span dir="ltr">.</span>
 
-=== الغابة ===
-نفس الاسم مرة أخرى.</code></pre>
+<span dir="ltr">===</span> الغابة <span dir="ltr">===</span>
+نفس الاسم مرة أخرى<span dir="ltr">.</span></code></pre>
 <p><strong>الحل:</strong> غيّر اسم أحد المقاطع. كل مقطع يحتاج اسمًا فريدًا.</p>
 <hr>
 <h3 id="E103-ترويسة-مقطع-غير-مغلقة">E103 — ترويسة مقطع غير مغلقة</h3>
-<blockquote><strong>الرسالة:</strong> <code>ترويسة المقطع غير مغلقة؛ أضف === في نهاية السطر.</code></blockquote>
-<p><strong>السبب:</strong> بدأت سطرًا بـ <code>===</code> لكن لم تغلقه بـ <code>===</code>.</p>
+<blockquote><strong>الرسالة:</strong> <code>ترويسة المقطع غير مغلقة؛ أضف <span dir="ltr">===</span> في نهاية السطر<span dir="ltr">.</span></code></blockquote>
+<p><strong>السبب:</strong> بدأت سطرًا بـ <code><span dir="ltr">===</span></code> لكن لم تغلقه بـ <code><span dir="ltr">===</span></code>.</p>
 <p><strong>مثال الخطأ:</strong></p>
-<pre><code>=== البداية</code></pre>
-<p><strong>الحل:</strong> أضف <code>===</code> في نهاية السطر:</p>
-<pre class="lang-qalam"><code>=== البداية ===</code></pre>
+<pre><code><span dir="ltr">===</span> البداية</code></pre>
+<p><strong>الحل:</strong> أضف <code><span dir="ltr">===</span></code> في نهاية السطر:</p>
+<pre class="lang-qalam"><code><span dir="ltr">===</span> البداية <span dir="ltr">===</span></code></pre>
 <hr>
 <h3 id="E104-خيار-خارج-أي-مقطع">E104 — خيار خارج أي مقطع</h3>
-<blockquote><strong>الرسالة:</strong> <code>خيار خارج أيّ مقطع؛ ابدأ مقطعًا بـ === قبل كتابة الخيارات.</code></blockquote>
-<p><strong>السبب:</strong> كتبت <code>*</code> أو <code>+</code> قبل أن تفتح مقطعًا بـ <code>===</code>.</p>
+<blockquote><strong>الرسالة:</strong> <code>خيار خارج أيّ مقطع؛ ابدأ مقطعًا بـ <span dir="ltr">===</span> قبل كتابة الخيارات<span dir="ltr">.</span></code></blockquote>
+<p><strong>السبب:</strong> كتبت <code><span dir="ltr">*</span></code> أو <code><span dir="ltr">+</span></code> قبل أن تفتح مقطعًا بـ <code><span dir="ltr">===</span></code>.</p>
 <p><strong>مثال الخطأ:</strong></p>
-<pre><code>* [افتح الباب]
-  -&gt; الممر</code></pre>
+<pre><code><span dir="ltr">*</span> <span dir="ltr">[</span>افتح الباب<span dir="ltr">]</span>
+  <span dir="ltr">-&gt;</span> الممر</code></pre>
 <p><strong>الحل:</strong> افتح مقطعًا أولاً:</p>
-<pre class="lang-qalam"><code>=== البداية ===
+<pre class="lang-qalam"><code><span dir="ltr">===</span> البداية <span dir="ltr">===</span>
 
-* [افتح الباب]
-  -&gt; تابع</code></pre>
+<span dir="ltr">*</span> <span dir="ltr">[</span>افتح الباب<span dir="ltr">]</span>
+  <span dir="ltr">-&gt;</span> تابع</code></pre>
 <hr>
 <h3 id="E105-شرط-غير-مكتمل">E105 — شرط غير مكتمل</h3>
-<blockquote><strong>الرسالة:</strong> <code>شرط غير مكتمل؛ القوس { لم يُغلق.</code></blockquote>
-<p><strong>السبب:</strong> فتحت <code>{</code> لكن لم تغلقه بـ <code>}</code>.</p>
+<blockquote><strong>الرسالة:</strong> <code>شرط غير مكتمل؛ القوس <span dir="ltr">{</span> لم يُغلق<span dir="ltr">.</span></code></blockquote>
+<p><strong>السبب:</strong> فتحت <code><span dir="ltr">{</span></code> لكن لم تغلقه بـ <code><span dir="ltr">}</span></code>.</p>
 <p><strong>مثال الخطأ:</strong></p>
-<pre><code>{نقاط &gt; ٥: أحسنت!</code></pre>
-<p><strong>الحل:</strong> أضف <code>}</code> في نهاية الشرط:</p>
-<pre class="lang-qalam"><code>{نقاط &gt; ٥: أحسنت!}</code></pre>
+<pre><code><span dir="ltr">{</span>نقاط <span dir="ltr">&gt;</span> ٥<span dir="ltr">:</span> أحسنت<span dir="ltr">!</span></code></pre>
+<p><strong>الحل:</strong> أضف <code><span dir="ltr">}</span></code> في نهاية الشرط:</p>
+<pre class="lang-qalam"><code><span dir="ltr">{</span>نقاط <span dir="ltr">&gt;</span> ٥<span dir="ltr">:</span> أحسنت<span dir="ltr">!}</span></code></pre>
+<hr>
+<h3 id="E106-لا-توجد-صورة-بهذا-الاسم">E106 — لا توجد صورة بهذا الاسم</h3>
+<blockquote><strong>الرسالة:</strong> <code>لا توجد صورة بهذا الاسم<span dir="ltr">:</span> <span dir="ltr">{name}</span></code></blockquote>
+<p><strong>السبب:</strong> كتبتَ <code>صورة<span dir="ltr">:</span> الاسم</code> داخل مقطع، لكنّك لم تُصرّح عن صورة بهذا الاسم في أعلى الملف.</p>
+<p><strong>مثال الخطأ:</strong></p>
+<pre><code><span dir="ltr">===</span> البداية <span dir="ltr">===</span>
+
+صورة<span dir="ltr">:</span> بوابة<span dir="ltr">_</span>المدينة
+
+وقفتِ أمام البوابة<span dir="ltr">.</span></code></pre>
+<p><strong>الحل:</strong> صرّح عن الصورة قبل المقاطع، بالاسم نفسه:</p>
+<pre class="lang-qalam"><code>صورة بوابة<span dir="ltr">_</span>المدينة <span dir="ltr">=</span> <span dir="ltr">&quot;</span>بوابة حجرية قديمة عند غروب الشمس<span dir="ltr">&quot;</span>
+
+<span dir="ltr">===</span> البداية <span dir="ltr">===</span>
+
+صورة<span dir="ltr">:</span> بوابة<span dir="ltr">_</span>المدينة
+
+وقفتِ أمام البوابة<span dir="ltr">.</span></code></pre>
+<hr>
+<h3 id="E107-اسم-الصورة-مكر-ر">E107 — اسم الصورة مكرّر</h3>
+<blockquote><strong>الرسالة:</strong> <code>اسم الصورة مكرّر<span dir="ltr">:</span> <span dir="ltr">{name}</span></code></blockquote>
+<p><strong>السبب:</strong> صرّحتَ عن صورتين بالاسم نفسه. الاسم هو ما يربط الوصف بالمشهد، فلا يصحّ أن يشير إلى شيئين.</p>
+<p><strong>مثال الخطأ:</strong></p>
+<pre><code>صورة خريطة <span dir="ltr">=</span> <span dir="ltr">&quot;</span>خريطة صفراء قديمة<span dir="ltr">&quot;</span>
+صورة خريطة <span dir="ltr">=</span> <span dir="ltr">&quot;</span>خريطة ممزّقة الأطراف<span dir="ltr">&quot;</span></code></pre>
+<p><strong>الحل:</strong> أعطِ كلّ صورة اسمًا خاصًّا بها:</p>
+<pre class="lang-qalam"><code>صورة خريطة <span dir="ltr">=</span> <span dir="ltr">&quot;</span>خريطة صفراء قديمة<span dir="ltr">&quot;</span>
+صورة خريطة<span dir="ltr">_</span>ممزقة <span dir="ltr">=</span> <span dir="ltr">&quot;</span>خريطة ممزّقة الأطراف<span dir="ltr">&quot;</span>
+
+<span dir="ltr">===</span> البداية <span dir="ltr">===</span>
+
+صورة<span dir="ltr">:</span> خريطة
+
+وجدتِ الخريطة على الأرض<span dir="ltr">.</span></code></pre>
+<hr>
+<h3 id="E108-تصريح-الصورة-بلا-وصف">E108 — تصريح الصورة بلا وصف</h3>
+<blockquote><strong>الرسالة:</strong> <code>تصريح الصورة يحتاج وصفًا بين علامتَي اقتباس<span dir="ltr">.</span></code></blockquote>
+<p><strong>السبب:</strong> تصريح الصورة ناقص: ينقصه الاسم أو علامة <code><span dir="ltr">=</span></code> أو الوصف بين علامتَي اقتباس.</p>
+<p><strong>مثال الخطأ:</strong></p>
+<pre><code>صورة بوابة<span dir="ltr">_</span>المدينة <span dir="ltr">=</span></code></pre>
+<p><strong>الحل:</strong> اكتب التصريح كاملًا — اسم، ثمّ <code><span dir="ltr">=</span></code>، ثمّ وصف بين علامتَي اقتباس:</p>
+<pre class="lang-qalam"><code>صورة بوابة<span dir="ltr">_</span>المدينة <span dir="ltr">=</span> <span dir="ltr">&quot;</span>بوابة حجرية قديمة عند غروب الشمس<span dir="ltr">&quot;</span>
+
+<span dir="ltr">===</span> البداية <span dir="ltr">===</span>
+
+صورة<span dir="ltr">:</span> بوابة<span dir="ltr">_</span>المدينة
+
+وقفتِ أمام البوابة<span dir="ltr">.</span></code></pre>
 <hr>
 <h2 id="أخطاء-التجميع-أخطاء-المعنى">أخطاء التجميع — أخطاء المعنى</h2>
 <p>هذه الأخطاء تظهر بعد التحليل. سببها مشكلة في المنطق أو المتغيرات.</p>
 <hr>
 <h3 id="E201-تعبير-غير-مدعوم-في-الإسناد">E201 — تعبير غير مدعوم في الإسناد</h3>
-<blockquote><strong>الرسالة:</strong> <code>تعبير غير مدعوم في الإسناد: {expr}. المدعوم: رقم أو نصّ أو صح/خطأ أو قيمة من قائمة.</code></blockquote>
+<blockquote><strong>الرسالة:</strong> <code>تعبير غير مدعوم في الإسناد<span dir="ltr">:</span> <span dir="ltr">{expr}.</span> المدعوم<span dir="ltr">:</span> رقم أو نصّ أو صح<span dir="ltr">/</span>خطأ أو قيمة من قائمة<span dir="ltr">.</span></code></blockquote>
 <p><strong>السبب:</strong> حاولت إسناد قيمة معقدة إلى متغير.</p>
 <p><strong>مثال الخطأ:</strong></p>
-<pre><code>متغير س = ٠
-~ س = ص + ع</code></pre>
+<pre><code>متغير س <span dir="ltr">=</span> ٠
+<span dir="ltr">~</span> س <span dir="ltr">=</span> ص <span dir="ltr">+</span> ع</code></pre>
 <p><strong>الحل:</strong> استخدم قيمة بسيطة:</p>
-<pre class="lang-qalam"><code>متغير س = ٠
-~ س = ٥</code></pre>
+<pre class="lang-qalam"><code>متغير س <span dir="ltr">=</span> ٠
+<span dir="ltr">~</span> س <span dir="ltr">=</span> ٥</code></pre>
 <hr>
 <h3 id="E202-متغير-غير-معرف">E202 — متغير غير معرف</h3>
-<blockquote><strong>الرسالة:</strong> <code>متغير غير معرّف: {name}. أعلنه بـ متغير قبل استخدامه.</code></blockquote>
+<blockquote><strong>الرسالة:</strong> <code>متغير غير معرّف<span dir="ltr">:</span> <span dir="ltr">{name}.</span> أعلنه بـ متغير قبل استخدامه<span dir="ltr">.</span></code></blockquote>
 <p><strong>السبب:</strong> استخدمت متغيرًا لم تعلن عنه بـ <code>متغير</code>.</p>
 <p><strong>مثال الخطأ:</strong></p>
-<pre><code>=== البداية ===
+<pre><code><span dir="ltr">===</span> البداية <span dir="ltr">===</span>
 
-لديك {نقاط} نقطة.</code></pre>
+لديك <span dir="ltr">{</span>نقاط<span dir="ltr">}</span> نقطة<span dir="ltr">.</span></code></pre>
 <p><strong>الحل:</strong> أضف تعريف المتغير قبل المقاطع:</p>
-<pre class="lang-qalam"><code>متغير نقاط = ٠
+<pre class="lang-qalam"><code>متغير نقاط <span dir="ltr">=</span> ٠
 
-=== البداية ===
+<span dir="ltr">===</span> البداية <span dir="ltr">===</span>
 
-لديك {نقاط} نقطة.</code></pre>
+لديك <span dir="ltr">{</span>نقاط<span dir="ltr">}</span> نقطة<span dir="ltr">.</span></code></pre>
 <hr>
 <h3 id="E203-نوع-غير-متطابق">E203 — نوع غير متطابق</h3>
-<blockquote><strong>الرسالة:</strong> <code>نوع غير متطابق: المتغير {name} نوعه {expected}، والقيمة المسندة {got}.</code></blockquote>
+<blockquote><strong>الرسالة:</strong> <code>نوع غير متطابق<span dir="ltr">:</span> المتغير <span dir="ltr">{name}</span> نوعه <span dir="ltr">{expected}</span>، والقيمة المسندة <span dir="ltr">{got}.</span></code></blockquote>
 <p><strong>السبب:</strong> حاولت إسناد قيمة من نوع مختلف عن النوع الذي عرّفت به المتغير.</p>
 <p><strong>مثال الخطأ:</strong></p>
-<pre><code>متغير نقاط = ٠
-~ نقاط = &quot;كثير&quot;</code></pre>
+<pre><code>متغير نقاط <span dir="ltr">=</span> ٠
+<span dir="ltr">~</span> نقاط <span dir="ltr">=</span> <span dir="ltr">&quot;</span>كثير<span dir="ltr">&quot;</span></code></pre>
 <p><strong>الحل:</strong> أسند قيمة من نفس النوع:</p>
-<pre class="lang-qalam"><code>متغير نقاط = ٠
-~ نقاط = ١٠</code></pre>
+<pre class="lang-qalam"><code>متغير نقاط <span dir="ltr">=</span> ٠
+<span dir="ltr">~</span> نقاط <span dir="ltr">=</span> ١٠</code></pre>
 <hr>
 <h2 id="ملخص-سريع">ملخص سريع</h2>
 <table><thead><tr><th>الرمز</th><th>المشكلة</th><th>أين تبحث</th></tr></thead><tbody>
-<tr><td>E101</td><td>مقطع غير موجود</td><td>تأكد من كتابة <code>=== الاسم ===</code></td></tr>
+<tr><td>E101</td><td>مقطع غير موجود</td><td>تأكد من كتابة <code><span dir="ltr">===</span> الاسم <span dir="ltr">===</span></code></td></tr>
 <tr><td>E102</td><td>اسم مقطع مكرر</td><td>تأكد من فرادة أسماء المقاطع</td></tr>
-<tr><td>E103</td><td>ترويسة غير مغلقة</td><td>أضف <code>===</code> في نهاية السطر</td></tr>
-<tr><td>E104</td><td>خيار خارج مقطع</td><td>افتح مقطعًا بـ <code>===</code> أولاً</td></tr>
-<tr><td>E105</td><td>قوس غير مغلق</td><td>أضف <code>}</code> لإغلاق الشرط</td></tr>
+<tr><td>E103</td><td>ترويسة غير مغلقة</td><td>أضف <code><span dir="ltr">===</span></code> في نهاية السطر</td></tr>
+<tr><td>E104</td><td>خيار خارج مقطع</td><td>افتح مقطعًا بـ <code><span dir="ltr">===</span></code> أولاً</td></tr>
+<tr><td>E105</td><td>قوس غير مغلق</td><td>أضف <code><span dir="ltr">}</span></code> لإغلاق الشرط</td></tr>
+<tr><td>E106</td><td>لا توجد صورة بهذا الاسم</td><td>صرّح عنها بـ <code>صورة الاسم <span dir="ltr">=</span> <span dir="ltr">&quot;</span>وصف<span dir="ltr">&quot;</span></code></td></tr>
+<tr><td>E107</td><td>اسم الصورة مكرّر</td><td>أعطِ كلّ صورة اسمًا خاصًّا</td></tr>
+<tr><td>E108</td><td>تصريح صورة ناقص</td><td>أضف الوصف بين علامتَي اقتباس</td></tr>
 <tr><td>E201</td><td>تعبير غير مدعوم</td><td>استخدم قيمة بسيطة</td></tr>
 <tr><td>E202</td><td>متغير غير معرف</td><td>أعلن بـ <code>متغير</code> أولاً</td></tr>
 <tr><td>E203</td><td>نوع غير متطابق</td><td>أسند قيمة من نفس النوع</td></tr>

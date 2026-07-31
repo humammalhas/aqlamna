@@ -13,7 +13,7 @@
     "build:site": "npm run build:site -w @aqlamna/editor && node scripts/build-site.mjs && node scripts/build-docs.mjs",
     "test:site": "npm run build:site && playwright test --config site/playwright.config.ts",
     "typecheck": "npm run typecheck --workspaces --if-present",
-    "test": "npm run typecheck && npm run lint:html && npm run lint:colors && npm run test --workspaces --if-present",
+    "test": "npm run typecheck && npm run lint:html && npm run lint:colors && npm run test --workspaces --if-present && npm run test:site",
     "lint:html": "node scripts/lint-html.mjs",
     "build:all": "node scripts/build-all.mjs",
     "build:docs": "node scripts/build-docs.mjs",
