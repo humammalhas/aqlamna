@@ -4,7 +4,7 @@
 
 import { describe, it, expect, beforeAll } from "vitest";
 import { execSync } from "node:child_process";
-import { readFileSync, unlinkSync } from "node:fs";
+import { readFileSync, unlinkSync, statSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -150,6 +150,37 @@ describe("exportStandalone", () => {
     const parsed = JSON.parse(jsonMatch![1]!.trim());
     expect(parsed.title).toBe("الرحيق");
     expect(parsed.start).toBe("البداية");
+  });
+
+  it("DETERMINISM: exporting the same source twice is byte-identical", () => {
+    // The compiler used to stamp `new Date().toISOString()` into
+    // metadata.created/modified, so every export of an unchanged story
+    // differed from the last one. `npm run build:all` left three committed
+    // story HTMLs dirty with a timestamp-only diff on EVERY run, which makes
+    // "confirm every path in `git status` is one you deliberately changed"
+    // impossible to follow — and that rule exists because a commit once
+    // silently reverted six of the reviewer's files.
+    const run = () => {
+      execSync(`node scripts/cli.mjs "${FIXTURE_QALAM}" -o "${OUT_HTML}"`, {
+        cwd: PKG_DIR,
+        stdio: "pipe",
+      });
+      return readFileSync(OUT_HTML, "utf-8");
+    };
+
+    const first = run();
+    const second = run();
+
+    expect(second.length, `${first.length} bytes then ${second.length}`).toBe(first.length);
+    expect(second).toBe(first);
+
+    // And the stamp is the SOURCE's, not the clock's — a fresh wall-clock
+    // value would also be equal to itself if the two runs landed in the same
+    // millisecond, which is exactly how this bug would hide.
+    const meta = extractStoryJson(first).metadata as { created: string; modified: string };
+    const sourceMtime = statSync(FIXTURE_QALAM).mtime.toISOString();
+    expect(meta.created).toBe(sourceMtime);
+    expect(meta.modified).toBe(sourceMtime);
   });
 
   it("embed contains no type=module scripts", () => {

@@ -121,7 +121,30 @@ function countWords(content: ContentNode[]): number {
 
 // ---- main compile entry point ----------------------------------------------
 
-export function compileStory(ast: StoryAST, _filename: string): Record<string, unknown> {
+export interface CompileOptions {
+  /**
+   * ISO-8601 string written into `metadata.created` / `metadata.modified`.
+   *
+   * Omitted, the compiler stamps the wall clock — right for the editor, where
+   * a story really is being modified right now. Wrong for a build: the CLI
+   * exporter re-compiles the same three `.qalam` sources on every
+   * `npm run build:all`, so the wall clock made three shipped artifacts differ
+   * by a timestamp and nothing else, every single run. A working tree that is
+   * never clean is a working tree nobody reads, and `git status` before
+   * committing is the only thing standing between this repo and the commit
+   * that silently reverted six of the reviewer's files.
+   *
+   * The exporter passes the source `.qalam`'s own mtime, so exporting an
+   * unchanged story twice produces byte-identical HTML.
+   */
+  timestamp?: string;
+}
+
+export function compileStory(
+  ast: StoryAST,
+  _filename: string,
+  options: CompileOptions = {},
+): Record<string, unknown> {
   // Build passages object keyed by name (§4)
   const passages: Record<string, unknown> = {};
   let totalWords = 0;
@@ -151,7 +174,7 @@ export function compileStory(ast: StoryAST, _filename: string): Record<string, u
     ast.passages.length +
     ast.passages.reduce((sum, p) => sum + p.subsections.length, 0);
 
-  const now = new Date().toISOString();
+  const now = options.timestamp ?? new Date().toISOString();
 
   const hasImages = Object.keys(ast.images).length > 0;
 

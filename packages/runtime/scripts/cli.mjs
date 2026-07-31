@@ -9,7 +9,7 @@
 // .html file. The --theme flag selects the default (light if omitted).
 // ---------------------------------------------------------------------------
 
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync, statSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { buildThemeBlocks } from "../../../scripts/theme-builder.mjs";
@@ -59,9 +59,18 @@ const { compile } = await import(pathToFileURL(coreDist).href);
 
 const source = readFileSync(qalamPath, "utf-8");
 const filename = qalamPath.replace(/^.*[\\/]/, "");
+
+// metadata.created / metadata.modified come from the SOURCE, not the clock.
+// With the wall clock, exporting an unchanged story produced a different file
+// every time, so `npm run build:all` left three story HTMLs dirty with a
+// timestamp-only diff on every run — and "confirm every path in `git status`
+// is one you deliberately changed" cannot survive three files that are always
+// listed. Same input file, same bytes out.
+const sourceTimestamp = statSync(qalamPath).mtime.toISOString();
+
 let storyJson;
 try {
-  storyJson = compile(source, filename);
+  storyJson = compile(source, filename, { timestamp: sourceTimestamp });
 } catch (err) {
   console.error("[export] Compilation failed: " + (err?.message ?? err));
   process.exit(1);
