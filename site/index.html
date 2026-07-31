@@ -23,19 +23,21 @@
 .demo-heading{font-size:1.125rem;font-weight:700;margin-block-end:.75rem;text-align:center}
 .demo-label{font-size:.875rem;margin-block-end:.75rem;text-align:center}
 .demo-frame{inline-size:100%;block-size:520px;border-radius:8px;overflow:hidden}
-@media(max-inline-size:480px){.demo-frame{block-size:480px}}
+@media(max-width:40rem){.demo-frame{block-size:70dvh;min-block-size:380px}}
 .cta-wrap{text-align:center;margin-block:2rem}
 .cta-button{display:inline-block;font-size:1.125rem;font-weight:700;padding-inline:2.5rem;padding-block:.875rem;border-radius:8px;text-decoration:none;transition:background .2s;background:var(--aq-accent);color:var(--aq-on-accent)}
 .cta-button:hover{background:var(--aq-accent-hi)}
 .loop-section{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-block:2rem}
-@media(max-inline-size:600px){.loop-section{grid-template-columns:1fr}}
+@media(max-width:40rem){.loop-section{grid-template-columns:1fr}}
 .loop-card{border-radius:8px;overflow:hidden}
 .loop-card h3{font-size:.8125rem;font-weight:700;padding:.625rem .875rem;margin:0}
-.loop-source{padding:.75rem;margin:0;font-size:.8125rem;line-height:1.7;overflow-x:auto;direction:rtl;text-align:start;font-family:"Courier New",monospace;white-space:pre}
+.loop-source{padding:.75rem;margin:0;font-size:.8125rem;line-height:1.7;overflow-x:auto;max-inline-size:100%;direction:rtl;text-align:start;font-family:"Courier New",monospace;white-space:pre-wrap;overflow-wrap:break-word}
 .loop-result{padding:.75rem}
 .loop-prose{font-size:.9375rem;margin-block-end:.75rem;line-height:1.75}
 .loop-choices button{display:block;inline-size:100%;padding:.5rem .75rem;margin-block-end:.375rem;font-size:.875rem;font-family:inherit;border-radius:6px;cursor:default}
-.features{margin-block:3rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:2rem}
+.features{margin-block:3rem;display:grid;grid-template-columns:1fr;gap:2rem}
+@media(min-width:40rem){.features{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:64rem){.features{grid-template-columns:repeat(3,1fr)}}
 .feature h2{font-size:1.25rem;font-weight:700;margin-block-end:.5rem}
 .feature p{font-size:1rem;line-height:1.75}
 .privacy-line{margin-block:3rem 2rem;padding:1.5rem;border-radius:8px;text-align:center}
@@ -48,10 +50,23 @@
 .english-link{text-align:center;margin-block-start:3rem;font-size:.8125rem}
 .prose{max-inline-size:40rem;margin-inline:auto}
 .docs-section{margin-block:2rem;text-align:center}
-.docs-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(8rem,1fr));gap:.75rem;margin-block-start:1rem}
+.docs-grid{display:grid;grid-template-columns:1fr;gap:.75rem;margin-block-start:1rem}
+@media(min-width:40rem){.docs-grid{grid-template-columns:repeat(3,1fr)}}
 .docs-card{padding:1rem;border-radius:8px;text-decoration:none}
 .docs-card h3{font-size:1rem;font-weight:700;margin-block-end:.25rem}
 .docs-card-note{font-size:.75rem;margin:0}
+@media(max-width:40rem){
+ .page{padding-inline:1.125rem;padding-block:1.25rem}
+ .hero{padding-block:2rem 1rem}
+ .hero-title{font-size:1.75rem}
+ .hero-subtitle{font-size:1rem}
+ .hero-logo{max-inline-size:120px}
+ .site-footer nav{gap:.5rem 1rem}
+ .site-footer a,.back-link a,.english-link a,.docs-card{display:inline-flex;align-items:center;min-block-size:44px}
+ .docs-card{display:block;padding-block:1rem}
+ .cta-button{inline-size:100%;min-block-size:48px}
+ .loop-choices button{min-block-size:44px}
+}
   
   </style>
 </head>
@@ -78,20 +93,20 @@
     <section class="loop-section">
       <div class="loop-card">
         <h3>تكتب هذا</h3>
-        <pre class="loop-source">=== الدكّان ===
+        <pre class="loop-source"><span dir="ltr">===</span> الدكّان <span dir="ltr">===</span>
 
-رفوف الخشب تصطفّ حتى السقف، وفي كلّ جرّة رائحةٌ تنتظر. المعلّم سليم يجلس وراء ميزانٍ نحاسيّ، وأمامه ورقة صفراء لا شيء عليها.
+رفوف الخشب تصطفّ حتى السقف، وفي كلّ جرّة رائحةٌ تنتظر<span dir="ltr">.</span> المعلّم سليم يجلس وراء ميزانٍ نحاسيّ، وأمامه ورقة صفراء لا شيء عليها<span dir="ltr">.</span>
 
-&quot;وصفة جدّتي ضاعت،&quot; قال دون أن يرفع عينيه. &quot;أعرف أنّ فيها أربعة أشياء. أذكر ثلاثة، والرابع يهرب منّي كلّما اقتربتُ.&quot;
+<span dir="ltr">&quot;</span>وصفة جدّتي ضاعت،<span dir="ltr">&quot;</span> قال دون أن يرفع عينيه<span dir="ltr">.</span> <span dir="ltr">&quot;</span>أعرف أنّ فيها أربعة أشياء<span dir="ltr">.</span> أذكر ثلاثة، والرابع يهرب منّي كلّما اقتربتُ<span dir="ltr">.&quot;</span>
 
-* [اسأليه عن الثلاثة]
-  -&gt; الجرار
+<span dir="ltr">*</span> <span dir="ltr">[</span>اسأليه عن الثلاثة<span dir="ltr">]</span>
+  <span dir="ltr">-&gt;</span> الجرار
 
-* [تأمّلي الدكّان أولًا]
-  مررتِ بأصابعكِ على حرف الرفّ فتركت الغبار خطًّا رقيقًا. في الزاوية العليا جرّةٌ وحدها، لا ورقة عليها ولا اسم.
-  ~ الثقة = الثقة + 1
-  &quot;عينكِ حادّة،&quot; قال. &quot;لكن ابدئي من الأسفل.&quot;
-  -&gt; الجرار</pre>
+<span dir="ltr">*</span> <span dir="ltr">[</span>تأمّلي الدكّان أولًا<span dir="ltr">]</span>
+  مررتِ بأصابعكِ على حرف الرفّ فتركت الغبار خطًّا رقيقًا<span dir="ltr">.</span> في الزاوية العليا جرّةٌ وحدها، لا ورقة عليها ولا اسم<span dir="ltr">.</span>
+  <span dir="ltr">~</span> الثقة <span dir="ltr">=</span> الثقة <span dir="ltr">+</span> <span dir="ltr">1</span>
+  <span dir="ltr">&quot;</span>عينكِ حادّة،<span dir="ltr">&quot;</span> قال<span dir="ltr">.</span> <span dir="ltr">&quot;</span>لكن ابدئي من الأسفل<span dir="ltr">.&quot;</span>
+  <span dir="ltr">-&gt;</span> الجرار</pre>
       </div>
       <div class="loop-card">
         <h3>يصير هذا</h3>

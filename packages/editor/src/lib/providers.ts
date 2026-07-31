@@ -40,7 +40,11 @@ export interface ProviderConfig {
   keyAcquisitionUrl: string;
   pricingInfo: string;
   pricingInfoAr: string;
-  /** Free to use at all, in some form — drives the "مجاني" badge. */
+  /**
+   * Historic flag. It used to drive a "مجاني" badge, which broke the
+   * no-prices rule — prices change and UI text does not. Nothing renders it
+   * now; `isLocal` is what the interface actually shows.
+   */
   hasFreeTier: boolean;
   browserCors: BrowserCors;
   /** Shown when browserCors is not "ok" — explain the limitation in Arabic. */
@@ -282,16 +286,16 @@ export const OLLAMA: ProviderConfig = {
   models: ["llama3.2", "llama3.1", "mistral", "gemma2", "qwen2.5", "phi3"],
   defaultModel: "llama3.2",
   keyAcquisitionUrl: "https://ollama.com/download",
-  pricingInfo: "Free — runs on your computer",
-  pricingInfoAr: "مجاني — يعمل على جهازك",
+  pricingInfo: "Runs on your own computer",
+  pricingInfoAr: "يعمل على جهازك",
   hasFreeTier: true,
   browserCors: "local",
   corsNoteAr:
     "للسماح للمتصفح بالاتصال، شغّل أولاما مع OLLAMA_ORIGINS=* — مثلاً: OLLAMA_ORIGINS=* ollama serve",
   instructionsEn:
-    "Install Ollama from ollama.com/download.\nPull a model: ollama pull llama3.2\nStart it so the browser is allowed to connect:\n  OLLAMA_ORIGINS=* ollama serve\nNo API key needed — leave the key field empty.\nCompletely free and completely private: nothing leaves your computer.",
+    "Install Ollama from ollama.com/download.\nPull a model: ollama pull llama3.2\nStart it so the browser is allowed to connect:\n  OLLAMA_ORIGINS=* ollama serve\nNo API key needed — leave the key field empty.\nNothing leaves your computer.",
   instructionsAr:
-    "ثبّت أولاما من ollama.com/download.\nحمّل نموذجاً: ollama pull llama3.2\nشغّله بصيغة تسمح للمتصفح بالاتصال:\n  OLLAMA_ORIGINS=* ollama serve\nلا حاجة لمفتاح API — اترك حقل المفتاح فارغاً.\nمجاني تماماً وخاصّ تماماً: لا يخرج شيء من جهازك.",
+    "ثبّت أولاما من ollama.com/download.\nحمّل نموذجاً: ollama pull llama3.2\nشغّله بصيغة تسمح للمتصفح بالاتصال:\n  OLLAMA_ORIGINS=* ollama serve\nلا حاجة لمفتاح API — اترك حقل المفتاح فارغاً.\nلا يخرج شيء من جهازك.",
   supportsImages: false,
   imageModel: null,
 };
@@ -308,8 +312,8 @@ export const LM_STUDIO: ProviderConfig = {
   models: ["local-model"],
   defaultModel: "local-model",
   keyAcquisitionUrl: "https://lmstudio.ai",
-  pricingInfo: "Free — runs on your computer",
-  pricingInfoAr: "مجاني — يعمل على جهازك",
+  pricingInfo: "Runs on your own computer",
+  pricingInfoAr: "يعمل على جهازك",
   hasFreeTier: true,
   browserCors: "local",
   corsNoteAr: "فعّل CORS في إعدادات الخادم المحلي في LM Studio.",

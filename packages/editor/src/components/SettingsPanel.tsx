@@ -347,6 +347,15 @@ export default function SettingsPanel({ open, onClose }: SettingsPanelProps) {
           تختاره. لا يُحفَظ في الخادم ولا يُضمَّن في الملفات المصدرّة.
         </div>
 
+        {/* ---- Local providers do not work on the deployed site ---- */}
+        {currentProvider.isLocal && (
+          <div style={warningStyle}>
+            ⚠️ هذا المزوّد يعمل فقط حين تشغّل المحرّر على جهازك. الموقع المنشور
+            يُقدَّم عبر https، والمتصفّح يمنع أيّ اتصال بـ http://localhost من
+            صفحة https — فلن يستجيب هنا مهما كانت الإعدادات.
+          </div>
+        )}
+
         {/* ---- CORS warning ---- */}
         {showCorsWarning && currentProvider.corsNoteAr && (
           <div style={warningStyle}>⚠️ {currentProvider.corsNoteAr}</div>
@@ -354,7 +363,7 @@ export default function SettingsPanel({ open, onClose }: SettingsPanelProps) {
 
         {/* ---- Provider info ---- */}
         <div style={infoBoxStyle}>
-          <InfoRow label="السعر">{currentProvider.pricingInfoAr}</InfoRow>
+          <InfoRow label="التشغيل">{currentProvider.pricingInfoAr}</InfoRow>
           {currentProvider.keyAcquisitionUrl && (
             <InfoRow label="الحصول على مفتاح">
               <a
@@ -488,19 +497,22 @@ function ProviderCard({
       }}
     >
       <span style={{ flex: 1 }}>{provider.nameAr}</span>
-      {provider.hasFreeTier && (
+      {/* This used to be a "مجاني" badge. Prices change, badges do not — and
+          these two providers do not work on the deployed site at all, which is
+          the thing a writer actually needs to know before picking one. */}
+      {provider.isLocal && (
         <span
           style={{
             fontSize: "0.625rem",
             fontWeight: 700,
-            color: selected ? "var(--aq-editor-bg)" : "var(--aq-success)",
-            background: selected ? "rgba(0,0,0,0.1)" : "var(--aq-node-green-bg)",
+            color: selected ? "var(--aq-editor-bg)" : "var(--aq-muted)",
+            background: selected ? "rgba(0,0,0,0.1)" : "var(--aq-surface-hi)",
             paddingBlock: "0.125rem",
             paddingInline: "0.375rem",
             borderRadius: "3px",
           }}
         >
-          مجاني
+          محليّ
         </span>
       )}
     </button>
