@@ -233,6 +233,44 @@ test("قصة جديدة is the way back, from either mode", async ({ page }) => 
   expect(await page.locator("[data-writer-scene]").count()).toBe(1);
 });
 
+test("the example ships its illustration — card, player and export", async ({ page }) => {
+  // The bytes are seeded into IndexedDB from the bundle, because a first-time
+  // visitor has an empty database and a placeholder frame would hide the one
+  // feature the example exists to demonstrate.
+  await prepareProfile(page);
+  await openWriter(page);
+  page.on("dialog", (d) => d.accept());
+  await page.getByRole("button", { name: "افتح مثالًا" }).first().click();
+  await page.waitForSelector("[data-writer-scene] img", { timeout: 20000 });
+
+  // 1. On the scene card.
+  const card = page.locator("[data-writer-scene] img").first();
+  await expect(card).toBeVisible();
+  expect(await card.getAttribute("src")).toContain("data:image/webp;base64,");
+
+  // 2. In the run. The compiled JSON carries declarations only; PlayerPane
+  //    inlines the bytes the way the exporter does.
+  await page.getByRole("button", { name: "شغّل القصة" }).click();
+  await page.waitForSelector(".player-pane .aq-choice-btn", { timeout: 20000 });
+  await expect(page.locator(".player-pane img").first()).toBeVisible();
+
+  // 3. In the standalone file.
+  const [download] = await Promise.all([
+    page.waitForEvent("download", { timeout: 30000 }),
+    page.getByRole("button", { name: "تصدير القصة" }).click(),
+  ]);
+  const stream = await download.createReadStream();
+  const html = await new Promise<string>((resolve, reject) => {
+    let out = "";
+    stream.on("data", (c: { toString(): string }) => { out += c.toString(); });
+    stream.on("end", () => resolve(out));
+    stream.on("error", reject);
+  });
+  expect(html).toContain("data:image/webp;base64,");
+  // Without the picture the same story exports at ~52KB; with it, ~114KB.
+  expect(html.length, `exported ${html.length} bytes`).toBeGreaterThan(90000);
+});
+
 // ---- 6. A story the form genuinely cannot draw -----------------------------
 
 test("a hand-written tunnel is refused with a reason, and TWO ways out", async ({ page }) => {

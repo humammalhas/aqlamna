@@ -7,7 +7,7 @@
 // ---------------------------------------------------------------------------
 
 import { useStore } from "../store.js";
-import { SEED_STORY } from "../generated/seed-story.js";
+import { SEED_STORY, SEED_IMAGES } from "../generated/seed-story.js";
 
 /**
  * Start over — and this is also the way BACK.
@@ -54,5 +54,31 @@ export function openExample(): void {
       return;
     }
   }
-  setSource(SEED_STORY);
+  // Seed the pictures BEFORE the source. The scene card reads IndexedDB when
+  // its image name appears, and nothing re-reads it afterwards — seeding after
+  // `setSource` raced the render and lost, so the card showed a placeholder
+  // while the player showed the picture.
+  void seedExampleImages().then(() => setSource(SEED_STORY));
+}
+
+/**
+ * Put the example's pre-drawn pictures into IndexedDB.
+ *
+ * `putImage` and not `saveImage`: these bytes are already the pipeline's own
+ * output — 768px WebP — and `saveImage` would re-run the canvas downscaler over
+ * them, re-encoding a finished image for nothing.
+ */
+async function seedExampleImages(): Promise<void> {
+  const entries = Object.entries(SEED_IMAGES);
+  if (entries.length === 0) return;
+  try {
+    const { putImage, loadImage, DEFAULT_PROJECT_ID } = await import("./image-db.js");
+    for (const [name, dataUrl] of entries) {
+      // Never overwrite a picture the author drew themselves.
+      if (await loadImage(DEFAULT_PROJECT_ID, name)) continue;
+      await putImage(DEFAULT_PROJECT_ID, name, dataUrl);
+    }
+  } catch {
+    /* private mode, quota, a blocked DB — the story still works without it */
+  }
 }

@@ -22,6 +22,15 @@ export interface StoredImage {
   generatedAt: number;
 }
 
+/**
+ * The editor holds one story, so there is one image namespace — and it must be
+ * spelled the same everywhere. It was not: `export-html.ts` was called with
+ * "default" while the writer stored under "current", so the exporter looked in
+ * a drawer nothing was ever put in. Nothing noticed because, until the صورة row
+ * existed, nothing was ever put in either.
+ */
+export const DEFAULT_PROJECT_ID = "default";
+
 function imageKey(projectId: string, imageName: string): string {
   return `${projectId}:${imageName}`;
 }
@@ -39,6 +48,36 @@ export async function saveImage(
     const tx = db.transaction(STORE_NAME, "readwrite");
     tx.objectStore(STORE_NAME).put(processed, imageKey(projectId, imageName));
     tx.oncomplete = () => resolve(processed);
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+/**
+ * Store an image that is ALREADY in pipeline shape (768px WebP data URL).
+ *
+ * `saveImage` runs the canvas downscaler on its input, which is right for a
+ * fresh PNG from a provider and wrong for bytes this project produced itself:
+ * it would re-encode a finished picture and lose a little of it every time.
+ * Used to seed the worked example, which ships its illustration in the bundle.
+ */
+export async function putImage(
+  projectId: string,
+  imageName: string,
+  dataUrl: string,
+): Promise<void> {
+  const bytes = Math.round((dataUrl.length - dataUrl.indexOf(",") - 1) * 0.75);
+  const record: StoredImage = {
+    dataUrl,
+    width: 0,
+    height: 0,
+    bytes,
+    generatedAt: 0,
+  };
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, "readwrite");
+    tx.objectStore(STORE_NAME).put(record, imageKey(projectId, imageName));
+    tx.oncomplete = () => resolve();
     tx.onerror = () => reject(tx.error);
   });
 }

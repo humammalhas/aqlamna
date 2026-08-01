@@ -19,7 +19,7 @@
 import { useCallback, useEffect, useState } from "react";
 import type { StoryImage } from "../../lib/writer-model.js";
 import { generateImage, type GenStep } from "../../lib/image-gen.js";
-import { loadImage, saveImage, deleteImage, formatBytes } from "../../lib/image-db.js";
+import { loadImage, saveImage, deleteImage, formatBytes, DEFAULT_PROJECT_ID } from "../../lib/image-db.js";
 import { hasImageApiKey } from "../../lib/ai-keys.js";
 import AutoTextarea from "./AutoTextarea.js";
 import {
@@ -31,9 +31,6 @@ import {
   select,
   subCard,
 } from "./writer-ui.js";
-
-/** One project, one IndexedDB namespace. The editor holds a single story. */
-const PROJECT_ID = "current";
 
 const NEW = "__جديد__";
 
@@ -68,7 +65,7 @@ export default function SceneImage({
   useEffect(() => {
     let alive = true;
     if (!value) { setPreview(null); setBytes(null); return; }
-    loadImage(PROJECT_ID, value)
+    loadImage(DEFAULT_PROJECT_ID, value)
       .then((stored) => {
         if (!alive) return;
         setPreview(stored?.dataUrl ?? null);
@@ -89,7 +86,7 @@ export default function SceneImage({
     setStep("translate");
     try {
       const result = await generateImage(description, imageStyle.trim() || null, (s) => setStep(s));
-      const stored = await saveImage(PROJECT_ID, declared.name, result.dataUrl);
+      const stored = await saveImage(DEFAULT_PROJECT_ID, declared.name, result.dataUrl);
       setPreview(stored.dataUrl);
       setBytes(stored.bytes);
     } catch (err) {
@@ -156,7 +153,7 @@ export default function SceneImage({
               <button
                 type="button"
                 onClick={async () => {
-                  await deleteImage(PROJECT_ID, declared.name).catch(() => {});
+                  await deleteImage(DEFAULT_PROJECT_ID, declared.name).catch(() => {});
                   setPreview(null);
                   setBytes(null);
                 }}

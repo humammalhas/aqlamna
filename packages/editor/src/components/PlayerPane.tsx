@@ -7,7 +7,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useStore, type PlayerTheme } from "../store.js";
 import { mount, type StoryJSON } from "@aqlamna/runtime";
-import { loadImage } from "../lib/image-db.js";
+import { loadImage, DEFAULT_PROJECT_ID } from "../lib/image-db.js";
 import { DARK_THEME_CSS, LIGHT_THEME_CSS, BOOK_THEME_CSS } from "../generated/runtime-bundle.js";
 
 const THEME_CSS: Record<string, string> = {
@@ -114,7 +114,7 @@ export default function PlayerPane() {
       const images: Record<string, { alt: string; data?: string }> = {};
       for (const [name, decl] of Object.entries(declared)) {
         try {
-          const stored = await loadImage("current", name);
+          const stored = await loadImage(DEFAULT_PROJECT_ID, name);
           images[name] = stored ? { alt: decl.alt, data: stored.dataUrl } : { alt: decl.alt };
         } catch {
           // A picture that will not load is a placeholder, never a dead player.
