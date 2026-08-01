@@ -29,7 +29,7 @@ import {
   validateWriterState,
 } from "../src/lib/generate-qalam.js";
 import { importWriterState } from "../src/lib/writer-import.js";
-import { applyAIFragment } from "../src/lib/writer-ai.js";
+import { applyAIFragment, sceneContextText } from "../src/lib/writer-ai.js";
 
 // ---- Helpers ---------------------------------------------------------------
 
@@ -670,6 +670,26 @@ describe("applyAIFragment — where an accepted suggestion goes", () => {
     const state = twoScenes();
     const result = applyAIFragment(state, "suggest_choices", "* [اذهب]\n  -> مقطع_لا_وجود_له\n", state.scenes[0]!.id);
     expect(result.ok).toBe(false);
+  });
+
+  it("asks about the scene the answer will land in, not the last one", () => {
+    const state = perfumeState();
+    const middle = state.scenes[3]!; // السوق — neither first nor last
+
+    const context = sceneContextText(state, middle.id);
+    expect(context).toContain("الشمس عمودية والدرج ضيّق.");
+    expect(context).toContain("اقطفي الزهر");
+    // The last scene's prose must NOT be in it — that was the old behaviour,
+    // and it is invisible when wrong: the AI answers about the wrong scene and
+    // the text it returns is perfectly good Arabic.
+    expect(context).not.toContain("كتب المعلّم أسماء المكوّنات");
+    expect(context).not.toContain("رفوف الخشب"); // nor the first scene's
+  });
+
+  it("returns nothing for a scene that is not there, so the caller can fall back", () => {
+    const state = perfumeState();
+    expect(sceneContextText(state, null)).toBe("");
+    expect(sceneContextText(state, "s-does-not-exist")).toBe("");
   });
 
   it("leaves the original state untouched on every path", () => {

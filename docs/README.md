@@ -8,9 +8,13 @@ never programmed.
 
 | Document | Description |
 |----------|------------|
-| [البداية.md](./البداية.md) | Step-by-step tutorial — builds a 3-scene story from nothing. Introduces each symbol one at a time. No jargon, no prior knowledge assumed. |
-| [المرجع.md](./المرجع.md) | Complete `.qalam` language reference. Every keyword, both Arabic and English aliases, with one short working example each. |
-| [الأخطاء.md](./الأخطاء.md) | Error code reference — every E101–E203 with the exact Arabic message, what causes it, and how to fix it. Messages match the compiler output verbatim. |
+| [البداية.md](./البداية.md) | Step-by-step tutorial. Builds a three-scene story in the **visual writer** — cards, fields and dropdowns, no syntax at all. The generated `.qalam` appears once, at the end, under "الوضع المتقدّم". |
+| [المرجع.md](./المرجع.md) | Complete `.qalam` language reference — the advanced mode. Opens with a table mapping every field in the visual writer to what it generates, so the two can be read against each other. |
+| [الأخطاء.md](./الأخطاء.md) | Error code reference — every E101–E203 with the exact Arabic message, what causes it, and how to fix it. Messages match the compiler output verbatim. Opens by saying these are rare in the visual writer, and what it shows instead. |
+
+All three address the reader in the **masculine**, matching the landing page and
+the editor. They were feminine until 1 Aug 2026, so a visitor read `اكتب قصتك`,
+clicked البداية, and got `دليلكِ الأول` — one click, two voices.
 
 ## For Developers
 

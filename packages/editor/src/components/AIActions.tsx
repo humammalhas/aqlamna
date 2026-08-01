@@ -16,7 +16,7 @@ import {
   type AIAction,
   type AIResponse,
 } from "../lib/ai.js";
-import { applyAIFragment } from "../lib/writer-ai.js";
+import { applyAIFragment, sceneContextText } from "../lib/writer-ai.js";
 
 const COLLAPSED_KEY = "aqlamna-ai-collapsed";
 
@@ -67,7 +67,16 @@ export default function AIActions() {
 
       const passageNames = extractPassageNames(source);
       const variableNames = extractVariableNames(source);
-      const contextText = getContextText(source);
+
+      // Ask about the scene the answer will land in. In code mode that is the
+      // last passage, where the cursor is; in the form it is the card the
+      // author last touched, which is rarely the last one.
+      const { writerMode: mode, writerState, writerFocusScene } = useStore.getState();
+      const focused =
+        mode === "visual" && writerState
+          ? sceneContextText(writerState, writerFocusScene)
+          : "";
+      const contextText = focused || getContextText(source);
 
       try {
         const res = await callAI({

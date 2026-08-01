@@ -31,6 +31,32 @@ export type ApplyResult =
   | { ok: true; state: WriterState }
   | { ok: false; reason: string };
 
+/**
+ * The `.qalam` body of one scene, for the AI prompt's "المقطع الحالي".
+ *
+ * `AIActions` used to take the LAST passage of the source for every request,
+ * which was right while there was a cursor and the writer typed at the bottom.
+ * In the form there is no cursor: the answer lands in the scene the author last
+ * touched, so the question has to be about that scene too. Otherwise "أكمل
+ * المقطع" on scene 3 of 11 reads scene 11 and continues the wrong story.
+ *
+ * Returns "" when there is no such scene, and the caller falls back.
+ */
+export function sceneContextText(state: WriterState, sceneId: string | null): string {
+  if (!sceneId) return "";
+  const passage = buildNameMap(state).scene.get(sceneId);
+  if (!passage) return "";
+
+  const source = generateQalam(state);
+  const header = `=== ${passage} ===`;
+  const start = source.indexOf(header);
+  if (start === -1) return "";
+
+  const after = source.slice(start + header.length);
+  const next = after.search(/^=== /m);
+  return (next === -1 ? after : after.slice(0, next)).trim();
+}
+
 /** A passage name the author's own scenes will not have taken. */
 function scratchName(taken: Set<string>): string {
   let name = "مقطع_مؤقت_للذكاء";
