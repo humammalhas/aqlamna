@@ -117,7 +117,14 @@ for (const width of WIDTHS) {
 // ---------------------------------------------------------------------------
 
 test.describe("bidi: ASCII operator runs", () => {
-  for (const { path, label } of PAGES.filter((p) => p.label.startsWith("docs") || p.label === "landing")) {
+  // Docs only. The landing page used to carry two `.qalam` listings — the
+  // تكتب هذا / يصير هذا pair and the قصتك tab — and both are gone: the pair
+  // because it argued from syntax the editor no longer shows anyone, the tab
+  // because it now pictures the visual writer. There is no `<pre>` left on `/`
+  // for `measureArrow` to read, and asserting on one would fail for the reason
+  // "the page is correct". The docs pages still print the language and still
+  // need the isolate.
+  for (const { path, label } of PAGES.filter((p) => p.label.startsWith("docs"))) {
     test(`${label}: the dash of -> is painted LEFT of the >`, async ({ page }) => {
       await page.goto(path, { waitUntil: "networkidle" });
       const arrow = await measureArrow(page);

@@ -5,7 +5,6 @@ import { cpSync, existsSync, mkdirSync, rmSync, readFileSync, writeFileSync } fr
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { transform } from "esbuild";
-import { isolateAscii } from "./bidi-isolate.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dirname, "..");
@@ -114,18 +113,16 @@ for (const icon of JSON.parse(readFileSync(manifestPath, "utf-8")).icons) {
 }
 console.log("✓ manifest icons all resolve");
 
-// 4. Demo blocks — generated from stories/العطر_المفقود.qalam
+// 4. The demo block — generated from stories/العطر_المفقود.qalam
 //
-// Two injections, two marker pairs:
+// ONE injection now: PREVIEW, the box carrying the editor's own three tabs in
+// the editor's own order — قصتك · شغّل · مخطط.
 //
-//   GLANCE  — the hero's compact تكتب هذا / يصير هذا pair. Both halves visible
-//             at once, above the fold. This is the pitch.
-//   PREVIEW — one box carrying the editor's own three tabs in the editor's own
-//             order: قصتك · شغّل · مخطط. This is the proof.
-//
-// The page used to show the story TWICE: the side-by-side pair and then a full
-// iframe of the same story underneath it, so a visitor read the identical
-// opening paragraph twice with nothing saying why.
+// The hero used to carry a second block, a تكتب هذا / يصير هذا pair showing
+// four lines of `.qalam` beside what they produced. It went when the editor
+// stopped opening on code: its whole argument was "here is the syntax, here is
+// the result", and the syntax is no longer what a visitor meets. Showing it
+// above the fold promised a product that no longer exists.
 const qalamSrc = resolve(root, "stories", "العطر_المفقود.qalam");
 if (!existsSync(qalamSrc)) {
   console.error("qalam source not found:", qalamSrc);
@@ -138,18 +135,20 @@ if (!firstPassage) {
   process.exit(1);
 }
 
-const glanceHtml = generateGlanceHtml(firstPassage);
 const map = await generateMap(qalamText);
 const previewHtml = generatePreviewHtml(firstPassage, map);
 
 const indexHtml = resolve(site, "index.html");
 let indexContent = readFileSync(indexHtml, "utf-8");
-indexContent = injectBlock(indexContent, "GLANCE", glanceHtml);
+if (/<!-- GLANCE_START/.test(indexContent)) {
+  console.error("site/index.html still carries GLANCE markers — the pair was removed");
+  process.exit(1);
+}
 indexContent = injectBlock(indexContent, "PREVIEW", previewHtml);
 writeFileSync(indexHtml, indexContent, "utf-8");
 console.log(
-  `✓ site/index.html (glance + preview injected; map: ${map.cardCount} cards, ` +
-    `${map.arrowCount} arrows, ${map.svgBytes} bytes of inline SVG)`,
+  `✓ site/index.html (preview injected; ${firstPassage.choices.length} choice cards, ` +
+    `map: ${map.cardCount} cards, ${map.arrowCount} arrows, ${map.svgBytes} bytes of inline SVG)`,
 );
 
 console.log("\nSite is ready at site/");
@@ -173,80 +172,132 @@ function injectBlock(html, name, body) {
   );
 }
 
-// ── The first passage, split into source / prose / choices ──────────────
+// ── The first passage, taken apart the way the visual writer sees it ────
+//
+// Scene name, prose paragraphs, and one entry per choice carrying everything
+// the writer's choice card has a field for: the label, where it goes, the prose
+// shown after the click, and any counter it moves. Read out of the `.qalam`
+// rather than hand-written, so the picture on the landing page cannot describe
+// a story the repo does not contain.
 
 function parseFirstPassage(src) {
-  const passageRe = /^(=== .+ ===[^\n]*)\n((?:(?!^=== ).*\n?)*)/m;
+  const passageRe = /^=== (.+?) ===[^\n]*\n((?:(?!^=== ).*\n?)*)/m;
   const m = passageRe.exec(src);
   if (!m) return null;
 
-  const header = m[1].replace(/#[^\n]*/, "").trim(); // strip tags
+  const name = m[1].trim();
   const body = m[2].trim();
 
-  const sourceLines = [];
   const proseLines = [];
-  const choiceLabels = [];
-  let beforeChoices = true;
+  const choices = [];
+  let current = null;
 
   for (const line of body.split("\n")) {
     const trimmed = line.trim();
-    if (!trimmed) {
-      sourceLines.push("");
+    if (!trimmed) continue;
+
+    const choiceStart = trimmed.match(/^[*+]+\s*(?:\{[^}]*\}\s*)?\[([^\]]+)\]\s*(.*)$/);
+    if (choiceStart) {
+      current = { label: choiceStart[1], after: [], divert: null, counter: null };
+      if (choiceStart[2]) current.after.push(choiceStart[2]);
+      choices.push(current);
       continue;
     }
-    if (trimmed.startsWith("* [")) {
-      beforeChoices = false;
-      choiceLabels.push(trimmed.match(/\* \[([^\]]+)\]/)?.[1] ?? trimmed);
-      sourceLines.push(trimmed);
-    } else if (!beforeChoices) {
-      sourceLines.push(line); // inside a choice body — source only
-    } else {
-      sourceLines.push(trimmed);
-      proseLines.push(trimmed);
-    }
+
+    if (!current) { proseLines.push(trimmed); continue; }
+
+    const divert = trimmed.match(/^->\s*(.+)$/);
+    if (divert) { current.divert = divert[1].trim(); continue; }
+
+    // `~ الثقة = الثقة + 1` is "يزيد العدّاد" in the form.
+    const add = trimmed.match(/^~\s*(\S+)\s*=\s*\1\s*\+\s*(\d+)\s*$/);
+    if (add) { current.counter = { name: add[1], amount: Number(add[2]) }; continue; }
+
+    if (trimmed.startsWith("~")) continue; // any other assignment: no field to show
+    current.after.push(trimmed);
   }
 
-  return { header, sourceLines, proseLines, choiceLabels };
-}
-
-/** ASCII runs get an LTR isolate so `->` does not paint as `<-`. */
-function sourcePre(className, lines) {
-  return `<pre class="${className}">${isolateAscii(escHtml(lines.join("\n")))}</pre>`;
-}
-
-// ── GLANCE — the hero pair ──────────────────────────────────────────────
-
-/**
- * Four lines of .qalam beside what they produce. Deliberately shorter than the
- * قصتك tab below: the pair only works while both halves are on screen at once,
- * and the full first passage does not fit above the fold on a phone.
- */
-function generateGlanceHtml({ header, proseLines, choiceLabels }) {
-  const firstSentence = (proseLines[0] ?? "").split(/(?<=\.)\s+/)[0] ?? "";
-  const src = [header, "", firstSentence, "", ...choiceLabels.map((l) => `* [${l}]`)];
-
-  const buttons = choiceLabels
-    .map((l) => `          <button type="button" disabled>${escHtml(l)}</button>`)
-    .join("\n");
-
-  return `    <section class="glance" aria-label="مثال قصير">
-      <div class="glance-card">
-        <h2>تكتب هذا</h2>
-        ${sourcePre("glance-source", src)}
-      </div>
-      <div class="glance-card">
-        <h2>يصير هذا</h2>
-        <div class="glance-result">
-          <p>${escHtml(firstSentence)}</p>
-${buttons}
-        </div>
-      </div>
-    </section>`;
+  if (choices.length === 0) return null;
+  return { name, proseLines, choices };
 }
 
 // ── PREVIEW — the three tabs ────────────────────────────────────────────
 
-function generatePreviewHtml({ header, sourceLines }, map) {
+/**
+ * The قصتك panel: a picture of the visual writer, not a code listing.
+ *
+ * Nothing here is a real control. A `<button>` or a `<select>` that does
+ * nothing is a lie a visitor discovers by clicking, and it would also drag the
+ * page into the 44px touch-target rule that `site/tests/responsive.spec.ts`
+ * measures — for elements that are not targets at all. These are spans styled
+ * to look like the fields they depict, and they read in order as plain text.
+ */
+function generateWriterMock({ name, proseLines, choices }) {
+  const prose = proseLines
+    .map((p) => `            <p>${escHtml(p)}</p>`)
+    .join("\n");
+
+  const choiceCards = choices
+    .map((c, i) => {
+      const rows = [
+        `            <div class="writer-row">
+              <span class="writer-tag">ينقلك إلى</span>
+              <span class="writer-pick">${escHtml(c.divert ?? "—")}</span>
+            </div>`,
+      ];
+      if (c.after.length > 0) {
+        rows.push(`            <span class="writer-tag">نصّ بعد الاختيار</span>
+            <div class="writer-box writer-after">${c.after.map((l) => `<p>${escHtml(l)}</p>`).join("")}</div>`);
+      }
+      if (c.counter) {
+        rows.push(`            <div class="writer-row">
+              <span class="writer-tag">عند الاختيار</span>
+              <span class="writer-pick">يزيد العدّاد: ${escHtml(c.counter.name)}</span>
+            </div>`);
+      }
+      return `          <div class="writer-choice">
+            <div class="writer-row">
+              <span class="writer-tag">خيار ${arabicNumber(i + 1)}</span>
+              <span class="writer-box writer-grow">${escHtml(c.label)}</span>
+            </div>
+${rows.join("\n")}
+          </div>`;
+    })
+    .join("\n");
+
+  return `        <div class="writer">
+          <div class="writer-scene">
+            <div class="writer-row">
+              <span class="writer-grip" aria-hidden="true">⣿</span>
+              <span class="writer-box writer-grow writer-name">${escHtml(name)}</span>
+              <span class="writer-start">يبدأ هنا</span>
+            </div>
+            <div class="writer-box writer-prose">
+${prose}
+            </div>
+${choiceCards}
+            <div class="writer-row">
+              <span class="writer-add">＋ أضف خيارًا</span>
+              <span class="writer-add">＋ أضف نصًّا مشروطًا</span>
+            </div>
+          </div>
+        </div>`;
+}
+
+/**
+ * `2` → `٢`, matching the editor's own scene numbering.
+ *
+ * The digit table is inside the function on purpose: `generatePreviewHtml` runs
+ * at the top of this file, long before a `const` declared down here would be
+ * initialised, and a temporal-dead-zone ReferenceError from a build script is a
+ * confusing way to learn about declaration order.
+ */
+function arabicNumber(n) {
+  const digits = ["٠", "١", "٢", "٣", "٤", "٥", "٦", "٧", "٨", "٩"];
+  return String(n).split("").map((d) => digits[Number(d)] ?? d).join("");
+}
+
+function generatePreviewHtml(firstPassage, map) {
   return `    <section class="preview" aria-labelledby="preview-title">
       <h2 class="preview-title" id="preview-title">القصة نفسها من ثلاث زوايا</h2>
 
@@ -260,8 +311,8 @@ function generatePreviewHtml({ header, sourceLines }, map) {
       </div>
 
       <div class="panel" role="tabpanel" id="panel-source" aria-labelledby="tab-source" tabindex="0">
-        <p class="panel-note">هذا ما تكتبه — أوّل مقطع من قصة "العطر المفقود".</p>
-        ${sourcePre("panel-source-code", [header, "", ...sourceLines])}
+        <p class="panel-note">هكذا تكتب المقطع الأول من "العطر المفقود": حقول وبطاقات، دون رموز.</p>
+${generateWriterMock(firstPassage)}
       </div>
 
       <div class="panel" role="tabpanel" id="panel-play" aria-labelledby="tab-play" tabindex="0" hidden>

@@ -181,6 +181,68 @@ test.describe("Preview tabs", () => {
     expect(await page.evaluate(() => document.activeElement!.textContent!.trim())).toBe("مخطط");
   });
 
+  // -------------------------------------------------------------------------
+  // The landing page stopped arguing from syntax.
+  //
+  // It used to make that argument twice: a تكتب هذا / يصير هذا pair in the hero
+  // showing four lines of `.qalam` beside their output, and a قصتك tab printing
+  // the whole first passage as code. Both described an editor that no longer
+  // exists — the first thing a visitor now meets at /editor is a form. A
+  // landing page promising `===` and `->` sets up an expectation the product
+  // spends its whole first screen contradicting.
+  // -------------------------------------------------------------------------
+
+  test("no .qalam syntax is visible anywhere on the page", async ({ page }) => {
+    await page.goto("/");
+
+    // Every panel, not just the selected one: a hidden tab is one click away.
+    await page.evaluate(() => {
+      document.querySelectorAll<HTMLElement>('[role="tabpanel"]').forEach((p) => {
+        p.hidden = false;
+      });
+    });
+    const text = await page.locator("main").innerText();
+
+    for (const token of ["===", "->", "* [", "+ [", "متغير ", "تكتب هذا", "يصير هذا"]) {
+      expect(text, `"${token}" is still on the landing page`).not.toContain(token);
+    }
+    // `{الشرط: …}` — the syntax nobody could discover — and the assignment mark.
+    expect(text).not.toMatch(/\{[^}]*:/);
+    expect(text).not.toMatch(/(^|\n)\s*~/);
+
+    // And no code listing is left to hold any of it.
+    expect(await page.locator("main pre").count()).toBe(0);
+    expect(await page.locator(".glance").count()).toBe(0);
+  });
+
+  test("the قصتك panel pictures the visual writer: a scene, a choice, a destination", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    const panel = page.locator("#panel-source");
+    await expect(panel).toBeVisible();
+
+    // The scene card, named after the story's real first passage.
+    await expect(panel.locator(".writer-scene")).toHaveCount(1);
+    await expect(panel.locator(".writer-name")).toHaveText("الدكّان");
+    await expect(panel.locator(".writer-start")).toHaveText("يبدأ هنا");
+
+    // One card per choice in that passage, each with somewhere to go.
+    const choices = panel.locator(".writer-choice");
+    await expect(choices).toHaveCount(2);
+    await expect(choices.nth(0)).toContainText("اسأليه عن الثلاثة");
+    await expect(choices.nth(1)).toContainText("تأمّلي الدكّان أولًا");
+    for (const i of [0, 1]) {
+      await expect(choices.nth(i)).toContainText("ينقلك إلى");
+      await expect(choices.nth(i).locator(".writer-pick").first()).toHaveText("الجرار");
+    }
+    // The second choice moves a counter, which is a field, not an operator.
+    await expect(choices.nth(1)).toContainText("يزيد العدّاد: الثقة");
+
+    // Nothing in the picture is a live control that would do nothing if pressed.
+    expect(await panel.locator("button, select, input, textarea, a").count()).toBe(0);
+  });
+
   test("the focused tab has a visible focus ring", async ({ page }) => {
     await page.goto("/");
     // Keyboard focus, not a click — :focus-visible does not match a mouse press.

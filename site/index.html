@@ -35,17 +35,40 @@
 .cta-button{display:inline-block;font-size:1.125rem;font-weight:700;padding-inline:2.5rem;padding-block:.875rem;border-radius:8px;text-decoration:none;transition:background .2s;background:var(--aq-accent);color:var(--aq-on-accent)}
 .cta-button:hover{background:var(--aq-accent-hi)}
 
-/* ---- The glance: تكتب هذا / يصير هذا, in the hero ----
-   The pair is the pitch and it only works while both halves are on screen at
-   once, so it is short and it is high. The tabbed box below is the proof. */
-.glance{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-block:1.5rem}
-@media(max-width:40rem){.glance{grid-template-columns:1fr}}
-.glance-card{border:1px solid var(--aq-border);border-radius:8px;overflow:hidden;background:var(--aq-surface)}
-.glance-card h2{font-size:.8125rem;font-weight:700;color:var(--aq-muted);background:var(--aq-highlight);margin:0;padding:.5rem .75rem;border:none;border-block-end:1px solid var(--aq-border)}
-.glance-source{margin:0;padding:.75rem;border:none;border-radius:0;background:var(--aq-code-bg);font-size:.75rem;line-height:1.9;direction:rtl;text-align:start;font-family:"Courier New",monospace;white-space:pre-wrap;overflow-wrap:break-word;overflow-x:auto;max-inline-size:100%}
-.glance-result{padding:.75rem}
-.glance-result p{font-size:.875rem;line-height:1.8;margin-block:0 .625rem}
-.glance-result button{display:block;inline-size:100%;padding:.5rem .75rem;margin-block-end:.375rem;font-size:.8125rem;font-family:inherit;text-align:start;border-radius:6px;cursor:default;color:var(--aq-accent);background:var(--aq-bg);border:1px solid var(--aq-border)}
+/* ---- The قصتك panel: a picture of the visual writer ----
+   Every colour is one of the twelve variables /assets/aqlamna.css declares.
+   The editor's own node colours (--aq-node-green and friends) live in
+   packages/editor/src/aqlamna-theme.css and are NOT in scope on this page; an
+   undefined custom property does not warn, it inherits, which is exactly how
+   the install button once shipped at 1.29:1. The start scene is marked with
+   --aq-accent, the same variable the map's start card uses, so the two tabs
+   agree about which scene the reader begins in.
+
+   Nothing here is a control. No <button>, no <select>, no <input> — a field
+   that looks live and does nothing is a lie a visitor finds by clicking. */
+.writer{background:var(--aq-code-bg);border:1px solid var(--aq-code-border);border-radius:6px;padding:.75rem;max-block-size:26rem;overflow-y:auto}
+.writer-scene{background:var(--aq-surface);border:1px solid var(--aq-border);border-inline-start:4px solid var(--aq-accent);border-radius:10px;padding:.75rem}
+.writer-row{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-block-start:.5rem}
+.writer-row:first-child{margin-block-start:0}
+.writer-grip{color:var(--aq-dim);font-size:.875rem;line-height:1}
+.writer-box{display:block;background:var(--aq-bg);border:1px solid var(--aq-border);border-radius:6px;padding:.5rem .625rem;font-size:.875rem;line-height:1.8}
+.writer-grow{flex:1 1 8rem;min-inline-size:0}
+.writer-name{font-weight:700;font-size:.9375rem}
+.writer-start{font-size:.75rem;color:var(--aq-accent);white-space:nowrap}
+.writer-prose{margin-block-start:.625rem}
+.writer-prose p{margin-block:0 .5rem}
+.writer-prose p:last-child{margin-block-end:0}
+.writer-tag{font-size:.75rem;color:var(--aq-dim);white-space:nowrap}
+.writer-choice{margin-block-start:.625rem;padding:.625rem;background:var(--aq-bg);border:1px solid var(--aq-border);border-radius:8px}
+.writer-choice .writer-box{background:var(--aq-surface)}
+.writer-after{margin-block-start:.25rem}
+.writer-after p{margin-block:0 .375rem;font-size:.8125rem}
+.writer-after p:last-child{margin-block-end:0}
+/* The dropdown look, without a dropdown: the ▾ is decorative and lives in the
+   stylesheet so it never lands in the accessibility tree as a stray glyph. */
+.writer-pick{display:inline-flex;align-items:center;gap:.375rem;background:var(--aq-surface);border:1px solid var(--aq-border);border-radius:6px;padding:.375rem .625rem;font-size:.8125rem}
+.writer-pick::after{content:"▾";color:var(--aq-dim);font-size:.6875rem}
+.writer-add{font-size:.8125rem;color:var(--aq-muted);background:transparent;border:1px solid var(--aq-border);border-radius:6px;padding:.375rem .625rem}
 
 /* ---- The preview: the editor's own three tabs, same words, same order ---- */
 .preview{margin-block:2.5rem}
@@ -58,7 +81,6 @@
 .panel{border:1px solid var(--aq-border);border-radius:8px;background:var(--aq-surface);padding:.875rem}
 .panel[hidden]{display:none}
 .panel-note{font-size:.8125rem;color:var(--aq-muted);text-align:center;margin-block:0 .75rem}
-.panel-source-code{margin:0;font-size:.8125rem;line-height:1.8;max-block-size:26rem;overflow:auto}
 .panel-frame{position:relative;background:var(--aq-code-bg);border:1px solid var(--aq-code-border);border-radius:6px;overflow:hidden}
 .panel-frame iframe{display:block;inline-size:100%;block-size:520px;border:none}
 .panel-frame iframe[hidden]{display:none}
@@ -140,7 +162,8 @@
  .site-footer a,.back-link a,.english-link a,.docs-card{display:inline-flex;align-items:center;min-block-size:44px}
  .docs-card{display:block;padding-block:1rem}
  .cta-button{inline-size:100%;min-block-size:48px}
- .glance-result button{min-block-size:44px}
+ .writer{padding:.5rem}
+ .writer-scene{padding:.625rem}
  .tab{flex:1 1 0;padding-inline:.5rem}
 }
   
@@ -176,31 +199,11 @@
       </p>
     </header>
 
-    <!-- GLANCE_START — generated from stories/العطر_المفقود.qalam by build-site.mjs -->
-    <section class="glance" aria-label="مثال قصير">
-      <div class="glance-card">
-        <h2>تكتب هذا</h2>
-        <pre class="glance-source"><span dir="ltr">===</span> الدكّان <span dir="ltr">===</span>
-
-رفوف الخشب تصطفّ حتى السقف، وفي كلّ جرّة رائحةٌ تنتظر<span dir="ltr">.</span>
-
-<span dir="ltr">*</span> <span dir="ltr">[</span>اسأليه عن الثلاثة<span dir="ltr">]</span>
-<span dir="ltr">*</span> <span dir="ltr">[</span>تأمّلي الدكّان أولًا<span dir="ltr">]</span></pre>
-      </div>
-      <div class="glance-card">
-        <h2>يصير هذا</h2>
-        <div class="glance-result">
-          <p>رفوف الخشب تصطفّ حتى السقف، وفي كلّ جرّة رائحةٌ تنتظر.</p>
-          <button type="button" disabled>اسأليه عن الثلاثة</button>
-          <button type="button" disabled>تأمّلي الدكّان أولًا</button>
-        </div>
-      </div>
-    </section>
-    <!-- GLANCE_END -->
-
-    <!-- CTA. It sits here, directly under the glance, because the glance is
-         the whole promise and there is nothing to gain by making someone who
-         is already convinced scroll past the proof to find the button. -->
+    <!-- CTA. Directly under the hero: there is nothing to gain by making
+         someone who is already convinced scroll past the proof to find the
+         button. It used to sit under a تكتب هذا / يصير هذا pair that argued
+         from `.qalam` syntax — an argument the editor stopped making the day
+         it opened on a form instead. -->
     <div class="cta-wrap">
       <a class="cta-button" href="/editor">افتح المحرر</a>
     </div>
@@ -219,21 +222,50 @@
       </div>
 
       <div class="panel" role="tabpanel" id="panel-source" aria-labelledby="tab-source" tabindex="0">
-        <p class="panel-note">هذا ما تكتبه — أوّل مقطع من قصة "العطر المفقود".</p>
-        <pre class="panel-source-code"><span dir="ltr">===</span> الدكّان <span dir="ltr">===</span>
-
-رفوف الخشب تصطفّ حتى السقف، وفي كلّ جرّة رائحةٌ تنتظر<span dir="ltr">.</span> المعلّم سليم يجلس وراء ميزانٍ نحاسيّ، وأمامه ورقة صفراء لا شيء عليها<span dir="ltr">.</span>
-
-<span dir="ltr">&quot;</span>وصفة جدّتي ضاعت،<span dir="ltr">&quot;</span> قال دون أن يرفع عينيه<span dir="ltr">.</span> <span dir="ltr">&quot;</span>أعرف أنّ فيها أربعة أشياء<span dir="ltr">.</span> أذكر ثلاثة، والرابع يهرب منّي كلّما اقتربتُ<span dir="ltr">.&quot;</span>
-
-<span dir="ltr">*</span> <span dir="ltr">[</span>اسأليه عن الثلاثة<span dir="ltr">]</span>
-  <span dir="ltr">-&gt;</span> الجرار
-
-<span dir="ltr">*</span> <span dir="ltr">[</span>تأمّلي الدكّان أولًا<span dir="ltr">]</span>
-  مررتِ بأصابعكِ على حرف الرفّ فتركت الغبار خطًّا رقيقًا<span dir="ltr">.</span> في الزاوية العليا جرّةٌ وحدها، لا ورقة عليها ولا اسم<span dir="ltr">.</span>
-  <span dir="ltr">~</span> الثقة <span dir="ltr">=</span> الثقة <span dir="ltr">+</span> <span dir="ltr">1</span>
-  <span dir="ltr">&quot;</span>عينكِ حادّة،<span dir="ltr">&quot;</span> قال<span dir="ltr">.</span> <span dir="ltr">&quot;</span>لكن ابدئي من الأسفل<span dir="ltr">.&quot;</span>
-  <span dir="ltr">-&gt;</span> الجرار</pre>
+        <p class="panel-note">هكذا تكتب المقطع الأول من "العطر المفقود": حقول وبطاقات، دون رموز.</p>
+        <div class="writer">
+          <div class="writer-scene">
+            <div class="writer-row">
+              <span class="writer-grip" aria-hidden="true">⣿</span>
+              <span class="writer-box writer-grow writer-name">الدكّان</span>
+              <span class="writer-start">يبدأ هنا</span>
+            </div>
+            <div class="writer-box writer-prose">
+            <p>رفوف الخشب تصطفّ حتى السقف، وفي كلّ جرّة رائحةٌ تنتظر. المعلّم سليم يجلس وراء ميزانٍ نحاسيّ، وأمامه ورقة صفراء لا شيء عليها.</p>
+            <p>&quot;وصفة جدّتي ضاعت،&quot; قال دون أن يرفع عينيه. &quot;أعرف أنّ فيها أربعة أشياء. أذكر ثلاثة، والرابع يهرب منّي كلّما اقتربتُ.&quot;</p>
+            </div>
+          <div class="writer-choice">
+            <div class="writer-row">
+              <span class="writer-tag">خيار ١</span>
+              <span class="writer-box writer-grow">اسأليه عن الثلاثة</span>
+            </div>
+            <div class="writer-row">
+              <span class="writer-tag">ينقلك إلى</span>
+              <span class="writer-pick">الجرار</span>
+            </div>
+          </div>
+          <div class="writer-choice">
+            <div class="writer-row">
+              <span class="writer-tag">خيار ٢</span>
+              <span class="writer-box writer-grow">تأمّلي الدكّان أولًا</span>
+            </div>
+            <div class="writer-row">
+              <span class="writer-tag">ينقلك إلى</span>
+              <span class="writer-pick">الجرار</span>
+            </div>
+            <span class="writer-tag">نصّ بعد الاختيار</span>
+            <div class="writer-box writer-after"><p>مررتِ بأصابعكِ على حرف الرفّ فتركت الغبار خطًّا رقيقًا. في الزاوية العليا جرّةٌ وحدها، لا ورقة عليها ولا اسم.</p><p>&quot;عينكِ حادّة،&quot; قال. &quot;لكن ابدئي من الأسفل.&quot;</p></div>
+            <div class="writer-row">
+              <span class="writer-tag">عند الاختيار</span>
+              <span class="writer-pick">يزيد العدّاد: الثقة</span>
+            </div>
+          </div>
+            <div class="writer-row">
+              <span class="writer-add">＋ أضف خيارًا</span>
+              <span class="writer-add">＋ أضف نصًّا مشروطًا</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="panel" role="tabpanel" id="panel-play" aria-labelledby="tab-play" tabindex="0" hidden>
