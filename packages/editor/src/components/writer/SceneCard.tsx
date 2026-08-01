@@ -143,6 +143,8 @@ export default function SceneCard({
         value={scene.image}
         images={images}
         imageStyle={imageStyle}
+        sceneTitle={scene.title}
+        sceneProse={scene.prose}
         onChange={(image) => set({ image })}
         onCreate={onCreateImage}
         onDescription={onImageDescription}

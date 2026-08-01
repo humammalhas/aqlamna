@@ -110,6 +110,62 @@ async function arabicToEnglishPrompt(arabicDescription: string): Promise<string>
   return text.replace(/^["']|["']$/g, "").trim();
 }
 
+// ---- Suggesting a description from the scene the author already wrote -------
+
+/**
+ * Arabic in, Arabic out. This is NOT the bridge.
+ *
+ * The description field was the last place the visual writer still asked an
+ * author to think like a prompt engineer: it wanted a subject with no style, no
+ * lighting and no signage, from someone who had just written a paragraph of
+ * prose. This reads that paragraph and proposes the description, in Arabic, for
+ * the author to edit. The English translation still happens afterwards, in the
+ * bridge — one job per call.
+ *
+ * The constraints are the same ones IMAGES_SPEC.md gives a human: subject only,
+ * because style belongs to أسلوب_الصور; and no written words in the picture,
+ * because image models cannot draw Arabic script.
+ */
+const SUGGEST_SYSTEM_PROMPT =
+  "أنت تقترح وصفًا لصورة تُرسم لمقطع من قصة تفاعلية.\n" +
+  "اقرأ نصّ المقطع، ثمّ اكتب وصفًا عربيًّا قصيرًا لما يظهر في الصورة: من فيها، وأين، ومتى.\n" +
+  "الموضوع وحده. لا إضاءة ولا مزاج ولا ألوان ولا تكوين ولا زاوية تصوير — كلّ ذلك يأتي من مكان آخر.\n" +
+  "لا تطلب لافتة ولا كتابًا مفتوحًا ولا أيّ كلام مكتوب داخل الصورة.\n" +
+  "جملة واحدة. دون علامات اقتباس، ودون مقدّمة، ودون شرح.";
+
+export async function suggestImageDescription(
+  sceneTitle: string,
+  prose: string,
+): Promise<string> {
+  const text = prose.trim();
+  if (text.length === 0) {
+    throw new Error("اكتب نصّ المقطع أولًا، ثمّ اطلب اقتراح وصف.");
+  }
+
+  const provider = getSelectedProvider();
+  const apiKey = getApiKey(provider.id);
+  if (provider.requiresKey && (!apiKey || apiKey.length === 0)) {
+    throw new Error(
+      `لم يُضبط مفتاح API للمزوّد ${provider.nameAr}. افتح الإعدادات وأدخل المفتاح.`,
+    );
+  }
+
+  const suggestion = await callTransport(
+    provider.kind,
+    { baseUrl: getEffectiveBaseUrl(), model: getEffectiveModel(), apiKey: apiKey ?? undefined },
+    [
+      { role: "system", content: SUGGEST_SYSTEM_PROMPT },
+      {
+        role: "user",
+        content: `اسم المقطع: ${sceneTitle || "دون اسم"}\n\nنصّ المقطع:\n${text}`,
+      },
+    ],
+    { temperature: 0.6, max_tokens: 160 },
+  );
+
+  return suggestion.replace(/^["'«»]|["'«»]$/g, "").trim();
+}
+
 // ---- Image generation transports -------------------------------------------
 
 /**

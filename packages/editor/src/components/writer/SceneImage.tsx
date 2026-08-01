@@ -18,13 +18,14 @@
 
 import { useCallback, useEffect, useState } from "react";
 import type { StoryImage } from "../../lib/writer-model.js";
-import { generateImage, type GenStep } from "../../lib/image-gen.js";
+import { generateImage, suggestImageDescription, type GenStep } from "../../lib/image-gen.js";
 import { loadImage, saveImage, deleteImage, formatBytes, DEFAULT_PROJECT_ID } from "../../lib/image-db.js";
-import { hasImageApiKey } from "../../lib/ai-keys.js";
+import { hasImageApiKey, hasApiKey } from "../../lib/ai-keys.js";
 import AutoTextarea from "./AutoTextarea.js";
 import {
   accentButton,
   dangerButton,
+  ghostButton,
   label as labelStyle,
   noteText,
   row,
@@ -40,6 +41,9 @@ interface Props {
   value: string | null;
   images: StoryImage[];
   imageStyle: string;
+  /** The scene's own prose — what the suggestion is derived from. */
+  sceneTitle: string;
+  sceneProse: string;
   onChange: (name: string | null) => void;
   onCreate: () => string | null;
   onDescription: (name: string, description: string) => void;
@@ -50,6 +54,8 @@ export default function SceneImage({
   value,
   images,
   imageStyle,
+  sceneTitle,
+  sceneProse,
   onChange,
   onCreate,
   onDescription,
@@ -57,6 +63,7 @@ export default function SceneImage({
   const [preview, setPreview] = useState<string | null>(null);
   const [bytes, setBytes] = useState<number | null>(null);
   const [step, setStep] = useState<GenStep | null>(null);
+  const [suggesting, setSuggesting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const declared = images.find((i) => i.name === value) ?? null;
@@ -97,6 +104,29 @@ export default function SceneImage({
   }, [declared, imageStyle]);
 
   const keyReady = hasImageApiKey();
+  const textKeyReady = hasApiKey();
+
+  /**
+   * Propose the description from the prose the author already wrote.
+   *
+   * It fills the field rather than drawing straight away: the author reads it,
+   * edits it, and presses ارسم الصورة when it says what they meant. An AI that
+   * both writes the prompt and spends the money on it gives nobody a place to
+   * disagree.
+   */
+  const suggest = useCallback(async () => {
+    if (!declared) return;
+    setError(null);
+    setSuggesting(true);
+    try {
+      const text = await suggestImageDescription(sceneTitle, sceneProse);
+      if (text) onDescription(declared.name, text);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "تعذّر اقتراح وصف.");
+    } finally {
+      setSuggesting(false);
+    }
+  }, [declared, sceneTitle, sceneProse, onDescription]);
 
   return (
     <div style={{ ...subCard, borderStyle: "dashed" }} data-writer-image={value ?? ""}>
@@ -121,7 +151,28 @@ export default function SceneImage({
       {declared && (
         <>
           <div style={{ marginBlockStart: "0.5rem" }}>
-            <span style={labelStyle}>وصف ما في الصورة</span>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBlockEnd: "0.25rem" }}>
+              <span style={{ ...labelStyle, marginBlockEnd: 0 }}>وصف ما في الصورة</span>
+              <button
+                type="button"
+                onClick={suggest}
+                disabled={suggesting || !textKeyReady || sceneProse.trim().length === 0}
+                title={
+                  sceneProse.trim().length === 0
+                    ? "اكتب نصّ المقطع أولًا"
+                    : "اقرأ نصّ المقطع واقترح وصفًا"
+                }
+                style={{
+                  ...ghostButton,
+                  minBlockSize: "28px",
+                  paddingBlock: "0.125rem",
+                  fontSize: "0.75rem",
+                  opacity: suggesting || !textKeyReady || sceneProse.trim().length === 0 ? 0.5 : 1,
+                }}
+              >
+                {suggesting ? "✨ يقترح…" : "✨ اقترح من النصّ"}
+              </button>
+            </div>
             <AutoTextarea
               ariaLabel={`وصف صورة المقطع ${sceneIndex + 1}`}
               placeholder="من في الصورة، وأين، ومتى — الموضوع وحده"

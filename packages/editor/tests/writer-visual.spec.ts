@@ -271,6 +271,30 @@ test("the example ships its illustration — card, player and export", async ({ 
   expect(html.length, `exported ${html.length} bytes`).toBeGreaterThan(90000);
 });
 
+test("the صورة row offers a suggestion button, disabled until there is prose", async ({ page }) => {
+  await prepareProfile(page);
+  await openWriter(page);
+
+  // A brand-new scene has no prose, so there is nothing to suggest FROM. The
+  // button says why in its tooltip rather than failing after a round trip.
+  const first = page.locator("[data-writer-scene]").first();
+  await first.getByLabel("صورة المقطع 1").selectOption({ index: 0 });
+
+  page.on("dialog", (d) => d.accept("غلاف"));
+  await first.getByLabel("صورة المقطع 1").selectOption({ label: "＋ صورة جديدة" });
+
+  const suggest = first.getByRole("button", { name: /اقترح من النصّ/ });
+  await expect(suggest).toBeVisible();
+  await expect(suggest).toBeDisabled();
+  await expect(suggest).toHaveAttribute("title", "اكتب نصّ المقطع أولًا");
+
+  // Give the scene prose and the button becomes available. It still needs a
+  // text-provider key to actually call anything, which this profile has not
+  // got — so it stays disabled, and that is the honest state to assert.
+  await first.getByLabel("نصّ المقطع 1").fill("رفوف الخشب تصطفّ حتى السقف.");
+  await expect(suggest).toHaveAttribute("title", "اقرأ نصّ المقطع واقترح وصفًا");
+});
+
 // ---- 6. A story the form genuinely cannot draw -----------------------------
 
 test("a hand-written tunnel is refused with a reason, and TWO ways out", async ({ page }) => {
