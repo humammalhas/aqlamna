@@ -350,6 +350,9 @@ export default function SettingsPanel({ open, onClose }: SettingsPanelProps) {
           )}
         </div>
 
+        {/* ---- Which authoring surface قصتك shows ---- */}
+        <WriterModeToggle />
+
         {/* ---- Editor theme ---- */}
         <EditorThemeToggle />
 
@@ -667,6 +670,57 @@ function LinterToggle() {
           }}
         >
           {qualityLintEnabled ? "مُفعَّل" : "معطَّل"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ---- Writer mode -----------------------------------------------------------
+
+/**
+ * Visual writer or CodeMirror.
+ *
+ * Switching to متقدّم is safe in both directions: the visual writer's own
+ * output IS the source the code editor shows, and coming back re-reads it. What
+ * cannot come back is a story that grew features the form has no field for —
+ * the pane says so by name rather than dropping them, so the door is one-way
+ * only for the parts of the language the writer never had.
+ */
+function WriterModeToggle() {
+  const writerMode = useStore((s) => s.writerMode);
+  const setWriterMode = useStore((s) => s.setWriterMode);
+  const advanced = writerMode === "code";
+
+  return (
+    <div style={infoBoxStyle}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "0.75rem" }}>
+        <div>
+          <div style={{ fontSize: "0.875rem", color: "var(--aq-dim)" }}>وضع المحرّر</div>
+          <div style={{ fontSize: "0.75rem", color: "var(--aq-muted)", marginBlockStart: "0.25rem" }}>
+            {advanced
+              ? "المحرّر النصّي: لغة أقلام كاملة، بكلّ ما فيها."
+              : "المحرّر المرئي: بطاقات وحقول، دون أيّ رموز."}
+          </div>
+        </div>
+        <button
+          data-writer-mode-toggle={writerMode}
+          onClick={() => setWriterMode(advanced ? "visual" : "code")}
+          style={{
+            paddingBlock: "0.375rem",
+            paddingInline: "0.75rem",
+            fontSize: "0.8125rem",
+            fontFamily: "inherit",
+            fontWeight: 600,
+            color: advanced ? "var(--aq-editor-bg)" : "var(--aq-muted)",
+            background: advanced ? "var(--aq-accent)" : "var(--aq-surface-hi)",
+            border: advanced ? "none" : "1px solid var(--aq-border)",
+            borderRadius: "6px",
+            cursor: "pointer",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {advanced ? "متقدّم" : "مرئي"}
         </button>
       </div>
     </div>

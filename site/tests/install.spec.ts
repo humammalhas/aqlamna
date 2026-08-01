@@ -81,9 +81,10 @@ test.describe("install offer — Chromium", () => {
   test("appears once the event fires and the writer has typed", async ({ page }) => {
     await freshEditor(page, { engaged: false });
 
-    // Type — this is the engagement signal, not a synthetic flag.
-    await page.locator(".cm-content").click();
-    await page.keyboard.type("=== البداية ===");
+    // Type — this is the engagement signal, not a synthetic flag. The قصتك tab
+    // opens on the visual writer now, so the typing that counts happens in a
+    // scene's prose box rather than in CodeMirror.
+    await page.getByLabel("نصّ المقطع 1").fill("أنت واقف أمام باب.");
     await page.waitForTimeout(300);
 
     await fireBeforeInstallPrompt(page);
@@ -159,9 +160,8 @@ test.describe("install offer — Chromium", () => {
     await expect(page.locator(BAR)).toBeVisible();
 
     // No overlay: the bar is in flow, so the editor still takes typing.
-    await page.locator(".cm-content").click();
-    await page.keyboard.type("مرحبا");
-    await expect(page.locator(".cm-content")).toContainText("مرحبا");
+    await page.getByLabel("نصّ المقطع 1").fill("مرحبا");
+    await expect(page.getByLabel("نصّ المقطع 1")).toHaveValue("مرحبا");
 
     const overlapping = await page.evaluate(() => {
       const bar = document.querySelector("[data-install-prompt]")!;

@@ -16,6 +16,7 @@ import {
   type AIAction,
   type AIResponse,
 } from "../lib/ai.js";
+import { applyAIFragment } from "../lib/writer-ai.js";
 
 const COLLAPSED_KEY = "aqlamna-ai-collapsed";
 
@@ -31,12 +32,15 @@ function saveCollapsed(v: boolean) {
 export default function AIActions() {
   const source = useStore((s) => s.source);
   const setSource = useStore((s) => s.setSource);
+  const writerMode = useStore((s) => s.writerMode);
 
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState<AIResponse | null>(null);
+  const [action, setAction] = useState<AIAction>("continue_scene");
   const [actionLabel, setActionLabel] = useState("");
   const [humanInstruction, setHumanInstruction] = useState("");
+  const [applyError, setApplyError] = useState<string | null>(null);
 
   const keyAvailable = hasApiKey();
 
@@ -57,6 +61,8 @@ export default function AIActions() {
     async (action: AIAction, label: string) => {
       setLoading(true);
       setResponse(null);
+      setApplyError(null);
+      setAction(action);
       setActionLabel(label);
 
       const passageNames = extractPassageNames(source);
@@ -86,14 +92,40 @@ export default function AIActions() {
     [source, humanInstruction],
   );
 
+  /**
+   * Where an accepted suggestion lands.
+   *
+   * In code mode it is appended to the source, as it always was. In the visual
+   * writer it is folded into the scene cards — prose into the scene the author
+   * last touched, choices as new sub-cards, a written passage as a new scene.
+   * If the fold fails, the suggestion is kept on screen with the reason: an
+   * "أضف" that silently does nothing is the worst of the three outcomes.
+   */
   const handleAccept = () => {
     if (!response?.valid) return;
-    const newSource = source + "\n" + response.valid;
-    setSource(newSource);
+
+    if (writerMode === "code") {
+      setSource(source + "\n" + response.valid);
+      setResponse(null);
+      return;
+    }
+
+    const { writerState, writerFocusScene, setWriterState } = useStore.getState();
+    if (!writerState) {
+      setApplyError("افتح المحرّر المرئي على قصة أولًا.");
+      return;
+    }
+    const result = applyAIFragment(writerState, action, response.valid, writerFocusScene);
+    if (!result.ok) {
+      setApplyError(result.reason);
+      return;
+    }
+    setWriterState(result.state);
     setResponse(null);
+    setApplyError(null);
   };
 
-  const handleDismiss = () => setResponse(null);
+  const handleDismiss = () => { setResponse(null); setApplyError(null); };
 
   // ---- Collapsed button ------------------------------------------------------
   if (!open) {
@@ -148,7 +180,7 @@ export default function AIActions() {
       <textarea
         value={humanInstruction}
         onChange={(e) => setHumanInstruction(e.target.value)}
-        placeholder={keyAvailable ? "مثال: اكتب مشهدًا في سوق قديم، الراوي خائف" : ""}
+        placeholder={keyAvailable ? "مثال: اكتب مقطعًا في سوق قديم، الراوي خائف" : ""}
         disabled={!keyAvailable}
         rows={2}
         style={{
@@ -185,11 +217,11 @@ export default function AIActions() {
           onClick={() => runAction("suggest_choices", "اقترح خيارات")}
         />
         <AIButton
-          label="أكمل المشهد"
+          label="أكمل المقطع"
           title="استمرار السرد النثري للمقطع الحالي"
           disabled={!keyAvailable || loading}
-          loading={loading && actionLabel === "أكمل المشهد"}
-          onClick={() => runAction("continue_scene", "أكمل المشهد")}
+          loading={loading && actionLabel === "أكمل المقطع"}
+          onClick={() => runAction("continue_scene", "أكمل المقطع")}
         />
         <AIButton
           label="اكتب هذا المقطع"
@@ -270,12 +302,30 @@ export default function AIActions() {
               color: "var(--aq-dim)",
               lineHeight: 1.8,
               whiteSpace: "pre-wrap",
-              fontFamily: "monospace",
+              // The visual writer promises no syntax on screen. A preview in
+              // monospace `.qalam` would break that promise at the one moment
+              // the author is deciding whether to trust the tool.
+              fontFamily: writerMode === "visual" ? "inherit" : "monospace",
               maxBlockSize: "16rem",
               overflowY: "auto",
               direction: "rtl",
             }}
           >
+            {applyError && (
+              <div
+                style={{
+                  color: "var(--aq-danger)",
+                  marginBlockEnd: "0.5rem",
+                  padding: "0.5rem",
+                  backgroundColor: "var(--aq-danger-bg)",
+                  borderRadius: "4px",
+                  fontSize: "0.8125rem",
+                  fontFamily: "inherit",
+                }}
+              >
+                ⚠️ {applyError}
+              </div>
+            )}
             {response.error ? (
               <div>
                 <div
@@ -297,6 +347,8 @@ export default function AIActions() {
                 </div>
                 <div style={{ opacity: 0.7 }}>{response.raw}</div>
               </div>
+            ) : writerMode === "visual" ? (
+              readable(response.valid ?? response.raw)
             ) : (
               response.raw
             )}
@@ -305,6 +357,33 @@ export default function AIActions() {
       )}
     </div>
   );
+}
+
+// ---- Preview text -----------------------------------------------------------
+
+/**
+ * The suggestion as prose, for the visual writer's preview.
+ *
+ * Display only — the text that is actually applied is `response.valid`, which
+ * went through the compiler. This never feeds anything but the screen, so a
+ * line it fails to prettify is a cosmetic miss, not a corrupted story.
+ */
+function readable(qalam: string): string {
+  return qalam
+    .split("\n")
+    .map((line) => {
+      const t = line.trim();
+      if (t.length === 0) return "";
+      if (t.startsWith("~")) return ""; // a tag or counter change has no prose
+      const divert = t.match(/^->\s*(.+)$/);
+      if (divert) return `↩ ينتقل إلى: ${divert[1]}`;
+      const choice = t.match(/^[*+]+\s*(?:\{[^}]*\}\s*)?\[([^\]]*)\]\s*(.*)$/);
+      if (choice) return `• ${choice[1]}${choice[2] ? ` — ${choice[2]}` : ""}`;
+      return t;
+    })
+    .filter((l, i, all) => l.length > 0 || (i > 0 && all[i - 1]!.length > 0))
+    .join("\n")
+    .trim();
 }
 
 // ---- AIButton sub-component -------------------------------------------------

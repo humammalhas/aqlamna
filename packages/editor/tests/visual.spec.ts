@@ -26,12 +26,20 @@ import { test, expect } from "@playwright/test";
  *   every assertion about `textarea` was waiting for an element the editor had
  *   stopped drawing. Expanding it here is the preference a returning writer
  *   would have; the assertions about it are unchanged.
+ *
+ *   the writer mode — قصتك now opens on the VISUAL writer, and CodeMirror is
+ *   the advanced mode behind a setting. Every test in this file is about
+ *   CodeMirror: the bidi isolation of `>=`, the line wrapping, the syntax
+ *   colours, the canvas's cursor jump into a passage header. They are still
+ *   the right tests for the surface they test, so the profile opts into it.
+ *   The visual writer has its own browser suite in `writer-visual.spec.ts`.
  */
 async function prepareProfile(page: import("@playwright/test").Page) {
   await page.addInitScript(() => {
     try {
       localStorage.setItem("aqlamna-onboarding-done", "1");
       localStorage.setItem("aqlamna-ai-collapsed", "false");
+      localStorage.setItem("aqlamna-writer-mode", "code");
     } catch {
       /* private mode — the overlay shows and the test says so */
     }

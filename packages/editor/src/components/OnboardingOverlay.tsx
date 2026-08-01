@@ -29,10 +29,14 @@ export default function OnboardingOverlay() {
   const dismiss = () => {
     try { localStorage.setItem(STORAGE_KEY, "1"); } catch { /* noop */ }
     setVisible(false);
-    // Focus the editor after the overlay is gone
+    // Put the cursor where the writing happens. In the visual writer that is
+    // the first scene's prose box; in advanced mode it is CodeMirror. Looking
+    // for the visual one first means the default surface wins.
     setTimeout(() => {
-      const cm = document.querySelector(".cm-content");
-      if (cm instanceof HTMLElement) cm.focus();
+      const target =
+        document.querySelector('[data-writer="visual"] textarea') ??
+        document.querySelector(".cm-content");
+      if (target instanceof HTMLElement) target.focus();
     }, 100);
   };
 
@@ -95,10 +99,22 @@ export default function OnboardingOverlay() {
             lineHeight: 2,
           }}
         >
-          <li>١. اكتب قصتك</li>
+          <li>١. اكتب مقطعًا وأضف خياراته</li>
           <li>٢. اضغط شغّل لتجربها</li>
           <li>٣. اضغط تصدير لمشاركتها</li>
         </ol>
+
+        <p
+          style={{
+            fontSize: "0.9375rem",
+            color: "var(--aq-text)",
+            marginBlockEnd: "1.25rem",
+            lineHeight: 1.75,
+          }}
+        >
+          تكتب بالحقول والأزرار، دون رموز ولا برمجة. القصة تُبنى مقطعًا مقطعًا،
+          وكلّ خيار ينقل القارئ إلى مقطع تختاره من قائمة.
+        </p>
 
         <p
           style={{

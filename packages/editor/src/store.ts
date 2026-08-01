@@ -9,6 +9,9 @@ import type { StoryJSON } from "@aqlamna/runtime";
 import { saveSource } from "./lib/db.js";
 import { getViewMode, setViewMode as persistViewMode, type ViewMode } from "./lib/canvas-db.js";
 import { isEngaged, setEngaged } from "./lib/install.js";
+import { starterWriterState, type WriterState } from "./lib/writer-model.js";
+import { generateQalam } from "./lib/generate-qalam.js";
+import { importWriterState } from "./lib/writer-import.js";
 
 function loadPane(key: string, def: boolean): boolean {
   try { const v = localStorage.getItem(key); return v === null ? def : v === "1"; }
@@ -48,6 +51,30 @@ function loadPanes(): { panePlayer: boolean; paneText: boolean; paneCanvas: bool
   }
   return panes;
 }
+
+// ---- Writer mode -----------------------------------------------------------
+//
+// `visual` is the default and the product. `code` is the CodeMirror editor,
+// kept whole as the advanced mode — the writer generates the source the code
+// editor shows, so nothing is hidden, only spelled differently.
+
+export type WriterMode = "visual" | "code";
+
+const WRITER_MODE_KEY = "aqlamna-writer-mode";
+
+function loadWriterMode(): WriterMode {
+  try {
+    return localStorage.getItem(WRITER_MODE_KEY) === "code" ? "code" : "visual";
+  } catch { return "visual"; }
+}
+
+function saveWriterMode(m: WriterMode) {
+  try { localStorage.setItem(WRITER_MODE_KEY, m); } catch { /* noop */ }
+}
+
+/** Shown when the source does not compile, so the form has nothing to draw. */
+export const WRITER_COMPILE_MESSAGE =
+  "لا يمكن عرض القصة في المحرّر المرئي حتى يُصلَح الخطأ الظاهر أسفل الشاشة.";
 
 export type EditorTheme = "light" | "dark";
 
@@ -172,6 +199,43 @@ export interface EditorStore {
 
   /** Record a real user action. Idempotent, and remembered across visits. */
   markEngaged: () => void;
+
+  /** Which authoring surface the قصتك tab shows. */
+  writerMode: WriterMode;
+  setWriterMode: (mode: WriterMode) => void;
+
+  /**
+   * The visual writer's own model. Null until the first sync, and while the
+   * story is beyond what the form can draw.
+   */
+  writerState: WriterState | null;
+
+  /**
+   * Why the visual writer cannot show this story, in Arabic. Null when it can.
+   * Never a silent fallback — the pane prints this and offers the code editor.
+   */
+  writerBlocked: string | null;
+
+  /**
+   * The last source the visual writer generated. Comparing against `source`
+   * is how the pane tells its own writes (ignore) from an external change —
+   * a load from IndexedDB, an AI insertion, an example, an edit in code mode —
+   * which must be re-imported.
+   */
+  writerEcho: string;
+
+  /**
+   * The scene the author last touched. The visual writer has no text cursor,
+   * so this is what "أكمل المقطع" means when there are eleven scenes on screen.
+   */
+  writerFocusScene: string | null;
+  setWriterFocusScene: (id: string | null) => void;
+
+  /** Replace the writer model, regenerate `.qalam`, and persist it. */
+  setWriterState: (next: WriterState) => void;
+
+  /** Rebuild the writer model from the current source. */
+  syncWriterFromSource: () => void;
 
   /** Cursor jump request from canvas → CodeMirror. */
   cursorJump: { name: string; nonce: number } | null;
@@ -328,6 +392,58 @@ export const useStore = create<EditorStore>((set, get) => ({
     if (get().engaged) return;
     set({ engaged: true });
     setEngaged();
+  },
+
+  writerMode: loadWriterMode(),
+  writerState: null,
+  writerBlocked: null,
+  writerEcho: "",
+  writerFocusScene: null,
+
+  setWriterFocusScene: (id: string | null) => set({ writerFocusScene: id }),
+
+  setWriterMode: (mode: WriterMode) => {
+    set({ writerMode: mode });
+    saveWriterMode(mode);
+    // Coming back from code mode, the source is whatever was typed there.
+    if (mode === "visual") get().syncWriterFromSource();
+  },
+
+  setWriterState: (next: WriterState) => {
+    const source = generateQalam(next);
+    // `writerEcho` is set in the same update as `source`, so the pane's
+    // "did somebody else change this?" check can never see a torn state.
+    set({ writerState: next, writerBlocked: null, writerEcho: source, source });
+    saveSource(source).catch(() => {});
+    get().markEngaged();
+  },
+
+  syncWriterFromSource: () => {
+    const { source } = get();
+
+    // Nothing saved yet: open on one empty scene rather than a blank page, and
+    // leave `source` alone so an untouched visit writes nothing to IndexedDB.
+    if (source.trim().length === 0) {
+      set({ writerState: starterWriterState(), writerBlocked: null, writerEcho: source });
+      return;
+    }
+
+    let story: StoryJSON;
+    try {
+      story = compile(source, "editor.qalam") as unknown as StoryJSON;
+    } catch {
+      // A syntax error is only reachable from code mode. The error strip
+      // already names it; the form cannot draw a story that does not exist.
+      set({ writerState: null, writerBlocked: WRITER_COMPILE_MESSAGE, writerEcho: source });
+      return;
+    }
+
+    const result = importWriterState(story);
+    if (result.ok) {
+      set({ writerState: result.state, writerBlocked: null, writerEcho: source });
+    } else {
+      set({ writerState: null, writerBlocked: result.reason, writerEcho: source });
+    }
   },
 
   cursorJump: null,

@@ -10,6 +10,7 @@ export default defineConfig({
     // browser spec to one without the other breaks `npm test`.
     exclude: [
       "tests/visual.spec.ts",
+      "tests/writer-visual.spec.ts",
       "tests/bookmark-visual.spec.ts",
       "tests/deploy.spec.ts",
       "tests/downscale.spec.ts",

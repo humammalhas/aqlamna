@@ -86,6 +86,49 @@ body {
   color: var(--aq-error-text);
 }
 
+/* ---- Visual writer: touch targets ---------------------------------------
+ *
+ * The pane's inline styles carry its colours and layout; these two rules carry
+ * the one thing an inline style cannot express — a media query.
+ *
+ * Below 640px every control must measure at least 44px on its short side. That
+ * is not a preference: `site/tests/responsive.spec.ts` measures the smallest
+ * control on the page at 390px and fails the build under 44, and it caught a
+ * 13px checkbox here the moment the writer shipped. A native checkbox is 13px
+ * by default and a text input is about 38px, so both need saying out loud.
+ *
+ * `!important` is load-bearing, not decoration. The pane styles its controls
+ * with inline `style` objects, and an inline declaration outranks any selector
+ * in a stylesheet — without it these rules parse, match, and change nothing.
+ * Measured: every control still reported 36px with the media query in place.
+ */
+@media (max-width: 639px) {
+  [data-writer="visual"] input,
+  [data-writer="visual"] select,
+  [data-writer="visual"] textarea,
+  [data-writer="visual"] summary {
+    min-block-size: 44px !important;
+  }
+
+  /* Both axes: the ✕ on a choice is square, so a 44px height alone still
+     leaves a 36px-wide target and the gate measures the SHORT side. */
+  [data-writer="visual"] button {
+    min-block-size: 44px !important;
+    min-inline-size: 44px !important;
+  }
+
+  [data-writer="visual"] input[type="checkbox"] {
+    inline-size: 44px !important;
+    block-size: 44px !important;
+  }
+
+  /* Drag-to-reorder is a mouse gesture — HTML5 drag events never fire from a
+     finger. The ▲ ▼ buttons beside it do the same job on every device. */
+  [data-writer-drag-handle] {
+    display: none;
+  }
+}
+
 /* ---- Mobile responsive --------------------------------------------------- */
 
 @media (max-width: 768px) {

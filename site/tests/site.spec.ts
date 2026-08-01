@@ -494,12 +494,15 @@ test.describe("Terms page", () => {
 });
 
 test.describe("Editor app", () => {
-  test("loads at /editor with a .cm-content element", async ({ page }) => {
-    // The editor is a SPA — wait for it to bootstrap
+  test("loads at /editor on the visual writer, with somewhere to type", async ({ page }) => {
+    // The editor is a SPA — wait for it to bootstrap.
     await page.goto("/editor", { waitUntil: "domcontentloaded" });
 
-    // CodeMirror creates .cm-content once the editor mounts
-    const cmContent = page.locator(".cm-content");
-    await expect(cmContent).toBeVisible({ timeout: 15000 });
+    // This used to wait for `.cm-content`, which was the right "the editor
+    // mounted" signal while CodeMirror was the only authoring surface. It is
+    // now the advanced mode, so waiting for it would pass on a build where the
+    // default surface never rendered at all.
+    await expect(page.locator('[data-writer="visual"]')).toBeVisible({ timeout: 15000 });
+    await expect(page.getByLabel("نصّ المقطع 1")).toBeVisible({ timeout: 15000 });
   });
 });

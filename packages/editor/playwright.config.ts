@@ -23,9 +23,13 @@ const includeDeploy = process.env.DEPLOY_TESTS === "1";
 
 export default defineConfig({
   testDir: "./tests",
+  // `writer-visual` matches the `visual` alternative already, but naming it is
+  // the difference between a suite that is in the gate and a suite that is in
+  // the gate by accident — which is how 37 browser tests ran in no gate at all
+  // until 31 Jul.
   testMatch: includeDeploy
-    ? /(visual|bookmark-visual|deploy)\.spec\.ts/
-    : /(visual|bookmark-visual)\.spec\.ts/,
+    ? /(visual|writer-visual|bookmark-visual|deploy)\.spec\.ts/
+    : /(visual|writer-visual|bookmark-visual)\.spec\.ts/,
   use: {
     baseURL: "http://localhost:5173",
     permissions: ["clipboard-read", "clipboard-write"],

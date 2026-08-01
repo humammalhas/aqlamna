@@ -310,9 +310,12 @@ test.describe("editor player pane — the toolbar's other home", () => {
     // The onboarding overlay covers the top bar on a fresh profile, so the
     // run button is there but unclickable. Mark it seen before first paint.
     await page.goto("/");
-    await page.evaluate(() =>
-      localStorage.setItem("aqlamna-onboarding-done", "1"),
-    );
+    await page.evaluate(() => {
+      localStorage.setItem("aqlamna-onboarding-done", "1");
+      // This test drives CodeMirror's "افتح مثالًا" and counts `.cm-line`, so
+      // it opts into the advanced mode the قصتك tab no longer defaults to.
+      localStorage.setItem("aqlamna-writer-mode", "code");
+    });
     await page.reload();
     await page.waitForSelector(".cm-line", { timeout: 15000 });
 

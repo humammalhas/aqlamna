@@ -1,13 +1,19 @@
 // ---------------------------------------------------------------------------
-// EditorPane — the text-editing surface. Header "قصتك" with collapsed AI
-// co-writing control and an "افتح مثالًا" button on the same row.
-// CodeMirror below.
+// EditorPane — the قصتك surface. Header with the collapsed AI co-writing
+// control and an "افتح مثالًا" button on the same row; below it, whichever
+// authoring surface the writer has chosen.
+//
+// The visual writer is the default and the product. CodeMirror is still here,
+// whole, as the advanced mode — one setting away, showing the very source the
+// visual writer generates, so nothing is hidden from anybody who wants it.
 // ---------------------------------------------------------------------------
 
 import CodeEditorPane from "./CodeEditorPane.js";
+import VisualWriterPane from "./VisualWriterPane.js";
 import AIActions from "./AIActions.js";
 import { newStory, openExample } from "../lib/story-actions.js";
 import { useBreakpoint } from "../lib/breakpoint.js";
+import { useStore } from "../store.js";
 
 const headerButtonStyle: React.CSSProperties = {
   minBlockSize: "36px",
@@ -27,6 +33,7 @@ export default function EditorPane() {
   // On a phone these two buttons live in the top bar's ☰ menu instead; the
   // header row has no space for them next to the AI control.
   const isPhone = useBreakpoint() === "phone";
+  const writerMode = useStore((s) => s.writerMode);
 
   return (
     <div style={{ blockSize: "100%", display: "flex", flexDirection: "column", minBlockSize: 0 }}>
@@ -52,6 +59,14 @@ export default function EditorPane() {
           >
             قصتك
           </span>
+          {writerMode === "code" && (
+            <span
+              data-writer-mode="code"
+              style={{ fontSize: "0.75rem", color: "var(--aq-muted)", whiteSpace: "nowrap" }}
+            >
+              وضع متقدّم
+            </span>
+          )}
           {!isPhone && (
             <>
               <button
@@ -74,9 +89,9 @@ export default function EditorPane() {
         <AIActions />
       </div>
 
-      {/* Code editor */}
+      {/* Authoring surface */}
       <div style={{ flex: 1, minBlockSize: 0 }}>
-        <CodeEditorPane />
+        {writerMode === "visual" ? <VisualWriterPane /> : <CodeEditorPane />}
       </div>
     </div>
   );

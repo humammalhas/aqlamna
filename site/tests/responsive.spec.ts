@@ -374,32 +374,23 @@ test.describe("editor layout", () => {
     // phone. If the شغّل TAB only switches panes and never compiles, the
     // player sits on its empty state forever and a phone can write but never
     // run — which is the whole complaint the responsive work started from.
-    await page.locator(".cm-content").click();
-    // Line by line with a delay. Typing a whole multi-line story in one burst
-    // drops keystrokes in CodeMirror and silently merges lines — a source that
-    // then compiles to something else entirely, which makes the test lie in
-    // both directions.
-    const story = [
-      "=== البداية ===",
-      "الشمس عالية والطريق طويل.",
-      "",
-      "* [امضِ] -> النهاية",
-      "",
-      "=== النهاية ===",
-      "وصلتَ.",
-    ];
-    for (let i = 0; i < story.length; i++) {
-      if (story[i]) await page.keyboard.type(story[i]!, { delay: 20 });
-      if (i < story.length - 1) {
-        await page.keyboard.press("Enter");
-        await page.waitForTimeout(100);
-      }
-    }
-    await page.waitForTimeout(400);
+    // Written the way a phone writer now writes it: scene cards and fields,
+    // no syntax. The old version of this test typed `.qalam` into CodeMirror
+    // line by line; CodeMirror is one setting away and still tested, but it is
+    // no longer what a person meets on a phone.
+    await page.waitForSelector("[data-writer-scene]", { timeout: 15000 });
+    const first = page.locator("[data-writer-scene]").first();
+    await first.getByLabel("اسم المقطع 1").fill("البداية");
+    await first.getByLabel("نصّ المقطع 1").fill("الشمس عالية والطريق طويل.");
+    await first.getByRole("button", { name: "＋ أضف خيارًا" }).click();
+    await first.getByLabel("نصّ الخيار 1").fill("امضِ");
+    await first.getByLabel("وجهة الخيار 1").selectOption({ label: "＋ مقطع جديد" });
 
-    // Guard the guard: if the lines merged, everything below is meaningless.
-    const lines = await page.$$eval(".cm-line", (els) => els.map((e) => e.textContent));
-    expect(lines, "typed source was mangled").toEqual(story);
+    const second = page.locator("[data-writer-scene]").nth(1);
+    await second.getByLabel("اسم المقطع 2").fill("النهاية");
+    await second.getByLabel("نصّ المقطع 2").fill("وصلتَ.");
+    await second.getByLabel("تنتهي القصة هنا").check();
+    await page.waitForTimeout(300);
 
     // Use the top-bar run button, which is what a person reaches for.
     await page.locator("header [data-run-button]").click();
@@ -485,6 +476,11 @@ test.describe("editor layout", () => {
   }) => {
     await page.setViewportSize({ width: 1024, height: 900 });
     await skipOnboarding(page);
+    // This test is about CodeMirror, which is now the advanced mode. Opt in
+    // before the page scripts run rather than clicking through الإعدادات.
+    await page.addInitScript(() => {
+      try { localStorage.setItem("aqlamna-writer-mode", "code"); } catch { /* private mode */ }
+    });
     await page.goto("/editor/", { waitUntil: "networkidle" });
     await page.waitForTimeout(500);
 
@@ -638,8 +634,9 @@ test.describe("the editor has a way back to the site", () => {
     // change, so this asserts the bytes came back — not that the code looks
     // like it saves.
     const sentence = "كان يا ما كان، في قريةٍ صغيرة على حافّة الوادي";
-    await page.locator(".cm-content").click();
-    await page.keyboard.type(sentence, { delay: 30 });
+    await page.waitForSelector("[data-writer-scene]", { timeout: 15000 });
+    await page.getByLabel("نصّ المقطع 1").fill(sentence);
+    await page.waitForTimeout(200);
 
     // No pause between the last keystroke and the click. That is the case.
     await Promise.all([
@@ -667,9 +664,14 @@ test.describe("the editor has a way back to the site", () => {
           req.onblocked = () => resolve(null);
         }),
     );
-    expect(restored, `typed ${sentence.length} chars, got back ${restored?.length ?? 0}`).toBe(
-      sentence,
-    );
-    await expect(page.locator(".cm-content")).toContainText(sentence);
+    // The visual writer saves generated `.qalam`, so the stored bytes are the
+    // sentence inside a passage — not the sentence alone. What matters is that
+    // the writing survived the click, and that it comes back into the box the
+    // author typed it in.
+    expect(
+      restored,
+      `typed ${sentence.length} chars, got back ${restored?.length ?? 0}`,
+    ).toContain(sentence);
+    await expect(page.getByLabel("نصّ المقطع 1")).toHaveValue(sentence);
   });
 });
