@@ -1,12 +1,31 @@
 # أقلامنا — Aqlamna
 
 أول محرك قصص تفاعلية مبني للعربية من الأساس — ليس مجرد ترجمة لأداة إنجليزية.
-فكّر "توين + إنك، لكن بالعربية." محرر مرئي للعقد يولّد لغة برمجة نصية قابلة للقراءة،
-تُصرّف إلى قصص قابلة للتشغيل في المتصفح.
+تكتب قصتك في بطاقات وحقول دون أيّ رمز، فيخرج لك ملفّ HTML واحد يعمل دون إنترنت.
 
 **جرّبه الآن على [aqlamna.org](https://aqlamna.org)** — يعمل في المتصفح، دون تثبيت ودون حساب.
 
-## هكذا تبدو القصة
+## هكذا تكتب
+
+تفتح المحرر فتجد بطاقة مقطع واحدة: حقل لاسمه، وصندوق لنصّه، وزرّ لإضافة خيار. الخيار
+يسألك ما يقرأه القارئ وإلى أيّ مقطع ينقله — تختاره من قائمة مقاطعك. لا `===` ولا `->`
+ولا أقواس.
+
+وحين تحتاج أكثر:
+
+- **أثر** — علامة تضعها القصة على القارئ لتتذكّر شيئًا فعله. موجود أو غائب.
+- **عدّاد** — رقم يزيد كلّما اختار القارئ شيئًا.
+- **نصّ مشروط** — فقرة لا يراها إلا من ينطبق عليه الشرط.
+- **شرط ظهور الخيار** — زرّ لا يظهر إلا لمن يستحقّه.
+
+ثمّ تضغط **▶ شغّل** لتجرّبها، و**⬇ تصدير** لتأخذها معك.
+
+الدليل الكامل في [docs/البداية.md](./docs/البداية.md) — عشر خطوات، دون رمز واحد.
+
+## واللغة تحت الحقول
+
+المحرر لا يخفي شيئًا: هو يكتب لغة أقلامنا (`.qalam`) نيابةً عنك، ويمكنك رؤيتها وتحريرها
+من **⚙️ الإعدادات ← وضع المحرر ← متقدّم**.
 
 ```qalam
 عنوان: "الجرّة"
@@ -15,11 +34,13 @@
 
 على الرفّ جرّةٌ مغلقة. رائحةٌ تتسلّل من تحت غطائها.
 
-* [افتحي الجرّة] رفعتِ الغطاءَ ففاح عطر اليانسون.
+* [افتح الجرّة]
+  رفعتَ الغطاءَ ففاح عطر اليانسون.
   -> نهاية
 ```
 
-تكتب هذا، فيخرج لك ملف HTML واحد يعمل دون إنترنت ودون أيّ مكتبة خارجية.
+هذا ما تولّده بطاقتان وخيار واحد. اللغة أوسع من الحقول — فيها خيارات متداخلة وأنفاق
+وقوائم — وكلّها في [docs/المرجع.md](./docs/المرجع.md). لست مضطرًّا إلى قراءتها لتكتب قصة.
 
 ## البداية السريعة
 
@@ -34,9 +55,9 @@ npm run dev -w @aqlamna/editor
 
 ## مفتاحك يبقى عندك
 
-مزايا الذكاء الاصطناعي — اقتراح الخيارات وإكمال المشهد ورسم الصور — تعمل بمفتاح
-تختاره أنت من مزوّدك. يُحفظ المفتاح في متصفّحك وحده، ويذهب إلى المزوّد مباشرة.
-لا يمرّ بخادم لنا، فنحن لا نملك خادمًا أصلًا. القصص كلّها تبقى على جهازك.
+مزايا الذكاء الاصطناعي — اقتراح الخيارات وإكمال المقطع ورسم الصور — تعمل بمفتاح تختاره
+أنت من مزوّدك. يُحفظ المفتاح في متصفّحك وحده، ويذهب إلى المزوّد مباشرة. لا يمرّ بخادم
+لنا، فنحن لا نملك خادمًا أصلًا. القصص كلّها تبقى على جهازك.
 
 **الترخيص:** GPL-3.0
 
@@ -45,18 +66,33 @@ npm run dev -w @aqlamna/editor
 ---
 
 The first interactive fiction engine built for Arabic from the ground up — not a
-translation layer on top of an English tool. Think "Twine + Ink, but Arabic-native."
-A visual node editor that generates a readable scripting language, compiling to
-playable stories in the browser.
+translation layer on top of an English tool. You write in cards and fields, with no
+syntax at all, and it exports one HTML file that plays offline.
 
 **Live at [aqlamna.org](https://aqlamna.org)** — runs in the browser, no install, no account.
 
-### What a story looks like
+### How you write
 
-The example above declares a title, opens the passage `البداية`, prints a line of
-prose, and offers one choice that diverts to `نهاية` (END). Keywords are Arabic;
-English aliases work too. It exports to a single HTML file that plays offline with
-zero dependencies.
+The editor opens on a single scene card: a field for its name, a box for its prose, and a
+button to add a choice. A choice asks what the reader clicks and which scene it leads to —
+picked from a dropdown of your own scenes. No `===`, no `->`, no braces.
+
+When you need more: a **tag** (a flag the story remembers), a **counter** (a number that
+goes up), **conditional text** (a paragraph only some readers see), and a **gated choice**
+(a button that only appears when a condition holds).
+
+The full walkthrough is [docs/البداية.md](./docs/البداية.md) — ten steps, no code.
+
+### The language underneath
+
+Nothing is hidden. The editor writes `.qalam` on your behalf, and
+**⚙️ Settings → وضع المحرر → متقدّم** shows it in a CodeMirror pane, where you can edit it
+by hand. Switching back re-reads it. If you use something the form has no field for —
+tunnels, nested choices, lists — the visual writer says so by name and offers you the code
+editor rather than dropping it.
+
+`.qalam` is also the export format and the file you share. The reference is
+[docs/المرجع.md](./docs/المرجع.md).
 
 ### Quick start
 
@@ -71,9 +107,9 @@ The last command opens the editor at `http://localhost:5173`.
 
 ### Bring your own key
 
-The AI features — suggesting choices, continuing a scene, generating illustrations —
-run on a key you supply from your own provider. It is stored in your browser's
-localStorage and sent straight to that provider. It never passes through a server of
-ours, because there is no server of ours. Your stories stay on your machine.
+The AI features — suggesting choices, continuing a scene, generating illustrations — run on
+a key you supply from your own provider. It is stored in your browser's localStorage and
+sent straight to that provider. It never passes through a server of ours, because there is
+no server of ours. Your stories stay on your machine.
 
 **License:** GPL-3.0
