@@ -17,7 +17,7 @@ const STORY_URL = "https://aqlamna.org/العطر_المفقود.html";
 // ---------------------------------------------------------------------------
 
 test.describe("Deployed editor", () => {
-  test("opens on text view with player visible", async ({ page }) => {
+  test("opens on the visual writer with player visible", async ({ page }) => {
     // Collect console errors
     const errors: string[] = [];
     page.on("console", (msg) => {
@@ -33,11 +33,15 @@ test.describe("Deployed editor", () => {
 
     // ---- Assertions ----
 
-    // 1. Text editor (.cm-editor) renders — default view is text
-    const cmEditors = await page.locator(".cm-editor").count();
-    expect(cmEditors).toBe(1);
+    // 1. The قصتك pane renders the visual writer, with a scene card in it.
+    //    This used to count `.cm-editor`. CodeMirror is now the advanced mode,
+    //    so counting it would pass on a deployment where the default surface
+    //    never rendered — the exact shape of bug this file exists to catch.
+    expect(await page.locator('[data-writer="visual"]').count()).toBe(1);
+    expect(await page.locator("[data-writer-scene]").count()).toBe(1);
+    expect(await page.locator(".cm-editor").count()).toBe(0);
 
-    // 2. Canvas (.react-flow) does NOT render on default text view
+    // 2. Canvas (.react-flow) does NOT render on the default view
     const reactFlows = await page.locator(".react-flow").count();
     expect(reactFlows).toBe(0);
 
@@ -115,7 +119,7 @@ test.describe("Exported story", () => {
 // ---------------------------------------------------------------------------
 
 test.describe("First-run focus", () => {
-  test("dismissing onboarding focuses CodeMirror", async ({ page }) => {
+  test("dismissing onboarding puts the cursor where the writing happens", async ({ page }) => {
     await page.goto("https://aqlamna.org/editor/");
     await page.evaluate(() => {
       localStorage.clear();
@@ -132,10 +136,19 @@ test.describe("First-run focus", () => {
 
     await expect(dialog).not.toBeVisible({ timeout: 3000 });
 
-    const focusInCM = await page.evaluate(() => {
+    // The first scene's prose box, not CodeMirror: the overlay hands the
+    // cursor to whichever authoring surface is actually on screen.
+    const focused = await page.evaluate(() => {
       const ae = document.activeElement;
-      return ae ? ae.closest(".cm-editor") !== null : false;
+      if (!ae) return null;
+      return {
+        tag: ae.tagName.toLowerCase(),
+        label: ae.getAttribute("aria-label"),
+        inWriter: ae.closest('[data-writer="visual"]') !== null,
+      };
     });
-    expect(focusInCM).toBe(true);
+    expect(focused, "nothing was focused after ابدأ").not.toBeNull();
+    expect(focused!.inWriter, JSON.stringify(focused)).toBe(true);
+    expect(focused!.tag).toBe("textarea");
   });
 });
