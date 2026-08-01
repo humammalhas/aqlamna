@@ -22,7 +22,8 @@
     "build:all": "node scripts/build-all.mjs",
     "build:docs": "node scripts/build-docs.mjs",
     "lint:colors": "node scripts/lint-colors.mjs",
-    "deploy": "npm run build:all && npx wrangler pages deploy site --project-name=aqlamna"
+    "deploy": "npm run build:all && npx wrangler pages deploy site --project-name=aqlamna && npm run purge:zone",
+    "purge:zone": "node scripts/purge-zone.mjs"
   },
   "devDependencies": {
     "sharp": "^0.35.3"
