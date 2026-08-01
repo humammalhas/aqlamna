@@ -3,7 +3,7 @@
 // Machine-readable. Verified by scripts/check-artifacts.mjs. Do not hand-edit.
 // {
 //   "generator": "packages/linter/scripts/build-rules.mjs",
-//   "generatedAt": "2026-07-31T10:56:25.371Z",
+//   "generatedAt": "2026-08-01T08:05:51.190Z",
 //   "artifact": "packages/linter/src/generated/rules.ts",
 //   "source": "ARABIC_MASTERY.md",
 //   "sourceModified": "2026-07-31T10:29:38.484Z",
@@ -17,7 +17,7 @@ const rules: RulesFile = {
   "_meta": {
     "source": "ARABIC_MASTERY.md",
     "lastModified": "2026-07-31T10:29:38.484Z",
-    "generatedAt": "2026-07-31T10:56:25.371Z",
+    "generatedAt": "2026-08-01T08:05:51.189Z",
     "counts": {
       "pair": 88,
       "pattern": 5,
@@ -842,9 +842,9 @@ const rules: RulesFile = {
       "id": "2.4-tamm",
       "section": "2.4",
       "messageAr": "تجنّب \"تمّ\" + مصدر — استخدم المبني للمعلوم",
-      "pattern": "تمّ?\\s+(?!ال)[\\u0620-\\u064a]+",
+      "pattern": "(?:(?<![\\u0620-\\u064a])|(?<=(?:^|\\s)و))تمّ?\\s+(?!ال)[\\u0620-\\u064a]+",
       "suggestion": null,
-      "note": "\"تمّ إرسال الرسالة\" ← \"أرسلنا الرسالة\" أو \"أُرسلت الرسالة\".",
+      "note": "\"تمّ إرسال الرسالة\" ← \"أرسلنا الرسالة\". اللاحقة اليسرى تمنع مطابقة كلمة تنتهي بـ\"تم\" مثل \"اختم\"، وتسمح بـ\"وتمّ\".",
       "kind": "pattern",
       "severity": "warning"
     },

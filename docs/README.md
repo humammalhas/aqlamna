@@ -8,7 +8,7 @@ never programmed.
 
 | Document | Description |
 |----------|------------|
-| [البداية.md](./البداية.md) | Step-by-step tutorial. Builds a three-scene story in the **visual writer** — cards, fields and dropdowns, no syntax at all. The generated `.qalam` appears once, at the end, under "الوضع المتقدّم". |
+| [البداية.md](./البداية.md) | The writing guide. Eleven steps building a story in the **visual writer** — cards, fields and dropdowns, no syntax at all — then a craft section, **كيف تكتب قصة تستحقّ أن تُقرأ مرّتين**, on interactive-fiction writing itself: what makes a choice mean something, failure before success, one value per story, endings that differ. Ends with a pre-publish checklist. The generated `.qalam` appears once, near the end, under "الوضع المتقدّم". |
 | [المرجع.md](./المرجع.md) | Complete `.qalam` language reference — the advanced mode. Opens with a table mapping every field in the visual writer to what it generates, so the two can be read against each other. |
 | [الأخطاء.md](./الأخطاء.md) | Error code reference — every E101–E203 with the exact Arabic message, what causes it, and how to fix it. Messages match the compiler output verbatim. Opens by saying these are rare in the visual writer, and what it shows instead. |
 

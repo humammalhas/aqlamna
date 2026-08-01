@@ -17,7 +17,8 @@
 - **عدّاد** — رقم يزيد كلّما اختار القارئ شيئًا.
 - **نصّ مشروط** — فقرة لا يراها إلا من ينطبق عليه الشرط.
 - **شرط ظهور الخيار** — زرّ لا يظهر إلا لمن يستحقّه.
-- **صورة** — تصفها بالعربية وتضغط زرًّا، فتظهر في المقطع وفي الملفّ المصدَّر.
+- **صورة** — تصفها بالعربية وتضغط زرًّا، فتظهر في المقطع وفي الملفّ المصدَّر. ولا يلزمك
+  أن تكتب الوصف بنفسك: زرّ **✨ اقترح من النصّ** يقرأ ما كتبته في المقطع ويكتبه لك.
 
 ثمّ تضغط **▶ شغّل** لتجرّبها، و**⬇ تصدير** لتأخذها معك.
 
@@ -81,7 +82,8 @@ picked from a dropdown of your own scenes. No `===`, no `->`, no braces.
 When you need more: a **tag** (a flag the story remembers), a **counter** (a number that
 goes up), **conditional text** (a paragraph only some readers see), a **gated choice** (a
 button that only appears when a condition holds), and an **illustration** — describe it in
-Arabic, press a button, and it is drawn and inlined into the exported file.
+Arabic, press a button, and it is drawn and inlined into the exported file. A **✨ suggest**
+button writes that description from the scene's own prose, so you never phrase a prompt.
 
 The full walkthrough is [docs/البداية.md](./docs/البداية.md) — eleven steps, no code.
 
