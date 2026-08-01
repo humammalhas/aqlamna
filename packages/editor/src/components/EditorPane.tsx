@@ -34,6 +34,7 @@ export default function EditorPane() {
   // header row has no space for them next to the AI control.
   const isPhone = useBreakpoint() === "phone";
   const writerMode = useStore((s) => s.writerMode);
+  const setWriterMode = useStore((s) => s.setWriterMode);
 
   return (
     <div style={{ blockSize: "100%", display: "flex", flexDirection: "column", minBlockSize: 0 }}>
@@ -43,6 +44,9 @@ export default function EditorPane() {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
+          // The expanded AI panel wraps onto its own full-width line.
+          flexWrap: "wrap",
+          rowGap: "0.5rem",
           paddingBlock: "0.5rem",
           paddingInline: "0.75rem",
           borderBlockEnd: "1px solid var(--aq-border)",
@@ -59,13 +63,20 @@ export default function EditorPane() {
           >
             قصتك
           </span>
+          {/* The way back, next to the thing it undoes.
+              This was a plain label, and ⚙️ الإعدادات ← وضع المحرر was the only
+              route out of the advanced mode — two menus deep, in a panel a
+              beginner opens to paste an API key. Anyone who reached code mode
+              by accident was stuck there. */}
           {writerMode === "code" && (
-            <span
+            <button
               data-writer-mode="code"
-              style={{ fontSize: "0.75rem", color: "var(--aq-muted)", whiteSpace: "nowrap" }}
+              onClick={() => setWriterMode("visual")}
+              title="العودة إلى البطاقات والحقول"
+              style={{ ...headerButtonStyle, color: "var(--aq-accent)" }}
             >
-              وضع متقدّم
-            </span>
+              عد إلى المرئي
+            </button>
           )}
           {!isPhone && (
             <>
@@ -78,7 +89,7 @@ export default function EditorPane() {
               </button>
               <button
                 onClick={openExample}
-                title="تحميل قصة العطر المفقود كمثال"
+                title="تحميل قصة طائرة الورق كمثال"
                 style={headerButtonStyle}
               >
                 افتح مثالًا
@@ -86,7 +97,15 @@ export default function EditorPane() {
             </>
           )}
         </div>
-        <AIActions />
+        {/* Not a wrapper: `display: contents` makes AIActions' own root the
+            flex item, so it can claim a whole row when it expands. Sharing a
+            row was the bug — adding one button on the left narrowed the AI
+            textarea to 285px in a 637px pane, under the half-pane floor
+            `visual.spec.ts` enforces, and it would have narrowed again the
+            next time anyone added a word to a button. */}
+        <div style={{ display: "contents" }}>
+          <AIActions />
+        </div>
       </div>
 
       {/* Authoring surface */}

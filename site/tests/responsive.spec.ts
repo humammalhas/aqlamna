@@ -438,8 +438,12 @@ test.describe("editor layout", () => {
       const r = (await item.boundingBox())!;
       expect(r.y + r.height, `${label} is painted below the fold`).toBeLessThanOrEqual(844);
     }
-    // The documentation links live here on a phone too.
-    await expect(menu.locator("a")).toHaveCount(3);
+    // ONE documentation link, not three. المرجع (every keyword) and الأخطاء
+    // (E101…E203) moved to the advanced-mode row in ⚙️ الإعدادات on 1 Aug: a
+    // beginner opening help in a form-based editor met a syntax manual two
+    // entries down. البداية is the only one that answers a question they have.
+    await expect(menu.locator("a")).toHaveCount(1);
+    await expect(menu.locator("a")).toContainText("البداية");
   });
 
   for (const width of [768, 1440]) {
@@ -454,18 +458,18 @@ test.describe("editor layout", () => {
       await page.getByRole("button", { name: "مساعدة" }).click();
       await page.waitForTimeout(300);
 
-      // The THREE DOC LINKS, not "every anchor in the header". The header now
-      // also carries the أقلامنا wordmark as a link to "/", which is a
-      // permanent fourth <a> and has nothing to do with this menu. The doc
-      // links are the ones that open in a new tab.
+      // THE DOC LINK, not "every anchor in the header". The header also
+      // carries the أقلامنا wordmark as a link to "/", which has nothing to do
+      // with this menu; the doc link is the one that opens in a new tab.
+      // It is one link now — see the phone test above for why.
       const links = page.locator('header a[target="_blank"]');
-      await expect(links).toHaveCount(3);
+      await expect(links).toHaveCount(1);
 
       const headerBottom = await page
         .locator("header")
         .evaluate((el) => el.getBoundingClientRect().bottom);
 
-      for (let i = 0; i < 3; i++) {
+      for (let i = 0; i < 1; i++) {
         const link = links.nth(i);
         await expect(link).toBeVisible();
         const r = (await link.boundingBox())!;

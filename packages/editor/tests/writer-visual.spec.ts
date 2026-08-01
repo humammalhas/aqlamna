@@ -189,30 +189,78 @@ test("switching to متقدّم shows the very source the form generated", async
   expect(await page.locator('[data-writer="visual"]').count()).toBe(0);
 });
 
-// ---- 5. A story the form cannot draw --------------------------------------
+// ---- 5. افتح مثالًا opens IN the visual writer ------------------------------
+//
+// This test used to assert the opposite: that the example was too advanced for
+// the pane and showed a fallback banner. It shipped that way for a day. The
+// example is the first thing a curious visitor clicks, and it threw them out of
+// the editor into a message about multi-branch conditionals.
 
-test("العطر المفقود says why it cannot be shown instead of losing it", async ({ page }) => {
+test("افتح مثالًا loads a story into the cards, and it plays", async ({ page }) => {
   await prepareProfile(page);
   await openWriter(page);
 
   page.on("dialog", (d) => d.accept());
   await page.getByRole("button", { name: "افتح مثالًا" }).first().click();
+  await page.waitForTimeout(600);
 
-  const escape = page.getByRole("button", { name: "افتح المحرّر النصّي" });
-  await expect(escape).toBeVisible({ timeout: 15000 });
+  // Cards, not a banner.
+  expect(await page.locator("[data-writer-blocked]").count()).toBe(0);
+  expect(await page.locator("[data-writer-scene]").count()).toBeGreaterThan(1);
 
-  // And the story itself is untouched. CodeMirror only renders the lines in
-  // view, so counting `.cm-line` proves nothing about the tail of the file —
-  // the map is built from the whole source and all eleven passages are there.
-  await escape.click();
+  // And it is a real story, not a stub.
+  await page.getByRole("button", { name: "شغّل القصة" }).click();
+  await page.waitForSelector(".player-pane .aq-choice-btn", { timeout: 15000 });
+  expect(await page.locator(".player-pane .aq-choice-btn").count()).toBeGreaterThan(1);
+});
+
+test("قصة جديدة is the way back, from either mode", async ({ page }) => {
+  await prepareProfile(page);
+  await openWriter(page);
+  page.on("dialog", (d) => d.accept());
+
+  // Get deliberately stuck: switch to the advanced mode.
+  await page.getByRole("button", { name: "الإعدادات" }).click();
+  await page.locator("[data-writer-mode-toggle]").click();
+  await page.keyboard.press("Escape");
+  await page.waitForSelector(".cm-line", { timeout: 15000 });
+
+  // قصة جديدة used to clear the document and leave you in CodeMirror, with
+  // ⚙️ → وضع المحرر the only route back. Nobody finds that.
+  await page.getByRole("button", { name: "قصة جديدة" }).first().click();
+  await page.waitForSelector("[data-writer-scene]", { timeout: 15000 });
+  expect(await page.locator(".cm-content").count()).toBe(0);
+  expect(await page.locator("[data-writer-scene]").count()).toBe(1);
+});
+
+// ---- 6. A story the form genuinely cannot draw -----------------------------
+
+test("a hand-written tunnel is refused with a reason, and TWO ways out", async ({ page }) => {
+  await prepareProfile(page);
+  await openWriter(page);
+
+  // A tunnel (`->->`) has no field in the pane and never will have one here.
+  await page.getByRole("button", { name: "الإعدادات" }).click();
+  await page.locator("[data-writer-mode-toggle]").click();
+  await page.keyboard.press("Escape");
+  await page.waitForSelector(".cm-line", { timeout: 15000 });
+  await page.locator(".cm-content").click();
+  await page.keyboard.press("Control+End");
+  await page.keyboard.type("\n\n=== نفق ===\n\nنصّ.\n->->\n", { delay: 8 });
+  await page.waitForTimeout(600);
+
+  await page.getByRole("button", { name: "عد إلى المرئي" }).click();
+  await expect(page.locator("[data-writer-blocked]")).toBeVisible({ timeout: 15000 });
+
+  // Both doors. The one-way version of this banner is what locked authors in.
+  await expect(page.getByRole("button", { name: "ابدأ قصة جديدة" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "افتح المحرّر النصّي" })).toBeVisible();
+
+  // And nothing was lost: the source still has the tunnel in it.
+  await page.getByRole("button", { name: "افتح المحرّر النصّي" }).click();
   await page.waitForSelector(".cm-line", { timeout: 15000 });
   const source = await page.$$eval(".cm-line", (ls) => ls.map((l) => l.textContent).join("\n"));
-  expect(source).toContain("=== الدكّان ===");
-  expect(source).toContain("غير_ذلك");
-
-  await page.getByRole("button", { name: "مخطط", exact: true }).first().click();
-  await page.waitForSelector(".react-flow__node", { timeout: 15000 });
-  expect(await page.locator(".react-flow__node").count()).toBe(11);
+  expect(source).toContain("=== نفق ===");
 });
 
 // ---- 6. The phone ----------------------------------------------------------

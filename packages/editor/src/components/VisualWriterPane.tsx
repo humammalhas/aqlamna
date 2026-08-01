@@ -26,6 +26,7 @@ import {
   type WriterState,
 } from "../lib/writer-model.js";
 import { validateWriterState, type WriterIssue } from "../lib/generate-qalam.js";
+import { newStory } from "../lib/story-actions.js";
 import SceneCard from "./writer/SceneCard.js";
 import { askName } from "./writer/WriterControls.js";
 import {
@@ -117,7 +118,7 @@ export default function VisualWriterPane() {
 
   if (writerBlocked) {
     return (
-      <div style={{ padding: "1rem", overflow: "auto", blockSize: "100%" }}>
+      <div data-writer="visual" data-writer-blocked="" style={{ padding: "1rem", overflow: "auto", blockSize: "100%" }}>
         <div style={warnBox}>
           <p style={{ marginBlockEnd: "0.5rem" }}>{writerBlocked}</p>
           <p style={noteText}>
@@ -125,9 +126,19 @@ export default function VisualWriterPane() {
             ما هو أوسع من ذلك، ولن يعرضه هذا المحرّر حتى لا يحذفه.
           </p>
         </div>
-        <button type="button" onClick={() => setWriterMode("code")} style={accentButton}>
-          افتح المحرّر النصّي
-        </button>
+        {/* TWO doors, not one.
+            This used to offer only "افتح المحرّر النصّي" — a one-way trip:
+            once in the advanced mode, coming back re-imported the same story
+            and blocked again, and قصة جديدة did not change the mode. Two
+            clicks and the author was locked in with no visible way out. */}
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+          <button type="button" onClick={newStory} style={accentButton}>
+            ابدأ قصة جديدة
+          </button>
+          <button type="button" onClick={() => setWriterMode("code")} style={ghostButton}>
+            افتح المحرّر النصّي
+          </button>
+        </div>
       </div>
     );
   }

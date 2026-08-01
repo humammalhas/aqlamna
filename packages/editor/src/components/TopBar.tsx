@@ -24,10 +24,18 @@ import type { Breakpoint } from "../lib/breakpoint.js";
 import SettingsPanel from "./SettingsPanel.js";
 import { useState, useCallback, useEffect, useRef } from "react";
 
+/**
+ * The ❓ menu, for somebody who has not chosen to see code.
+ *
+ * It listed three links and two of them were language references — `المرجع`
+ * (every keyword and operator) and `الأخطاء` (E101…E203). A beginner opening
+ * help in a form-based editor met a syntax manual two entries down. Both still
+ * exist and both are still linked: from `البداية`'s own الوضع المتقدّم section,
+ * and from the advanced-mode row in ⚙️ الإعدادات — beside the switch that turns
+ * the language on, which is the only place they answer a question anyone has.
+ */
 const DOCS = [
   { href: "/docs/البداية.html", label: "📖 البداية — الدليل التعليمي" },
-  { href: "/docs/المرجع.html", label: "📚 المرجع — دليل اللغة" },
-  { href: "/docs/الأخطاء.html", label: "⚠️ الأخطاء — رموز الخطأ" },
 ];
 
 const HelpLink = ({ href, children }: { href: string; children: React.ReactNode }) => (

@@ -706,6 +706,7 @@ function WriterModeToggle() {
         <button
           data-writer-mode-toggle={writerMode}
           onClick={() => setWriterMode(advanced ? "visual" : "code")}
+          title={advanced ? "العودة إلى البطاقات والحقول" : "إظهار لغة أقلامنا"}
           style={{
             paddingBlock: "0.375rem",
             paddingInline: "0.75rem",
@@ -723,6 +724,32 @@ function WriterModeToggle() {
           {advanced ? "متقدّم" : "مرئي"}
         </button>
       </div>
+
+      {/* The two language references live here, and only here: beside the
+          switch that turns the language on. They were in the ❓ menu, where the
+          reader is a beginner and the answer to every question is a field, not
+          a keyword. */}
+      {advanced && (
+        <div style={{ ...noteStyle, marginBlockStart: "0.625rem", marginBlockEnd: 0 }}>
+          <a
+            href="/docs/المرجع.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: "var(--aq-accent-muted)", textDecoration: "underline" }}
+          >
+            📚 المرجع — دليل اللغة
+          </a>
+          {" · "}
+          <a
+            href="/docs/الأخطاء.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: "var(--aq-accent-muted)", textDecoration: "underline" }}
+          >
+            ⚠️ رموز الخطأ
+          </a>
+        </div>
+      )}
     </div>
   );
 }

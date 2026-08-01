@@ -529,21 +529,75 @@ describe("round trip — generate → compile → import → generate", () => {
   });
 });
 
+// ---- 9b. The example the editor actually offers ----------------------------
+
+/**
+ * `افتح مثالًا` must open in the visual writer. Nothing checked this, and the
+ * editor shipped for a day with an example that ejected the author into a
+ * "this story is too advanced" banner whose only button led further away.
+ *
+ * This is the gate on `scripts/copy-seed.mjs`: change the seed to a story that
+ * uses a multi-branch conditional or an interpolation and this fails, naming
+ * the passage.
+ */
+describe("the seed story — افتح مثالًا", () => {
+  const seed = () => compile(SEED_STORY, "seed.qalam") as unknown as StoryJSON;
+
+  it("compiles", () => {
+    expect(() => seed()).not.toThrow();
+  });
+
+  it("opens in the visual writer", () => {
+    const result = importWriterState(seed());
+    if (!result.ok) throw new Error(`the shipped example does not open: ${result.reason}`);
+    expect(result.state.scenes.length).toBeGreaterThan(1);
+  });
+
+  it("shows a beginner every field the pane has", () => {
+    const result = importWriterState(seed());
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const s = result.state;
+
+    expect(s.tags.length, "no tag to demonstrate أثر").toBeGreaterThan(0);
+    expect(s.counters.length, "no counter to demonstrate عدّاد").toBeGreaterThan(0);
+
+    const choices = s.scenes.flatMap((sc) => sc.choices);
+    expect(choices.some((c) => c.setTag), "no choice raises a tag").toBe(true);
+    expect(choices.some((c) => c.addToCounter), "no choice moves a counter").toBe(true);
+    expect(choices.some((c) => c.requires), "no gated choice").toBe(true);
+    expect(choices.some((c) => c.consumable), "no one-time choice").toBe(true);
+    expect(choices.some((c) => c.proseAfter.trim().length > 0), "no after-prose").toBe(true);
+    expect(
+      s.scenes.some((sc) => sc.conditionalTexts.length > 0),
+      "no conditional text",
+    ).toBe(true);
+    expect(s.scenes.filter((sc) => sc.isEnding).length, "fewer than two endings")
+      .toBeGreaterThanOrEqual(2);
+  });
+
+  it("has no problems of its own", () => {
+    const result = importWriterState(seed());
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(validateWriterState(result.state)).toEqual([]);
+  });
+
+  it("survives the round trip", () => {
+    const imported = importWriterState(seed());
+    expect(imported.ok).toBe(true);
+    if (!imported.ok) return;
+    const regenerated = generateQalam(imported.state);
+    const again = importWriterState(compile(regenerated, "seed.qalam") as unknown as StoryJSON);
+    expect(again.ok).toBe(true);
+    if (!again.ok) return;
+    expect(generateQalam(again.state)).toBe(regenerated);
+  });
+});
+
 // ---- 10. What the importer must refuse -------------------------------------
 
 describe("importWriterState — advanced stories fall back rather than lose work", () => {
-  it("refuses the shipped العطر المفقود source, which uses multi-branch conditionals", () => {
-    // The build step copies stories/العطر_المفقود.qalam into this module, so
-    // this is the very source the editor ships as "افتح مثالًا".
-    const story = compile(SEED_STORY, "العطر_المفقود.qalam") as unknown as StoryJSON;
-    const result = importWriterState(story);
-    expect(result.ok).toBe(false);
-    if (result.ok) return;
-    expect(result.reason.length).toBeGreaterThan(0);
-    // The reason is Arabic and names the part that cannot be shown.
-    expect(result.reason).toMatch(/[؀-ۿ]/);
-  });
-
   const refusals: Array<[string, string]> = [
     ["interpolation", `متغير س = 1\n\n=== البداية ===\nجمعت {س} قطرة.\n-> نهاية\n`],
     ["sub-sections", `=== البداية ===\nنصّ.\n= فرع\nنصّ آخر.\n-> نهاية\n`],

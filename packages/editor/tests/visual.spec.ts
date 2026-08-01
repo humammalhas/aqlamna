@@ -259,22 +259,31 @@ test.describe("editor visual contract", () => {
     expect(errors, `console errors: ${errors.join(" | ")}`).toHaveLength(0);
   });
 
-  test("story logic works through the UI: collect twice unlocks the third choice", async ({ page }) => {
+  test("story logic works through the UI: two attempts unlock the gated choice", async ({ page }) => {
     await page.getByRole("button", RUN).click();
     await page.waitForSelector(".aq-choice-btn", { timeout: 10000 });
 
     const labels = () =>
       page.locator(".aq-choice-btn").evaluateAll((els) => els.map((e) => e.textContent?.trim() ?? ""));
 
-    // The seed story (الدكّان) starts with choices
-    const initialLabels = await labels();
-    expect(initialLabels.length).toBeGreaterThan(0);
+    // The seed is stories/طائرة_الورق.qalam now. This test used to name العطر
+    // المفقود's choices, so it broke the moment the example changed — which is
+    // the right way round: a test that hardcodes a story should fail when the
+    // story is swapped, not quietly pass against a different one.
+    expect(await labels()).toContain("جرّب وحدك مرّة أخرى");
+    await page.locator(".aq-choice-btn", { hasText: "جرّب وحدك مرّة أخرى" }).first().click();
+    await page.waitForTimeout(250);
 
-    // Click the first choice to advance
-    await page.locator(".aq-choice-btn", { hasText: "اسأليه عن الثلاثة" }).first().click();
+    // المحاولة gates its third choice on المحاولات >= 2, so it is not offered yet.
+    expect(await labels(), "gated choice offered too early").not.toContain("أطل الخيط واركض");
 
-    // Story should have advanced past الدكّان
-    await expect(page.locator(".player-pane")).not.toContainText("وصفة جدّتي ضاعت");
+    await page.locator(".aq-choice-btn", { hasText: "اركض مع الريح" }).first().click();
+    await page.waitForTimeout(250);
+    await page.locator(".aq-choice-btn", { hasText: "انتظر هبّة قوية" }).first().click();
+    await page.waitForTimeout(250);
+
+    // Two attempts counted: the counter condition holds and the choice appears.
+    expect(await labels(), "gated choice never unlocked").toContain("أطل الخيط واركض");
   });
 
   test("AI textarea exists, is visible, and is wide enough", async ({ page }) => {

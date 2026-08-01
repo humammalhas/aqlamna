@@ -143,6 +143,8 @@ export default function AIActions() {
         onClick={toggleOpen}
         title="الكتابة بمساعدة الذكاء الاصطناعي"
         style={{
+          // Collapsed, it is a small button that stays at the end of the row.
+          marginInlineStart: "auto",
           paddingBlock: "0.25rem",
           paddingInline: "0.625rem",
           fontSize: "0.8125rem",
@@ -162,7 +164,7 @@ export default function AIActions() {
 
   // ---- Expanded panel --------------------------------------------------------
   return (
-    <div style={{ direction: "rtl" }}>
+    <div style={{ direction: "rtl", flex: "1 1 100%", inlineSize: "100%", minInlineSize: 0 }}>
       {/* Header row: label + collapse button */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBlockEnd: "0.5rem" }}>
         <button
