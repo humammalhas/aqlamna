@@ -41,6 +41,24 @@ export interface Counter {
   initial: number;
 }
 
+/**
+ * One declared illustration.
+ *
+ * `description` is Arabic and does three jobs: it is what the bridge translates
+ * and sends to the image model, it is the `alt` text a screen reader reads, and
+ * it is what shows inside the placeholder frame when the picture has not been
+ * drawn yet. The bytes never live here — they are in IndexedDB keyed by
+ * project+name, so a story with ten images is still a few KB of source.
+ *
+ * Images are story-level, not scene-level, because the language stores one copy
+ * however many times it is used (`IMAGES_SPEC.md`), and a form that hid that
+ * would make reuse impossible without saying so.
+ */
+export interface StoryImage {
+  name: string;
+  description: string;
+}
+
 export type WriterCondition =
   | { kind: "tag"; tag: string; present: boolean }
   | { kind: "counter"; counter: string; op: CounterOp; value: number };
@@ -72,6 +90,16 @@ export interface ConditionalText {
 export interface Scene {
   id: string;
   title: string;
+  /**
+   * Name of the declared image shown at the TOP of this scene, or null.
+   *
+   * One image, one position. The language allows `صورة: الاسم` anywhere in a
+   * passage and renders it exactly where it is written, so a form that offered
+   * one slot but silently moved the picture would change the story. The
+   * importer therefore accepts an image only when it is the passage's first
+   * node, and rejects the rest by name rather than relocating them.
+   */
+  image: string | null;
   prose: string;
   choices: Choice[];
   conditionalTexts: ConditionalText[];
@@ -87,6 +115,14 @@ export interface WriterState {
   scenes: Scene[];
   tags: string[];
   counters: Counter[];
+  images: StoryImage[];
+  /**
+   * One style sentence for the whole story, appended verbatim to every English
+   * prompt. Not decoration: given a bare description, the text model volunteers
+   * its own "cinematic composition, rich amber and deep violet sky" and ten
+   * images come back looking like ten illustrators. See `IMAGES_SPEC.md`.
+   */
+  imageStyle: string;
 }
 
 // ---- Ids -------------------------------------------------------------------
@@ -113,6 +149,7 @@ export function emptyScene(title: string): Scene {
   return {
     id: nextId("s"),
     title,
+    image: null,
     prose: "",
     choices: [],
     conditionalTexts: [],
@@ -143,7 +180,7 @@ export function emptyConditionalText(tag: string | null): ConditionalText {
 }
 
 export function emptyWriterState(): WriterState {
-  return { title: "", author: "", scenes: [], tags: [], counters: [] };
+  return { title: "", author: "", scenes: [], tags: [], counters: [], images: [], imageStyle: "" };
 }
 
 /**
@@ -151,7 +188,7 @@ export function emptyWriterState(): WriterState {
  * The title is the same word the docs use for a first scene.
  */
 export function starterWriterState(): WriterState {
-  return { title: "", author: "", scenes: [emptyScene("البداية")], tags: [], counters: [] };
+  return { title: "", author: "", scenes: [emptyScene("البداية")], tags: [], counters: [], images: [], imageStyle: "" };
 }
 
 // ---- Arabic-Indic digits ---------------------------------------------------

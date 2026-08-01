@@ -102,6 +102,27 @@ export default function VisualWriterPane() {
     return name;
   }, [setWriterState]);
 
+  const createImage = useCallback((): string | null => {
+    const current = useStore.getState().writerState;
+    if (!current) return null;
+    const names = (current.images ?? []).map((i) => i.name);
+    const name = askName("ما اسم الصورة الجديدة؟ (مثلًا: بوابة المدينة)", names);
+    if (!name) return null;
+    if (!names.includes(name)) {
+      setWriterState({ ...current, images: [...(current.images ?? []), { name, description: "" }] });
+    }
+    return name;
+  }, [setWriterState]);
+
+  const setImageDescription = useCallback((name: string, description: string) => {
+    const current = useStore.getState().writerState;
+    if (!current) return;
+    setWriterState({
+      ...current,
+      images: (current.images ?? []).map((i) => (i.name === name ? { ...i, description } : i)),
+    });
+  }, [setWriterState]);
+
   const createCounter = useCallback((): string | null => {
     const current = useStore.getState().writerState;
     if (!current) return null;
@@ -296,6 +317,10 @@ export default function VisualWriterPane() {
           scenes={state.scenes}
           tags={state.tags}
           counters={state.counters}
+          images={state.images}
+          imageStyle={state.imageStyle}
+          onCreateImage={createImage}
+          onImageDescription={setImageDescription}
           issues={issuesFor(scene.id)}
           onFocus={() => setWriterFocusScene(scene.id)}
           onChange={(next) => patchScene(scene.id, next)}
@@ -384,6 +409,20 @@ export default function VisualWriterPane() {
           <div style={row}>
             <button type="button" onClick={createCounter} style={ghostButton}>＋ أضف عدّادًا</button>
           </div>
+
+          <h3 style={{ ...labelStyle, marginBlockStart: "1rem", fontSize: "0.8125rem", fontWeight: 700 }}>أسلوب الصور</h3>
+          <p style={noteText}>
+            سطر واحد للقصة كلّها، يُضاف إلى كلّ صورة كما هو. دونه يخترع النموذج أسلوبًا
+            مختلفًا لكلّ صورة، فتخرج عشر صور كأنّ عشرة رسّامين رسموها.
+          </p>
+          <input
+            dir="rtl"
+            aria-label="أسلوب الصور"
+            placeholder="مثال: رسم كتب أطفال، ألوان ترابية"
+            value={state.imageStyle}
+            onChange={(e) => update((s) => ({ ...s, imageStyle: e.target.value }))}
+            style={{ ...input, fontFamily: PROSE_FONT, marginBlockStart: "0.375rem" }}
+          />
         </div>
       </details>
 

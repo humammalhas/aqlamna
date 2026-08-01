@@ -4,9 +4,10 @@
 // render as styled buttons. Theme is read from the Zustand store.
 // ---------------------------------------------------------------------------
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useStore, type PlayerTheme } from "../store.js";
 import { mount, type StoryJSON } from "@aqlamna/runtime";
+import { loadImage } from "../lib/image-db.js";
 import { DARK_THEME_CSS, LIGHT_THEME_CSS, BOOK_THEME_CSS } from "../generated/runtime-bundle.js";
 
 const THEME_CSS: Record<string, string> = {
@@ -84,8 +85,50 @@ export default function PlayerPane() {
   const playerTheme = useStore((s) => s.playerTheme);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  /**
+   * The story with its drawn images inlined, or null while they load.
+   *
+   * The compiled JSON carries only the DECLARATION of each image — name and
+   * Arabic description. The bytes live in IndexedDB, because a story with ten
+   * pictures would otherwise be megabytes of source re-serialised on every
+   * keystroke. `export-html.ts` already inlines them on the way out; without
+   * the same step here, ▶ شغّل showed the placeholder frame for a picture the
+   * author had just watched appear on the card two inches away.
+   */
+  const [readyStory, setReadyStory] = useState<StoryJSON | null>(null);
+
   useEffect(() => {
-    if (!storyJson || !containerRef.current) return;
+    let alive = true;
+    if (!storyJson) { setReadyStory(null); return; }
+
+    const declared = (storyJson as unknown as {
+      images?: Record<string, { alt: string; data?: string }>;
+    }).images;
+
+    if (!declared || Object.keys(declared).length === 0) {
+      setReadyStory(storyJson as unknown as StoryJSON);
+      return;
+    }
+
+    (async () => {
+      const images: Record<string, { alt: string; data?: string }> = {};
+      for (const [name, decl] of Object.entries(declared)) {
+        try {
+          const stored = await loadImage("current", name);
+          images[name] = stored ? { alt: decl.alt, data: stored.dataUrl } : { alt: decl.alt };
+        } catch {
+          // A picture that will not load is a placeholder, never a dead player.
+          images[name] = { alt: decl.alt };
+        }
+      }
+      if (alive) setReadyStory({ ...(storyJson as unknown as StoryJSON), images });
+    })();
+
+    return () => { alive = false; };
+  }, [storyJson]);
+
+  useEffect(() => {
+    if (!readyStory || !containerRef.current) return;
 
     // Clear previous content
     containerRef.current.innerHTML = "";
@@ -103,7 +146,7 @@ export default function PlayerPane() {
 
     // Mount the runtime player
     const unmount = mount(
-      storyJson as unknown as StoryJSON,
+      readyStory,
       containerRef.current,
       {
         showToolbar: true,
@@ -117,7 +160,7 @@ export default function PlayerPane() {
     return () => {
       unmount();
     };
-  }, [storyJson, playerTheme]);
+  }, [readyStory, playerTheme]);
 
   if (!storyJson) {
     return (

@@ -97,12 +97,14 @@ export interface NameMap {
   scene: Map<string, string>;
   tag: Map<string, string>;
   counter: Map<string, string>;
+  image: Map<string, string>;
 }
 
 export function buildNameMap(state: WriterState): NameMap {
   const sceneNames = uniqueIdentifiers(state.scenes.map((s) => s.title), "مقطع");
   const tagNames = uniqueIdentifiers(state.tags, "أثر");
   const counterNames = uniqueIdentifiers(state.counters.map((c) => c.name), "عداد");
+  const imageNames = uniqueIdentifiers((state.images ?? []).map((i) => i.name), "صورة");
 
   const scene = new Map<string, string>();
   state.scenes.forEach((s, i) => scene.set(s.id, sceneNames[i]!));
@@ -110,8 +112,10 @@ export function buildNameMap(state: WriterState): NameMap {
   state.tags.forEach((t, i) => tag.set(t, tagNames[i]!));
   const counter = new Map<string, string>();
   state.counters.forEach((c, i) => counter.set(c.name, counterNames[i]!));
+  const image = new Map<string, string>();
+  (state.images ?? []).forEach((im, i) => image.set(im.name, imageNames[i]!));
 
-  return { scene, tag, counter };
+  return { scene, tag, counter, image };
 }
 
 // ---- Prose safety ----------------------------------------------------------
@@ -254,6 +258,14 @@ function renderScene(scene: Scene, names: NameMap): string[] {
   lines.push(`=== ${passage} ===`);
   lines.push("");
 
+  // Before the prose, always. `صورة: الاسم` renders exactly where it is
+  // written, and the card offers one slot at the top — so that is where it goes
+  // and the importer refuses anything else rather than moving it.
+  if (scene.image) {
+    const id = names.image.get(scene.image);
+    if (id) { lines.push(`صورة: ${id}`); lines.push(""); }
+  }
+
   const prose = sanitizeProse(scene.prose).replace(/\s+$/, "");
   if (prose.trim().length > 0) {
     for (const line of prose.split("\n")) lines.push(line.trimEnd());
@@ -302,6 +314,9 @@ export function generateQalam(state: WriterState): string {
 
   if (state.title.trim()) lines.push(`عنوان: ${quote(state.title.trim())}`);
   if (state.author.trim()) lines.push(`مؤلف: ${quote(state.author.trim())}`);
+  if ((state.imageStyle ?? "").trim()) {
+    lines.push(`أسلوب_الصور: ${quote(state.imageStyle.trim())}`);
+  }
   if (lines.length > 0) lines.push("");
 
   const declared: string[] = [];
@@ -312,6 +327,12 @@ export function generateQalam(state: WriterState): string {
   for (const counter of state.counters) {
     const id = names.counter.get(counter.name);
     if (id) declared.push(`متغير ${id} = ${Math.trunc(counter.initial) || 0}`);
+  }
+  // An image declared but never placed is not an error (IMAGES_SPEC), so every
+  // declared image is emitted whether or not a scene points at it.
+  for (const img of state.images ?? []) {
+    const id = names.image.get(img.name);
+    if (id) declared.push(`صورة ${id} = ${quote(img.description.trim() || img.name)}`);
   }
   if (declared.length > 0) { lines.push(...declared); lines.push(""); }
 

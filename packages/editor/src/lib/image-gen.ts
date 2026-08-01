@@ -28,6 +28,60 @@ const BRIDGE_SYSTEM_PROMPT =
   "Just the subject. No explanation, no prefix, no quotation marks.";
 
 /**
+ * The style has to cross the bridge too.
+ *
+ * IMAGES_SPEC.md says the bridge translates the subject and appends the
+ * author's style **verbatim**, to stop the text model inventing a look of its
+ * own. That guard is right; the word "verbatim" was wrong. The style is written
+ * in Arabic, and the image model cannot read Arabic — so appending it verbatim
+ * appended nothing.
+ *
+ * Measured on FLUX.1-schnell, same subject, same model, only this clause
+ * changed:
+ *   ", رسم كتب أطفال، ألوان ترابية"                        → a photograph
+ *   ", children's book illustration, earthy colours, flat" → an illustration
+ *
+ * The story style silently did nothing, which is the same failure as sending
+ * the subject in Arabic: not a worse picture, the wrong one. Translating the
+ * author's own words is not inventing — the system prompt below still forbids
+ * adding anything the author did not write.
+ */
+const STYLE_SYSTEM_PROMPT =
+  "Translate this Arabic art-style phrase into English image-generation " +
+  "keywords. Keep exactly the same meaning — do not add any style, colour, " +
+  "lighting or mood the input does not state. " +
+  "Output ONLY the English, no explanation, no quotation marks.";
+
+/** Styles change rarely; a story of ten images should not pay for ten calls. */
+const styleCache = new Map<string, string>();
+
+async function arabicStyleToEnglish(arabicStyle: string): Promise<string> {
+  const key = arabicStyle.trim();
+  const cached = styleCache.get(key);
+  if (cached !== undefined) return cached;
+
+  // Already Latin (the author typed English): nothing to translate.
+  if (!/[؀-ۿ]/.test(key)) { styleCache.set(key, key); return key; }
+
+  const provider = getSelectedProvider();
+  const apiKey = getApiKey(provider.id);
+  if (provider.requiresKey && !apiKey) return key;
+
+  const text = await callTransport(
+    provider.kind,
+    { baseUrl: getEffectiveBaseUrl(), model: getEffectiveModel(), apiKey: apiKey ?? undefined },
+    [
+      { role: "system", content: STYLE_SYSTEM_PROMPT },
+      { role: "user", content: key },
+    ],
+    { temperature: 0.2, max_tokens: 100 },
+  );
+  const english = text.replace(/^["']|["']$/g, "").trim();
+  styleCache.set(key, english);
+  return english;
+}
+
+/**
  * Translate an Arabic description into an English image prompt using the
  * currently selected text provider. This call does NOT include the
  * ARABIC_MASTERY system prompt — that corpus governs prose, not pictures.
@@ -250,10 +304,18 @@ export async function generateImage(
   }
   const translateMs = Date.now() - t0;
 
-  // Append story-level image style if the author set one
-  const englishPrompt = imageStyle
-    ? `${translated}, ${imageStyle}`
-    : translated;
+  // Append the story style — translated, because the image model reads English.
+  // A failure here must not lose the picture: fall back to the subject alone,
+  // which is what the author got before the style crossed the bridge at all.
+  let englishPrompt = translated;
+  if (imageStyle && imageStyle.trim()) {
+    try {
+      const englishStyle = await arabicStyleToEnglish(imageStyle);
+      if (englishStyle) englishPrompt = `${translated}, ${englishStyle}`;
+    } catch {
+      englishPrompt = translated;
+    }
+  }
 
   // Call 2 — image model: English → image
   onProgress?.("draw");

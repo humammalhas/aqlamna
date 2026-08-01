@@ -6,12 +6,13 @@
 // scene the reader starts in, red = a scene the story ends in, plain otherwise.
 // ---------------------------------------------------------------------------
 
-import type { Counter, Scene } from "../../lib/writer-model.js";
+import type { Counter, Scene, StoryImage } from "../../lib/writer-model.js";
 import { describeProseFixes } from "../../lib/generate-qalam.js";
 import type { WriterIssue } from "../../lib/generate-qalam.js";
 import AutoTextarea from "./AutoTextarea.js";
 import ChoiceCard from "./ChoiceCard.js";
 import ConditionalTextCard from "./ConditionalTextCard.js";
+import SceneImage from "./SceneImage.js";
 import { DestinationSelect } from "./WriterControls.js";
 import {
   card,
@@ -35,6 +36,10 @@ interface Props {
   scenes: Scene[];
   tags: string[];
   counters: Counter[];
+  images: StoryImage[];
+  imageStyle: string;
+  onCreateImage: () => string | null;
+  onImageDescription: (name: string, description: string) => void;
   issues: WriterIssue[];
   onChange: (next: Scene) => void;
   onDelete: () => void;
@@ -58,6 +63,10 @@ export default function SceneCard({
   scenes,
   tags,
   counters,
+  images,
+  imageStyle,
+  onCreateImage,
+  onImageDescription,
   issues,
   onChange,
   onDelete,
@@ -127,6 +136,17 @@ export default function SceneCard({
           {sceneIssues.map((m) => <li key={m}>{m}</li>)}
         </ul>
       )}
+
+      {/* ---- Image, above the prose because that is where it renders ---- */}
+      <SceneImage
+        sceneIndex={index}
+        value={scene.image}
+        images={images}
+        imageStyle={imageStyle}
+        onChange={(image) => set({ image })}
+        onCreate={onCreateImage}
+        onDescription={onImageDescription}
+      />
 
       {/* ---- Prose ---- */}
       <div style={{ marginBlockStart: "0.75rem" }}>

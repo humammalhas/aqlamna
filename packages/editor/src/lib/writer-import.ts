@@ -205,6 +205,7 @@ function readScene(
   const scene: Scene = {
     id,
     title: name,
+    image: null,
     prose: "",
     choices: [],
     conditionalTexts: [],
@@ -212,8 +213,8 @@ function readScene(
     isEnding: false,
   };
 
-  type Stage = "prose" | "conditional" | "choices" | "divert";
-  const rank: Record<Stage, number> = { prose: 0, conditional: 1, choices: 2, divert: 3 };
+  type Stage = "image" | "prose" | "conditional" | "choices" | "divert";
+  const rank: Record<Stage, number> = { image: 0, prose: 1, conditional: 2, choices: 3, divert: 4 };
   let stage = 0;
   const proseNodes: ContentNode[] = [];
 
@@ -224,6 +225,17 @@ function readScene(
 
   for (const node of content) {
     switch (node.type) {
+      case "image":
+        // First node only. The card shows one picture at the top of the scene;
+        // an image further down renders further down, and quietly hoisting it
+        // would change the story rather than describe it.
+        if (scene.image !== null || stage > rank.image) {
+          reject(`صورة في غير أوّل المقطع ${name}`);
+        }
+        enter("image");
+        scene.image = (node as { name: string }).name;
+        break;
+
       case "text":
         enter("prose");
         proseNodes.push(node);
@@ -305,7 +317,6 @@ export function importSingleScene(
 export function importWriterState(story: StoryJSON): ImportResult {
   try {
     if (Object.keys(story.lists ?? {}).length > 0) reject("القصة تستخدم القوائم");
-    if (Object.keys(story.images ?? {}).length > 0) reject("القصة تستخدم الصور");
 
     const kinds = readVariables(story);
 
@@ -340,6 +351,17 @@ export function importWriterState(story: StoryJSON): ImportResult {
       scenes,
       tags: kinds.tags,
       counters: kinds.counters,
+      images: Object.entries(story.images ?? {}).map(([name, decl]) => ({
+        name,
+        description: decl.alt ?? "",
+      })),
+      // `imageStyle` is emitted by the compiler but is not on the runtime's
+      // published StoryJSON type, so it is read structurally rather than by
+      // widening a package this phase is not allowed to touch.
+      imageStyle:
+        typeof (story as unknown as { imageStyle?: unknown }).imageStyle === "string"
+          ? (story as unknown as { imageStyle: string }).imageStyle
+          : "",
     };
     return { ok: true, state };
   } catch (err) {

@@ -661,6 +661,118 @@ describe("validateWriterState", () => {
   });
 });
 
+// ---- 11b. Images ----------------------------------------------------------
+
+describe("images", () => {
+  function withImage(): WriterState {
+    return build((s) => {
+      s.title = "قصة مصوّرة";
+      s.imageStyle = "رسم كتب أطفال، ألوان ترابية";
+      s.images = [{ name: "بوابة المدينة", description: "بوابة حجرية عند الغروب" }];
+      s.scenes = [
+        scene("البداية", (sc) => {
+          sc.image = "بوابة المدينة";
+          sc.prose = "وقفت أمام البوابة.";
+          sc.isEnding = true;
+        }),
+      ];
+    });
+  }
+
+  it("declares the image, sets the style, and places it in the scene", () => {
+    const story = compileState(withImage());
+
+    const images = (story as unknown as { images?: Record<string, { alt: string }> }).images!;
+    expect(images["بوابة_المدينة"]).toEqual({ alt: "بوابة حجرية عند الغروب" });
+    expect((story as unknown as { imageStyle?: string }).imageStyle)
+      .toBe("رسم كتب أطفال، ألوان ترابية");
+
+    // Placed FIRST, because that is where the card shows it and where the
+    // runtime will render it. Anywhere else would be a different story.
+    const content = contentOf(story, "البداية");
+    expect(content[0]).toEqual({ type: "image", name: "بوابة_المدينة" });
+  });
+
+  it("round-trips byte-identically", () => {
+    const first = generateQalam(withImage());
+    const story = compile(first, "w.qalam", { timestamp: "2026-08-01T00:00:00.000Z" }) as unknown as StoryJSON;
+    const imported = importWriterState(story);
+    expect(imported.ok).toBe(true);
+    if (!imported.ok) return;
+
+    expect(imported.state.imageStyle).toBe("رسم كتب أطفال، ألوان ترابية");
+    expect(imported.state.images).toEqual([
+      { name: "بوابة_المدينة", description: "بوابة حجرية عند الغروب" },
+    ]);
+    expect(imported.state.scenes[0]!.image).toBe("بوابة_المدينة");
+    expect(generateQalam(imported.state)).toBe(first);
+  });
+
+  it("keeps a declared-but-unplaced image — that is not an error", () => {
+    const state = build((s) => {
+      s.images = [{ name: "خريطة", description: "خريطة صفراء" }];
+      s.scenes = [scene("البداية", (sc) => { sc.prose = "نصّ."; sc.isEnding = true; })];
+    });
+    const story = compileState(state);
+    const images = (story as unknown as { images?: Record<string, unknown> }).images!;
+    expect(Object.keys(images)).toEqual(["خريطة"]);
+    const imported = importWriterState(story);
+    expect(imported.ok).toBe(true);
+    if (!imported.ok) return;
+    expect(imported.state.images).toHaveLength(1);
+    expect(imported.state.scenes[0]!.image).toBeNull();
+  });
+
+  /**
+   * ⚠️ This documents a bug in `@aqlamna/core`, not a decision here.
+   *
+   * `صورة: الاسم` is SILENTLY DROPPED by the parser unless it is the first node
+   * in its passage. `parseTextOrConditional()` collects a logical line and
+   * breaks on PASSAGE_MARKER, CHOICE_STAR, CHOICE_PLUS, DIVERT, DIVERT_RETURN,
+   * THREAD, ASSIGN and SUBSECTION_MARKER — but not KEYWORD_IMAGE. Once prose has
+   * started, the image keyword is swallowed into the text buffer and discarded
+   * as an unexpected token. No error, no warning, no picture.
+   *
+   * So `IMAGES_SPEC.md`'s "ترتيبها بين النصّ والخيارات هو ترتيب كتابتها" is not
+   * true today: position 1 is the only one that survives. The visual writer
+   * places images first, which is why it works — and this test pins the real
+   * behaviour so that fixing core fails here loudly rather than silently
+   * changing what the importer must accept.
+   */
+  it("core drops an image that is not the passage's first node — known bug", () => {
+    const source = [
+      'صورة خريطة = "خريطة صفراء"',
+      "",
+      "=== البداية ===",
+      "",
+      "نصّ قبل الصورة.",
+      "",
+      "صورة: خريطة",
+      "",
+      "-> نهاية",
+      "",
+    ].join("\n");
+    const story = compile(source, "t.qalam") as unknown as StoryJSON;
+
+    // The declaration survives; the placement does not.
+    expect(Object.keys((story as unknown as { images: Record<string, unknown> }).images))
+      .toEqual(["خريطة"]);
+    expect(contentOf(story, "البداية").map((n) => n.type)).toEqual(["text", "divert"]);
+
+    // Placed first, the very same image is kept.
+    const ok = compile(
+      ['صورة خريطة = "خريطة صفراء"', "", "=== البداية ===", "", "صورة: خريطة", "", "نصّ.", "", "-> نهاية", ""].join("\n"),
+      "t.qalam",
+    ) as unknown as StoryJSON;
+    expect(contentOf(ok, "البداية").map((n) => n.type)).toEqual(["image", "text", "divert"]);
+  });
+
+  it("a story with no images declares none at all", () => {
+    const story = compileState(perfumeState());
+    expect((story as unknown as { images?: unknown }).images).toBeUndefined();
+  });
+});
+
 // ---- 12. AI suggestions landing in the cards -------------------------------
 
 describe("applyAIFragment — where an accepted suggestion goes", () => {
