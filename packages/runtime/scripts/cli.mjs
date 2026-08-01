@@ -9,7 +9,7 @@
 // .html file. The --theme flag selects the default (light if omitted).
 // ---------------------------------------------------------------------------
 
-import { readFileSync, writeFileSync, statSync } from "node:fs";
+import { readFileSync, writeFileSync, statSync, existsSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { buildThemeBlocks } from "../../../scripts/theme-builder.mjs";
@@ -74,6 +74,35 @@ try {
 } catch (err) {
   console.error("[export] Compilation failed: " + (err?.message ?? err));
   process.exit(1);
+}
+
+// ---- Inline the illustrations ----------------------------------------------
+//
+// The compiled JSON carries only each image's DECLARATION — its name and Arabic
+// description. In the editor the bytes come from IndexedDB; a build script has
+// no such thing, so it reads the same files `copy-seed.mjs` reads:
+//
+//   stories/images/<story-basename>-<image-name>.webp
+//
+// Without this the CLI exported a picture-less story and the frames carried
+// their descriptions instead — correct behaviour for an undrawn image, and a
+// silent downgrade for one that had been drawn.
+if (storyJson.images && Object.keys(storyJson.images).length > 0) {
+  const storyName = filename.replace(/\.qalam$/, "");
+  const imagesDir = join(qalamPath, "..", "images");
+  let inlined = 0;
+  for (const [name, decl] of Object.entries(storyJson.images)) {
+    const file = join(imagesDir, `${storyName}-${name}.webp`);
+    if (!existsSync(file)) {
+      console.warn(`[export] no bytes for image "${name}" — exporting its frame only`);
+      continue;
+    }
+    decl.data = `data:image/webp;base64,${readFileSync(file).toString("base64")}`;
+    inlined++;
+  }
+  console.log(
+    `[export] Inlined ${inlined}/${Object.keys(storyJson.images).length} image(s)`,
+  );
 }
 
 // ---- Build the HTML --------------------------------------------------------

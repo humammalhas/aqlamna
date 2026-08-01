@@ -17,10 +17,11 @@
 - **عدّاد** — رقم يزيد كلّما اختار القارئ شيئًا.
 - **نصّ مشروط** — فقرة لا يراها إلا من ينطبق عليه الشرط.
 - **شرط ظهور الخيار** — زرّ لا يظهر إلا لمن يستحقّه.
+- **صورة** — تصفها بالعربية وتضغط زرًّا، فتظهر في المقطع وفي الملفّ المصدَّر.
 
 ثمّ تضغط **▶ شغّل** لتجرّبها، و**⬇ تصدير** لتأخذها معك.
 
-الدليل الكامل في [docs/البداية.md](./docs/البداية.md) — عشر خطوات، دون رمز واحد.
+الدليل الكامل في [docs/البداية.md](./docs/البداية.md) — إحدى عشرة خطوة، دون رمز واحد.
 
 ## واللغة تحت الحقول
 
@@ -78,10 +79,11 @@ button to add a choice. A choice asks what the reader clicks and which scene it 
 picked from a dropdown of your own scenes. No `===`, no `->`, no braces.
 
 When you need more: a **tag** (a flag the story remembers), a **counter** (a number that
-goes up), **conditional text** (a paragraph only some readers see), and a **gated choice**
-(a button that only appears when a condition holds).
+goes up), **conditional text** (a paragraph only some readers see), a **gated choice** (a
+button that only appears when a condition holds), and an **illustration** — describe it in
+Arabic, press a button, and it is drawn and inlined into the exported file.
 
-The full walkthrough is [docs/البداية.md](./docs/البداية.md) — ten steps, no code.
+The full walkthrough is [docs/البداية.md](./docs/البداية.md) — eleven steps, no code.
 
 ### The language underneath
 

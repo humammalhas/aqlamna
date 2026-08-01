@@ -75,7 +75,16 @@ if (!existsSync(qalamSource)) {
 run(`node "${cliPath}" "${qalamSource}" -o "${join(root, "stories", "العطر_المفقود.html")}"`);
 run(`node "${cliPath}" "${qalamSource}" -o "${join(root, "site", "العطر_المفقود.html")}"`);
 
-// 6b. الرحيق — no .qalam source; extract JSON from existing HTML and re-wrap
+// 6b. طائرة_الورق → site/. The editor's example, and the only shipped story
+//     with illustrations — the CLI inlines them from stories/images/.
+const kiteSource = join(root, "stories", "طائرة_الورق.qalam");
+if (!existsSync(kiteSource)) {
+  console.error("Missing story source: " + kiteSource);
+  process.exit(1);
+}
+run(`node "${cliPath}" "${kiteSource}" -o "${join(root, "site", "طائرة_الورق.html")}"`);
+
+// 6c. الرحيق — no .qalam source; extract JSON from existing HTML and re-wrap
 //     with the freshly-built runtime.
 console.log("\n  → rebuild الرحيق.html (extract JSON + fresh runtime)");
 rebuildNectar();
@@ -93,6 +102,7 @@ console.log("\n══ Timestamps:");
 const storyFiles = [
   join(root, "stories", "العطر_المفقود.html"),
   join(root, "site", "العطر_المفقود.html"),
+  join(root, "site", "طائرة_الورق.html"),
   join(root, "packages", "runtime", "examples", "الرحيق.html"),
 ];
 for (const f of storyFiles) {

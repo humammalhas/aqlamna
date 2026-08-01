@@ -133,7 +133,7 @@ export const BUILD_DIRS = [
       {
         kind: "explicit",
         producer: "scripts/build-site.mjs",
-        paths: ["العطر_المفقود.html"],
+        paths: ["العطر_المفقود.html", "طائرة_الورق.html"],
       },
       {
         // Derived from brand/ at the size they are actually displayed. The
