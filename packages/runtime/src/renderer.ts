@@ -91,6 +91,7 @@ export function renderScene(
   container: HTMLElement,
   scene: StoryScene,
   title: string | null,
+  author: string | null,
   options: RendererOptions,
   notice?: string,
 ): void {
@@ -100,12 +101,32 @@ export function renderScene(
   const wrapper = document.createElement("div");
   wrapper.className = "aq-story";
 
-  // Title
+  // Title, and the byline under it.
+  //
+  // `مؤلف:` has been part of the language since Phase 1 and the visual writer
+  // has a field for it, but nothing ever drew it: an author typed their name,
+  // exported the story, and their name appeared nowhere in the file they were
+  // about to send to somebody.
+  //
+  // The rule under the title moves to the byline when there is one, so the
+  // header stays one block rather than a title, a line, and an orphan name
+  // below it. A class rather than `:has(+ .aq-byline)` — the export must open
+  // in whatever browser the reader has, and a selector that fails to parse
+  // takes its whole rule with it.
+  const byline = author?.trim() ? `بقلم ${author.trim()}` : "";
+
   if (title) {
     const titleEl = document.createElement("h1");
-    titleEl.className = "aq-title";
+    titleEl.className = byline ? "aq-title aq-title-bylined" : "aq-title";
     titleEl.textContent = title;
     wrapper.appendChild(titleEl);
+  }
+
+  if (byline) {
+    const bylineEl = document.createElement("p");
+    bylineEl.className = "aq-byline";
+    bylineEl.textContent = byline;
+    wrapper.appendChild(bylineEl);
   }
 
   // Output area — PHASE1_SPEC §1.16.

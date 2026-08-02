@@ -137,6 +137,12 @@ function buildHtml(storyJson) {
   // Inline all three themes with theme-switching JS
   const themeHtml = buildThemeBlocks(storyJson.title ?? "قصة");
 
+  // The author's name belongs in the document as well as on the page: this is
+  // the tag a reader's browser, a bookmark manager and a search engine read.
+  const authorMeta = storyJson.author
+    ? `<meta name="author" content="${escapeHtml(storyJson.author)}">`
+    : null;
+
   return [
     "<!DOCTYPE html>",
     `<html lang="${lang}" dir="${dir}">`,
@@ -144,6 +150,7 @@ function buildHtml(storyJson) {
     '<meta charset="UTF-8">',
     '<meta name="viewport" content="width=device-width, initial-scale=1.0">',
     `<title>${title}</title>`,
+    ...(authorMeta ? [authorMeta] : []),
     themeHtml,
     "</head>",
     "<body>",

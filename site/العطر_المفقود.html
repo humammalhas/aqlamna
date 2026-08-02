@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>العطر المفقود</title>
+<meta name="author" content="أقلامنا">
 <style id="aq-theme-light">
 /* ---------------------------------------------------------------------------
    Aqlamna light theme — cream + ink blue.
@@ -60,6 +61,21 @@ html, body {
   margin-block-end: 2rem;
   border-block-end: 1px solid #D8CEBB;
   padding-block-end: 0.75rem;
+}
+
+/* --- Byline --------------------------------------------------------------- */
+/* With an author under it the title keeps its spacing but gives up the rule —
+   the byline carries it, so the two read as one header block. */
+
+.aq-title-bylined { margin-block-end: 0.4rem; border-block-end: none; padding-block-end: 0; }
+
+.aq-byline {
+  text-align: center;
+  font-size: 0.875rem;
+  color: #5A5346;
+  margin-block-end: 2rem;
+  padding-block-end: 0.75rem;
+  border-block-end: 1px solid #D8CEBB;
 }
 
 /* --- Output / prose ------------------------------------------------------- */
@@ -216,6 +232,25 @@ html, body {
   margin-block-end: 2rem;
   border-block-end: 1px solid #3a3528;
   padding-block-end: 0.75rem;
+}
+
+/* --- Byline --------------------------------------------------------------- */
+/* With an author under it the title keeps its spacing but gives up the rule —
+   the byline carries it, so the two read as one header block. */
+
+.aq-title-bylined {
+  margin-block-end: 0.4rem;
+  border-block-end: none;
+  padding-block-end: 0;
+}
+
+.aq-byline {
+  text-align: center;
+  font-size: 0.875rem;
+  color: #9a8c70;
+  margin-block-end: 2rem;
+  padding-block-end: 0.75rem;
+  border-block-end: 1px solid #3a3528;
 }
 
 /* --- Output / prose ------------------------------------------------------- */
@@ -425,6 +460,27 @@ html, body {
   margin-block-end: 2.5rem;
   border-block-end: 2px solid #c4a97d;
   padding-block-end: 1rem;
+}
+
+/* --- Byline --------------------------------------------------------------- */
+/* With an author under it the title keeps its spacing but gives up the rule —
+   the byline carries it, so the two read as one title page. No first-line
+   indent: this is not body text. */
+
+.aq-title-bylined {
+  margin-block-end: 0.5rem;
+  border-block-end: none;
+  padding-block-end: 0;
+}
+
+.aq-byline {
+  text-align: center;
+  text-indent: 0;
+  font-size: 1rem;
+  color: #8b6f3a;
+  margin-block-end: 2.5rem;
+  padding-block-end: 1rem;
+  border-block-end: 2px solid #c4a97d;
 }
 
 /* --- Output / prose ------------------------------------------------------- */
@@ -1076,17 +1132,35 @@ const FEEDBACK_MS = 3500;
  * Restart and "return to the mark" both rebuild the DOM, so their message
  * cannot be written before the render — it has to be handed to it.
  */
-function renderScene(container, scene, title, options, notice) {
+function renderScene(container, scene, title, author, options, notice) {
     container.innerHTML = "";
     // Story wrapper
     const wrapper = document.createElement("div");
     wrapper.className = "aq-story";
-    // Title
+    // Title, and the byline under it.
+    //
+    // `مؤلف:` has been part of the language since Phase 1 and the visual writer
+    // has a field for it, but nothing ever drew it: an author typed their name,
+    // exported the story, and their name appeared nowhere in the file they were
+    // about to send to somebody.
+    //
+    // The rule under the title moves to the byline when there is one, so the
+    // header stays one block rather than a title, a line, and an orphan name
+    // below it. A class rather than `:has(+ .aq-byline)` — the export must open
+    // in whatever browser the reader has, and a selector that fails to parse
+    // takes its whole rule with it.
+    const byline = author?.trim() ? `بقلم ${author.trim()}` : "";
     if (title) {
         const titleEl = document.createElement("h1");
-        titleEl.className = "aq-title";
+        titleEl.className = byline ? "aq-title aq-title-bylined" : "aq-title";
         titleEl.textContent = title;
         wrapper.appendChild(titleEl);
+    }
+    if (byline) {
+        const bylineEl = document.createElement("p");
+        bylineEl.className = "aq-byline";
+        bylineEl.textContent = byline;
+        wrapper.appendChild(bylineEl);
     }
     // Output area — PHASE1_SPEC §1.16.
     //   text        → a run of prose inside the current paragraph
@@ -1447,6 +1521,9 @@ function sanitiseKey(title) {
 function mount(storyJson, element, options = {}) {
     const showToolbar = options.showToolbar !== false;
     const title = storyJson.title ?? "قصة تفاعلية";
+    // `مؤلف:` in the source, a field in the visual writer, and until now dropped
+    // between the compiler and the screen.
+    const author = storyJson.author ?? null;
     // Mutable engine reference — replaced on restart
     let engine = new Engine(storyJson);
     // Every localStorage call is guarded. A browser in private mode throws on
@@ -1462,7 +1539,7 @@ function mount(storyJson, element, options = {}) {
         }
     }
     function render(scene, notice) {
-        renderScene(element, scene, title, {
+        renderScene(element, scene, title, author, {
             onChoice: (choiceId) => {
                 const next = engine.choose(choiceId);
                 render(next);

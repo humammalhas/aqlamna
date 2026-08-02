@@ -55,6 +55,21 @@ html, body {
   padding-block-end: 0.75rem;
 }
 
+/* --- Byline --------------------------------------------------------------- */
+/* With an author under it the title keeps its spacing but gives up the rule —
+   the byline carries it, so the two read as one header block. */
+
+.aq-title-bylined { margin-block-end: 0.4rem; border-block-end: none; padding-block-end: 0; }
+
+.aq-byline {
+  text-align: center;
+  font-size: 0.875rem;
+  color: #5A5346;
+  margin-block-end: 2rem;
+  padding-block-end: 0.75rem;
+  border-block-end: 1px solid #D8CEBB;
+}
+
 /* --- Output / prose ------------------------------------------------------- */
 
 .aq-output { margin-block-end: 1.5rem; }

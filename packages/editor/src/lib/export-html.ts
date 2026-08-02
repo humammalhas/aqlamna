@@ -90,6 +90,12 @@ export function buildStandaloneHtml(storyJson: StoryJSON): string {
   // Inline all three themes with theme-switching JS
   const themeHtml = buildThemeBlocks(storyJson.title ?? "قصة");
 
+  // The author's name belongs in the document as well as on the page: this is
+  // the tag a reader's browser, a bookmark manager and a search engine read.
+  const authorMeta = storyJson.author
+    ? [`<meta name="author" content="${escapeHtml(storyJson.author)}">`]
+    : [];
+
   return [
     "<!DOCTYPE html>",
     `<html lang="${lang}" dir="${dir}">`,
@@ -97,6 +103,7 @@ export function buildStandaloneHtml(storyJson: StoryJSON): string {
     '<meta charset="UTF-8">',
     '<meta name="viewport" content="width=device-width, initial-scale=1.0">',
     `<title>${title}</title>`,
+    ...authorMeta,
     themeHtml,
     "</head>",
     "<body>",

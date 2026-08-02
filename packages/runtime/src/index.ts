@@ -57,6 +57,9 @@ export function mount(
 ): () => void {
   const showToolbar = options.showToolbar !== false;
   const title = storyJson.title ?? "قصة تفاعلية";
+  // `مؤلف:` in the source, a field in the visual writer, and until now dropped
+  // between the compiler and the screen.
+  const author = storyJson.author ?? null;
 
   // Mutable engine reference — replaced on restart
   let engine = new Engine(storyJson);
@@ -78,6 +81,7 @@ export function mount(
       element,
       scene,
       title,
+      author,
       {
         onChoice: (choiceId: string) => {
           const next = engine.choose(choiceId);

@@ -84,10 +84,17 @@ if (!existsSync(kiteSource)) {
 }
 run(`node "${cliPath}" "${kiteSource}" -o "${join(root, "site", "طائرة_الورق.html")}"`);
 
-// 6c. الرحيق — no .qalam source; extract JSON from existing HTML and re-wrap
-//     with the freshly-built runtime.
-console.log("\n  → rebuild الرحيق.html (extract JSON + fresh runtime)");
-rebuildNectar();
+// 6c/6d. Two stories have no .qalam in this repo. Their compiled JSON is the
+//     master and lives inside the HTML itself, so they are re-wrapped rather
+//     than re-exported: extract the JSON, wrap it in the freshly-built runtime
+//     and the current themes. Without this they keep whatever bundle they were
+//     exported against and silently fall behind every runtime fix — which is
+//     how حرّاس الخزنة would have been the one story on the site that shows no
+//     author, on the day the byline shipped.
+console.log("\n  → rewrap الرحيق.html (extract JSON + fresh runtime)");
+rewrapStory(join(root, "packages", "runtime", "examples", "الرحيق.html"));
+console.log("  → rewrap stories/حرّاس_الخزنة.html (extract JSON + fresh runtime)");
+rewrapStory(join(root, "stories", "حرّاس_الخزنة.html"));
 
 // ── 7. Site ─────────────────────────────────────────────────────────────────
 console.log("══ Step 7/8: site");
@@ -111,15 +118,19 @@ for (const f of storyFiles) {
   console.log(`  ${rel}  ${size} bytes  ${new Date(mtimeMs).toISOString()}`);
 }
 
-// ── rebuildNectar ───────────────────────────────────────────────────────────
-function rebuildNectar() {
-  const nectarHtml = join(root, "packages", "runtime", "examples", "الرحيق.html");
+// ── rewrapStory ─────────────────────────────────────────────────────────────
+//
+// For a story whose compiled JSON lives inside its own HTML and nowhere else:
+// take that JSON out, wrap it in the current runtime and themes, write it back.
+// The bytes of the story do not change; the player around them does.
+function rewrapStory(nectarHtml) {
+  const name = nectarHtml.replace(root, "").replace(/^[\\/]/, "");
 
   // Read existing HTML and extract story JSON
   const html = readFileSync(nectarHtml, "utf-8");
   const m = html.match(/<script id="qalam-story" type="application\/json">\s*([\s\S]*?)\s*<\/script>/);
   if (!m) {
-    console.error("Could not extract story JSON from الرحيق.html");
+    console.error(`Could not extract story JSON from ${name}`);
     process.exit(1);
   }
   const storyJsonText = m[1].trim();
@@ -127,7 +138,7 @@ function rebuildNectar() {
   try {
     storyJson = JSON.parse(storyJsonText);
   } catch (e) {
-    console.error("Invalid JSON in الرحيق.html:", e.message);
+    console.error(`Invalid JSON in ${name}:`, e.message);
     process.exit(1);
   }
 
@@ -142,6 +153,10 @@ function rebuildNectar() {
   const safeJson = JSON.stringify(storyJson).replace(/</g, "\\u003c");
   const title = escapeHtml(storyJson.title ?? "قصة تفاعلية");
 
+  const authorMeta = storyJson.author
+    ? [`<meta name="author" content="${escapeHtml(storyJson.author)}">`]
+    : [];
+
   const out = [
     "<!DOCTYPE html>",
     '<html lang="ar" dir="rtl">',
@@ -149,6 +164,7 @@ function rebuildNectar() {
     '<meta charset="UTF-8">',
     '<meta name="viewport" content="width=device-width, initial-scale=1.0">',
     `<title>${title}</title>`,
+    ...authorMeta,
     themeHtml,
     "</head>",
     "<body>",
@@ -165,7 +181,7 @@ function rebuildNectar() {
   ].join("\n");
 
   writeFileSync(nectarHtml, out, "utf-8");
-  console.log(`  ✓ packages/runtime/examples/الرحيق.html  (${out.length} bytes)`);
+  console.log(`  ✓ ${name}  (${out.length} bytes)`);
 }
 
 function escapeHtml(s) {

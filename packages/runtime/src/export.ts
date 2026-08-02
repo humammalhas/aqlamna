@@ -85,6 +85,18 @@ body {
   padding-block-end: 0.75rem;
 }
 
+/* Kept in step with src/themes/dark.css. */
+.aq-title-bylined { margin-block-end: 0.4rem; border-block-end: none; padding-block-end: 0; }
+
+.aq-byline {
+  text-align: center;
+  font-size: 0.875rem;
+  color: #9a8c70;
+  margin-block-end: 2rem;
+  padding-block-end: 0.75rem;
+  border-block-end: 1px solid #3a3528;
+}
+
 .aq-output {
   margin-block-end: 1.5rem;
 }
