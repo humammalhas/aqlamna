@@ -4,6 +4,8 @@
 تكتب قصتك في بطاقات وحقول دون أيّ رمز، فيخرج لك ملفّ HTML واحد يعمل دون إنترنت.
 
 **جرّبه الآن على [aqlamna.org](https://aqlamna.org)** — يعمل في المتصفح، دون تثبيت ودون حساب.
+وفي الصفحة نفسها **قصصٌ جاهزة** تُقرأ بضغطة واحدة: [حرّاس الخزنة](https://aqlamna.org/حرّاس_الخزنة.html)
+و[العطر المفقود](https://aqlamna.org/العطر_المفقود.html) و[طائرة الورق](https://aqlamna.org/طائرة_الورق.html).
 
 ## هكذا تكتب
 
@@ -19,6 +21,8 @@
 - **شرط ظهور الخيار** — زرّ لا يظهر إلا لمن يستحقّه.
 - **صورة** — تصفها بالعربية وتضغط زرًّا، فتظهر في المقطع وفي الملفّ المصدَّر. ولا يلزمك
   أن تكتب الوصف بنفسك: زرّ **✨ اقترح من النصّ** يقرأ ما كتبته في المقطع ويكتبه لك.
+- **اسمك** — اكتبه في حقل **المؤلف** فوق أول بطاقة، فيظهر `بقلم` واسمك تحت العنوان في كلّ
+  شاشة، وفي ترويسة الملفّ المصدَّر.
 
 ثمّ تضغط **▶ شغّل** لتجرّبها، و**⬇ تصدير** لتأخذها معك.
 
@@ -72,6 +76,10 @@ translation layer on top of an English tool. You write in cards and fields, with
 syntax at all, and it exports one HTML file that plays offline.
 
 **Live at [aqlamna.org](https://aqlamna.org)** — runs in the browser, no install, no account.
+The same page carries three ready-made stories you can play in one click:
+[حرّاس الخزنة](https://aqlamna.org/حرّاس_الخزنة.html),
+[العطر المفقود](https://aqlamna.org/العطر_المفقود.html) and
+[طائرة الورق](https://aqlamna.org/طائرة_الورق.html).
 
 ### How you write
 
@@ -83,7 +91,9 @@ When you need more: a **tag** (a flag the story remembers), a **counter** (a num
 goes up), **conditional text** (a paragraph only some readers see), a **gated choice** (a
 button that only appears when a condition holds), and an **illustration** — describe it in
 Arabic, press a button, and it is drawn and inlined into the exported file. A **✨ suggest**
-button writes that description from the scene's own prose, so you never phrase a prompt.
+button writes that description from the scene's own prose, so you never phrase a prompt. Your
+name goes in the **المؤلف** field above the first card and appears as `بقلم <name>` under the
+title on every screen, and as `<meta name="author">` in the exported file.
 
 The full walkthrough is [docs/البداية.md](./docs/البداية.md) — eleven steps, no code.
 
