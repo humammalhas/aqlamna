@@ -29,6 +29,7 @@ import {
   type ProviderConfig,
 } from "../lib/providers.js";
 import { listServerModels } from "../lib/transport.js";
+import { BUILD_ID, forceFreshCopy } from "../lib/build-id.js";
 import { getRulesMeta } from "@aqlamna/linter";
 import { useStore } from "../store.js";
 
@@ -482,6 +483,49 @@ export default function SettingsPanel({ open, onClose }: SettingsPanelProps) {
           >
             راسلنا
           </a>
+        </div>
+
+        {/* ---- Version, and the way out of a stale one ----
+            A hard refresh does not clear a service worker's cache, so an author
+            can sit on a months-old editor while the site has moved on — pasting
+            a valid key into a build whose model IDs were retired. This button
+            unregisters the worker, deletes every cache and reloads. The build id
+            is here so "which version am I on?" has an answer on screen. */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "0.625rem",
+            flexWrap: "wrap",
+            marginBlockStart: "1rem",
+            paddingBlockStart: "0.875rem",
+            borderBlockStart: "1px solid var(--aq-border)",
+          }}
+        >
+          <span style={{ fontSize: "0.8125rem", color: "var(--aq-muted)" }}>
+            النسخة: <code data-build-id={BUILD_ID}>{BUILD_ID}</code>
+          </span>
+          <button
+            onClick={() => { void forceFreshCopy(); }}
+            title="يمسح النسخة المخزَّنة في المتصفّح ويحمّل أحدث نسخة من الموقع"
+            style={{
+              minBlockSize: "44px",
+              paddingBlock: "0.375rem",
+              paddingInline: "0.75rem",
+              fontSize: "0.8125rem",
+              fontFamily: "inherit",
+              color: "var(--aq-accent)",
+              background: "var(--aq-surface-hi)",
+              border: "1px solid var(--aq-border-hi)",
+              borderRadius: "6px",
+              cursor: "pointer",
+            }}
+          >
+            ↻ حدّث النسخة
+          </button>
+          <span style={{ fontSize: "0.75rem", color: "var(--aq-dim)", flex: "1 1 12rem", minInlineSize: 0 }}>
+            إن بقي المحرر على نسخة قديمة رغم التحديث، اضغط هنا. قصتك محفوظة ولا يمسحها هذا الزر.
+          </span>
         </div>
 
         <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end", marginBlockStart: "1rem" }}>

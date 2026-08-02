@@ -568,3 +568,27 @@ test.describe("Editor app", () => {
     await expect(page.getByLabel("نصّ المقطع 1")).toBeVisible({ timeout: 15000 });
   });
 });
+
+// ---------------------------------------------------------------------------
+// The build id the editor's settings panel shows
+// ---------------------------------------------------------------------------
+
+test("the deployed editor names its bundle in a shape build-id.ts can read", async ({ page }) => {
+  // `BUILD_ID` in packages/editor/src/lib/build-id.ts reads this exact pattern
+  // off the document's script tag, so the settings panel can tell an author
+  // which build they are looking at. A first attempt read `import.meta.url` and
+  // returned "dev" in a real build — the one answer it must never give.
+  await page.goto("/editor/");
+  const srcs = await page.$$eval("script[src]", (els) =>
+    els.map((e) => e.getAttribute("src") ?? ""),
+  );
+  const ids = srcs
+    .map((s) => (s.match(/index-([A-Za-z0-9_-]+)\.js/) ?? [])[1])
+    .filter(Boolean);
+  expect(ids.length, `script srcs: ${srcs.join(", ")}`).toBeGreaterThan(0);
+  expect(ids[0]!.length).toBeGreaterThan(3);
+
+  // And the panel shows it rather than "dev".
+  await page.getByRole("button", { name: /الإعدادات/ }).first().click();
+  await expect(page.locator("[data-build-id]")).toHaveAttribute("data-build-id", ids[0]!);
+});

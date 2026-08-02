@@ -825,3 +825,43 @@ test.describe("mobile layout (390x844)", () => {
     await expect(page.getByRole("menuitem", { name: "⬇ تصدير" })).toBeVisible();
   });
 });
+
+// ---- The way out of a stale build -----------------------------------------
+
+test.describe("settings — version and force refresh", () => {
+  test("names the build and offers a button that clears the worker's cache", async ({ page }) => {
+    await page.goto("/");
+    await page.getByRole("button", { name: /الإعدادات/ }).first().click();
+
+    // The build id, so "which version am I on?" has an answer on screen. It is
+    // read off the module's own URL, so it changes exactly when the bytes do.
+    const id = page.locator("[data-build-id]");
+    await expect(id).toBeVisible();
+    const value = await id.getAttribute("data-build-id");
+    // "dev" here: these tests run against `vite`, where the entry is
+    // /src/main.tsx and there is no hashed bundle to name. The shape a real
+    // build produces is asserted in editor.spec.ts against site/editor/, where
+    // the hashed filename actually exists.
+    expect(value, `build id was "${value}"`).toMatch(/^[A-Za-z0-9_-]{3,}$/);
+
+    // Seed a cache and a registration, then prove the button removes both.
+    await page.evaluate(async () => {
+      const c = await caches.open("aqlamna-app-pretend-old");
+      await c.put("/pretend", new Response("stale"));
+    });
+    expect(await page.evaluate(() => caches.keys())).toContain("aqlamna-app-pretend-old");
+
+    const refresh = page.getByRole("button", { name: /حدّث النسخة/ });
+    await expect(refresh).toBeVisible();
+    const box = await refresh.boundingBox();
+    expect(box!.height, "a 44px target").toBeGreaterThanOrEqual(44);
+
+    await Promise.all([page.waitForURL(/_=/, { timeout: 15000 }), refresh.click()]);
+
+    // Reloaded, and the stale cache is gone. (The live worker re-registers on
+    // load, which is the point: it comes back as the CURRENT one.)
+    await expect
+      .poll(async () => page.evaluate(() => caches.keys()), { timeout: 10000 })
+      .not.toContain("aqlamna-app-pretend-old");
+  });
+});
