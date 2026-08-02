@@ -38,6 +38,10 @@ html, body {
   max-inline-size: 38rem;
   margin-inline: auto;
   padding: 3rem 2rem;
+
+  /* The warm gold this theme already uses for its rules and buttons. Named
+     here so .aq-after-choice reads a token rather than repeating a hex. */
+  --aq-after-choice: #8b6f3a;
 }
 
 /* --- Title ---------------------------------------------------------------- */
@@ -61,6 +65,17 @@ html, body {
 .aq-text {
   margin-block: 1rem;
   text-indent: 2em;
+}
+
+/* The line a choice carries with it — the answer to the reader's own click,
+   not part of the passage it lands in. Weight AND colour, because either alone
+   reads as emphasis inside the prose rather than as a different voice. The
+   first-line indent is dropped here on purpose: this paragraph is not a
+   continuation of the book's body text. */
+.aq-after-choice {
+  font-weight: 700;
+  color: var(--aq-after-choice);
+  text-indent: 0;
 }
 
 /* --- Choices -------------------------------------------------------------- */

@@ -37,6 +37,10 @@ html, body {
   max-inline-size: 42rem;
   margin-inline: auto;
   padding: 2rem 1.5rem;
+
+  /* The ink blue this theme already uses for the title and the end line. Named
+     here so .aq-after-choice reads a token rather than repeating a hex. */
+  --aq-after-choice: #1F3A5F;
 }
 
 /* --- Title ---------------------------------------------------------------- */
@@ -55,6 +59,15 @@ html, body {
 
 .aq-output { margin-block-end: 1.5rem; }
 .aq-text { margin-block: 0.75rem; text-indent: 0; }
+
+/* The line a choice carries with it — the answer to the reader's own click,
+   not part of the passage it lands in. Weight AND colour, because either alone
+   reads as emphasis inside the prose rather than as a different voice. */
+.aq-after-choice {
+  font-weight: 700;
+  color: var(--aq-after-choice);
+  text-indent: 0;
+}
 
 /* --- Choices -------------------------------------------------------------- */
 

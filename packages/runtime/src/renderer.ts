@@ -54,6 +54,24 @@ function markLabel(marked: boolean): string {
 }
 
 /**
+ * Paragraph classes.
+ *
+ * `aq-after-choice` is the beat that answers a click — a line the author wrote
+ * under the choice itself, not part of the passage it lands in. It is bold and
+ * accented in all three themes so a reader can see at a glance which sentence
+ * their own hand caused.
+ */
+const TEXT_CLASS = "aq-text";
+const AFTER_CHOICE_CLASS = "aq-text aq-after-choice";
+
+/** How many leading items satisfy `pred` — the length of the matching prefix. */
+function countWhile<T>(items: T[], pred: (item: T) => boolean): number {
+  let i = 0;
+  while (i < items.length && pred(items[i]!)) i++;
+  return i;
+}
+
+/**
  * How long a confirmation stays on screen.
  *
  * 2000ms was too short for a line the eye is not already resting on, and that
@@ -103,7 +121,7 @@ export function renderScene(
   // null sentinel means <br>; string means a text run
   const run: Array<string | null> = [];
 
-  function flushRun(): void {
+  function flushRun(className: string): void {
     // A run of nothing but line breaks is not a paragraph — drop it rather
     // than emitting an empty <p> that pushes the prose around.
     if (!run.some((item) => item !== null && item !== "")) {
@@ -111,7 +129,7 @@ export function renderScene(
       return;
     }
     const p = document.createElement("p");
-    p.className = "aq-text";
+    p.className = className;
     for (const item of run) {
       if (item === null) {
         p.appendChild(document.createElement("br"));
@@ -123,19 +141,38 @@ export function renderScene(
     run.length = 0;
   }
 
-  for (const node of scene.output) {
-    if (node.type === "text") {
-      run.push(node.value);
-    } else if (node.type === "linebreak") {
-      run.push(null);
-    } else if (node.type === "paragraph") {
-      flushRun();
-    } else if (node.type === "image") {
-      flushRun();
-      outputEl.appendChild(renderImage(node));
+  /** Draw one stretch of nodes, every paragraph it opens carrying `className`. */
+  function emit(nodes: OutputNode[], className: string): void {
+    for (const node of nodes) {
+      if (node.type === "text") {
+        run.push(node.value);
+      } else if (node.type === "linebreak") {
+        run.push(null);
+      } else if (node.type === "paragraph") {
+        flushRun(className);
+      } else if (node.type === "image") {
+        flushRun(className);
+        outputEl.appendChild(renderImage(node));
+      }
     }
+    // Never leave a run open across the seam between two stretches: the beat
+    // and the passage's prose are different voices and must not share a <p>.
+    flushRun(className);
   }
-  flushRun();
+
+  // The engine hands a chosen line's own text to the next passage as a PREFIX
+  // of its output (engine.ts → choose → advance), marked `afterChoice`. Drawn
+  // in array order that put the beat above the destination's opening picture:
+  // the reader saw the answer to their click, then the photograph of the place
+  // they had only just arrived in. The picture is the top of the passage.
+  const beatEnd = countWhile(scene.output, (n) => n.afterChoice === true);
+  const beat = scene.output.slice(0, beatEnd);
+  const passage = scene.output.slice(beatEnd);
+  const leadImages = countWhile(passage, (n) => n.type === "image");
+
+  emit(passage.slice(0, leadImages), TEXT_CLASS);
+  emit(beat, AFTER_CHOICE_CLASS);
+  emit(passage.slice(leadImages), TEXT_CLASS);
 
   wrapper.appendChild(outputEl);
 

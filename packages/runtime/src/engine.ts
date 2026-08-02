@@ -103,6 +103,14 @@ export class Engine {
     const choiceOutput: OutputNode[] = [];
     const contentResult = this.processContent(item.content, choiceOutput);
 
+    // Mark it as the choice's own. Everything below carries this array into
+    // another passage's output, where nothing else can tell the two apart —
+    // the renderer reads the mark to keep the destination's opening image at
+    // the top of the passage and to style the beat as the answer to a click.
+    for (const node of choiceOutput) {
+      node.afterChoice = true;
+    }
+
     // If choice content itself contains choices (nested choices),
     // return immediately with the content output + those choices.
     if (contentResult.kind === "choices") {

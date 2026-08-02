@@ -71,6 +71,8 @@ body {
   max-inline-size: 42rem;
   margin-inline: auto;
   padding: 2rem 1.5rem;
+
+  --aq-after-choice: #d4a843;
 }
 
 .aq-title {
@@ -89,6 +91,14 @@ body {
 
 .aq-text {
   margin-block: 0.75rem;
+  text-indent: 0;
+}
+
+/* The line a choice carries with it — the answer to the reader's own click,
+   not part of the passage it lands in. Kept in step with src/themes/dark.css. */
+.aq-after-choice {
+  font-weight: 700;
+  color: var(--aq-after-choice);
   text-indent: 0;
 }
 

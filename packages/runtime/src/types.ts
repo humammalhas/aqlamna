@@ -173,10 +173,23 @@ export interface StoryScene {
 export type OutputNode =
   | ImageOutputNode
   | TextOutputNode
-  | { type: "linebreak" }
-  | { type: "paragraph" };
+  | LineBreakOutputNode
+  | ParagraphOutputNode;
 
-export interface TextOutputNode {
+/**
+ * Set on every node produced by a choice's own content.
+ *
+ * The engine hands that content to advance() as a prefix of the NEXT passage's
+ * output, so without a mark the renderer cannot tell "what your click did" from
+ * "where you now are" — they arrive as one flat array. The renderer needs the
+ * difference twice: to let the destination's own opening image stay at the top
+ * of the passage, and to give the beat a paragraph and a style of its own.
+ */
+interface AfterChoiceMark {
+  afterChoice?: true;
+}
+
+export interface TextOutputNode extends AfterChoiceMark {
   type: "text";
   value: string;
   /**
@@ -187,10 +200,18 @@ export interface TextOutputNode {
   inline?: boolean;
 }
 
-export interface ImageOutputNode {
+export interface ImageOutputNode extends AfterChoiceMark {
   type: "image";
   alt: string;
   data?: string;
+}
+
+export interface LineBreakOutputNode extends AfterChoiceMark {
+  type: "linebreak";
+}
+
+export interface ParagraphOutputNode extends AfterChoiceMark {
+  type: "paragraph";
 }
 
 export interface AvailableChoice {

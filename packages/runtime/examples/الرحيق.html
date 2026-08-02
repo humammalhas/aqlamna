@@ -44,6 +44,10 @@ html, body {
   max-inline-size: 42rem;
   margin-inline: auto;
   padding: 2rem 1.5rem;
+
+  /* The ink blue this theme already uses for the title and the end line. Named
+     here so .aq-after-choice reads a token rather than repeating a hex. */
+  --aq-after-choice: #1F3A5F;
 }
 
 /* --- Title ---------------------------------------------------------------- */
@@ -62,6 +66,15 @@ html, body {
 
 .aq-output { margin-block-end: 1.5rem; }
 .aq-text { margin-block: 0.75rem; text-indent: 0; }
+
+/* The line a choice carries with it — the answer to the reader's own click,
+   not part of the passage it lands in. Weight AND colour, because either alone
+   reads as emphasis inside the prose rather than as a different voice. */
+.aq-after-choice {
+  font-weight: 700;
+  color: var(--aq-after-choice);
+  text-indent: 0;
+}
 
 /* --- Choices -------------------------------------------------------------- */
 
@@ -187,6 +200,10 @@ html, body {
   max-inline-size: 42rem;
   margin-inline: auto;
   padding: 2rem 1.5rem;
+
+  /* The accent this theme already uses for the title and the end line. Named
+     here so .aq-after-choice reads a token rather than repeating a hex. */
+  --aq-after-choice: #d4a843;
 }
 
 /* --- Title ---------------------------------------------------------------- */
@@ -209,6 +226,15 @@ html, body {
 
 .aq-text {
   margin-block: 0.75rem;
+  text-indent: 0;
+}
+
+/* The line a choice carries with it — the answer to the reader's own click,
+   not part of the passage it lands in. Weight AND colour, because either alone
+   reads as emphasis inside the prose rather than as a different voice. */
+.aq-after-choice {
+  font-weight: 700;
+  color: var(--aq-after-choice);
   text-indent: 0;
 }
 
@@ -383,6 +409,10 @@ html, body {
   max-inline-size: 38rem;
   margin-inline: auto;
   padding: 3rem 2rem;
+
+  /* The warm gold this theme already uses for its rules and buttons. Named
+     here so .aq-after-choice reads a token rather than repeating a hex. */
+  --aq-after-choice: #8b6f3a;
 }
 
 /* --- Title ---------------------------------------------------------------- */
@@ -406,6 +436,17 @@ html, body {
 .aq-text {
   margin-block: 1rem;
   text-indent: 2em;
+}
+
+/* The line a choice carries with it — the answer to the reader's own click,
+   not part of the passage it lands in. Weight AND colour, because either alone
+   reads as emphasis inside the prose rather than as a different voice. The
+   first-line indent is dropped here on purpose: this paragraph is not a
+   continuation of the book's body text. */
+.aq-after-choice {
+  font-weight: 700;
+  color: var(--aq-after-choice);
+  text-indent: 0;
 }
 
 /* --- Choices -------------------------------------------------------------- */
@@ -646,6 +687,13 @@ class Engine {
         // Process the choice's content
         const choiceOutput = [];
         const contentResult = this.processContent(item.content, choiceOutput);
+        // Mark it as the choice's own. Everything below carries this array into
+        // another passage's output, where nothing else can tell the two apart —
+        // the renderer reads the mark to keep the destination's opening image at
+        // the top of the passage and to style the beat as the answer to a click.
+        for (const node of choiceOutput) {
+            node.afterChoice = true;
+        }
         // If choice content itself contains choices (nested choices),
         // return immediately with the content output + those choices.
         if (contentResult.kind === "choices") {
@@ -997,6 +1045,23 @@ function markLabel(marked) {
     return marked ? MARK_RETURN : MARK_SET;
 }
 /**
+ * Paragraph classes.
+ *
+ * `aq-after-choice` is the beat that answers a click — a line the author wrote
+ * under the choice itself, not part of the passage it lands in. It is bold and
+ * accented in all three themes so a reader can see at a glance which sentence
+ * their own hand caused.
+ */
+const TEXT_CLASS = "aq-text";
+const AFTER_CHOICE_CLASS = "aq-text aq-after-choice";
+/** How many leading items satisfy `pred` — the length of the matching prefix. */
+function countWhile(items, pred) {
+    let i = 0;
+    while (i < items.length && pred(items[i]))
+        i++;
+    return i;
+}
+/**
  * How long a confirmation stays on screen.
  *
  * 2000ms was too short for a line the eye is not already resting on, and that
@@ -1034,7 +1099,7 @@ function renderScene(container, scene, title, options, notice) {
     outputEl.className = "aq-output";
     // null sentinel means <br>; string means a text run
     const run = [];
-    function flushRun() {
+    function flushRun(className) {
         // A run of nothing but line breaks is not a paragraph — drop it rather
         // than emitting an empty <p> that pushes the prose around.
         if (!run.some((item) => item !== null && item !== "")) {
@@ -1042,7 +1107,7 @@ function renderScene(container, scene, title, options, notice) {
             return;
         }
         const p = document.createElement("p");
-        p.className = "aq-text";
+        p.className = className;
         for (const item of run) {
             if (item === null) {
                 p.appendChild(document.createElement("br"));
@@ -1054,22 +1119,39 @@ function renderScene(container, scene, title, options, notice) {
         outputEl.appendChild(p);
         run.length = 0;
     }
-    for (const node of scene.output) {
-        if (node.type === "text") {
-            run.push(node.value);
+    /** Draw one stretch of nodes, every paragraph it opens carrying `className`. */
+    function emit(nodes, className) {
+        for (const node of nodes) {
+            if (node.type === "text") {
+                run.push(node.value);
+            }
+            else if (node.type === "linebreak") {
+                run.push(null);
+            }
+            else if (node.type === "paragraph") {
+                flushRun(className);
+            }
+            else if (node.type === "image") {
+                flushRun(className);
+                outputEl.appendChild(renderImage(node));
+            }
         }
-        else if (node.type === "linebreak") {
-            run.push(null);
-        }
-        else if (node.type === "paragraph") {
-            flushRun();
-        }
-        else if (node.type === "image") {
-            flushRun();
-            outputEl.appendChild(renderImage(node));
-        }
+        // Never leave a run open across the seam between two stretches: the beat
+        // and the passage's prose are different voices and must not share a <p>.
+        flushRun(className);
     }
-    flushRun();
+    // The engine hands a chosen line's own text to the next passage as a PREFIX
+    // of its output (engine.ts → choose → advance), marked `afterChoice`. Drawn
+    // in array order that put the beat above the destination's opening picture:
+    // the reader saw the answer to their click, then the photograph of the place
+    // they had only just arrived in. The picture is the top of the passage.
+    const beatEnd = countWhile(scene.output, (n) => n.afterChoice === true);
+    const beat = scene.output.slice(0, beatEnd);
+    const passage = scene.output.slice(beatEnd);
+    const leadImages = countWhile(passage, (n) => n.type === "image");
+    emit(passage.slice(0, leadImages), TEXT_CLASS);
+    emit(beat, AFTER_CHOICE_CLASS);
+    emit(passage.slice(leadImages), TEXT_CLASS);
     wrapper.appendChild(outputEl);
     // Choices
     if (scene.choices.length > 0) {
