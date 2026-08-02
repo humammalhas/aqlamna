@@ -30,6 +30,7 @@ import {
 } from "../src/lib/generate-qalam.js";
 import { importWriterState } from "../src/lib/writer-import.js";
 import { applyAIFragment, sceneContextText } from "../src/lib/writer-ai.js";
+import { relevantCharacterLines } from "../src/lib/image-gen.js";
 
 // ---- Helpers ---------------------------------------------------------------
 
@@ -574,6 +575,28 @@ describe("the seed story — افتح مثالًا", () => {
     ).toBe(true);
     expect(s.scenes.filter((sc) => sc.isEnding).length, "fewer than two endings")
       .toBeGreaterThanOrEqual(2);
+    expect(s.imageStyle.trim().length, "no أسلوب_الصور to demonstrate").toBeGreaterThan(0);
+    expect(s.characters.trim().length, "no أوصاف_الشخصيات to demonstrate").toBeGreaterThan(0);
+  });
+
+  /**
+   * The example has two images and the same boy is in both. If his description
+   * does not reach both of them he is a different child in each — which is the
+   * failure the field exists to stop, so the example must actually show it
+   * working rather than merely carry the line.
+   */
+  it("its character description reaches every image it declares", () => {
+    const result = importWriterState(seed());
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    expect(result.state.images.length).toBeGreaterThan(1);
+    for (const img of result.state.images) {
+      expect(
+        relevantCharacterLines(result.state.characters, img.description),
+        `no character matches the description of "${img.name}"`,
+      ).not.toEqual([]);
+    }
   });
 
   it("has no problems of its own", () => {
