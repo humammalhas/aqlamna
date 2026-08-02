@@ -21,6 +21,9 @@ import {
   getTransportConfig,
   setApiKey,
   clearAllKeys,
+  getEffectiveBaseUrl,
+  setCustomBaseUrl,
+  resetAISettings,
 } from "../src/lib/ai-keys.js";
 import { callTransport } from "../src/lib/transport.js";
 
@@ -247,5 +250,66 @@ describe("OpenAI image generation", () => {
     const body = openaiImageRequestBody("gpt-image-2", "a grey square");
     expect(body).not.toHaveProperty("response_format");
     expect(body["model"]).toBe("gpt-image-2");
+  });
+});
+
+describe("the base URL is per-provider, never global", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    clearAllKeys();
+  });
+
+  // The exact shape of the live bug, reported from Chrome AND Firefox: an
+  // author sets up Ollama on a LAN address once, switches back to a cloud
+  // provider, and every request afterwards goes to `http://192.168.1.169:11434/`
+  // — which an https page blocks as mixed content before it is even sent. The
+  // AI then fails forever in that profile while a private window works, because
+  // a private window's localStorage is empty. No cache purge, no new service
+  // worker and no hard refresh can fix a saved setting.
+  it("a local URL left in the legacy global slot never reaches a cloud provider", () => {
+    localStorage.setItem("aqlamna-baseurl", "http://192.168.1.169:11434/");
+
+    for (const id of ["deepseek", "openai", "together", "gemini", "groq", "anthropic"]) {
+      setSelectedProviderId(id);
+      const provider = providerById(id)!;
+      expect(getEffectiveBaseUrl(), `${id} resolved a foreign base URL`).toBe(provider.baseUrl);
+      expect(getEffectiveBaseUrl()).toMatch(/^https:\/\//);
+    }
+  });
+
+  it("a URL saved for one local provider does not become the other's", () => {
+    setCustomBaseUrl("ollama", "http://192.168.1.169:11434/");
+
+    setSelectedProviderId("ollama");
+    expect(getEffectiveBaseUrl()).toBe("http://192.168.1.169:11434/");
+
+    setSelectedProviderId("lmstudio");
+    expect(getEffectiveBaseUrl()).toBe(providerById("lmstudio")!.baseUrl);
+  });
+
+  it("writing a scoped URL retires the global slot", () => {
+    localStorage.setItem("aqlamna-baseurl", "http://192.168.1.169:11434/");
+    setCustomBaseUrl("ollama", "http://localhost:11434/");
+    expect(localStorage.getItem("aqlamna-baseurl")).toBeNull();
+  });
+
+  it("a provider with no base-URL field cannot have one written for it", () => {
+    setCustomBaseUrl("deepseek", "http://evil.local/");
+    setSelectedProviderId("deepseek");
+    expect(getEffectiveBaseUrl()).toBe(providerById("deepseek")!.baseUrl);
+  });
+
+  it("resetAISettings forgets provider, model, URL and key", () => {
+    setSelectedProviderId("groq");
+    setCustomBaseUrl("ollama", "http://192.168.1.169:11434/");
+    localStorage.setItem("aqlamna-key-groq", "sk-test");
+    localStorage.setItem("aqlamna-model-groq", "openai/gpt-oss-20b");
+
+    resetAISettings();
+
+    expect(localStorage.getItem("aqlamna-provider")).toBeNull();
+    expect(localStorage.getItem("aqlamna-key-groq")).toBeNull();
+    expect(localStorage.getItem("aqlamna-model-groq")).toBeNull();
+    expect(localStorage.getItem("aqlamna-baseurl-ollama")).toBeNull();
   });
 });

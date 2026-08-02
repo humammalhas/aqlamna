@@ -22,6 +22,7 @@ import {
   setImageProviderId,
   getImageProvider,
   getImageApiKey,
+  resetAISettings,
 } from "../lib/ai-keys.js";
 import {
   ALL_PROVIDERS,
@@ -96,7 +97,7 @@ export default function SettingsPanel({ open, onClose }: SettingsPanelProps) {
     // ID to Anthropic.
     setModel(getSelectedModel(selectedId) || currentProvider.defaultModel);
     setBaseUrl(
-      getCustomBaseUrl() ||
+      getCustomBaseUrl(currentProvider.id) ||
         (currentProvider.supportsCustomBaseUrl ? currentProvider.baseUrl : ""),
     );
     setSaved(false);
@@ -109,7 +110,7 @@ export default function SettingsPanel({ open, onClose }: SettingsPanelProps) {
   useEffect(() => {
     if (!open || !currentProvider.isLocal) return;
     let cancelled = false;
-    const url = getCustomBaseUrl() || currentProvider.baseUrl;
+    const url = getCustomBaseUrl(currentProvider.id) || currentProvider.baseUrl;
     listServerModels(url, getApiKey(selectedId) ?? undefined).then((models) => {
       if (cancelled || models.length === 0) return;
       setServerModels(models);
@@ -137,7 +138,7 @@ export default function SettingsPanel({ open, onClose }: SettingsPanelProps) {
     }
     setSelectedModel(selectedId, model);
     if (p.supportsCustomBaseUrl) {
-      setCustomBaseUrl(baseUrl);
+      setCustomBaseUrl(selectedId, baseUrl);
     }
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
@@ -523,8 +524,36 @@ export default function SettingsPanel({ open, onClose }: SettingsPanelProps) {
           >
             ↻ حدّث النسخة
           </button>
+          <button
+            onClick={() => {
+              if (!window.confirm("سيُمسح المزوّد والنموذج والرابط والمفاتيح. قصتك لا تُمسّ. هل تريد الاستمرار؟")) return;
+              resetAISettings();
+              setSelectedId("deepseek");
+              setKey("");
+              setBaseUrl("");
+              setServerModels([]);
+              setSaved(true);
+            }}
+            title="يمسح إعدادات الذكاء الاصطناعي المحفوظة في هذا المتصفّح"
+            style={{
+              minBlockSize: "44px",
+              paddingBlock: "0.375rem",
+              paddingInline: "0.75rem",
+              fontSize: "0.8125rem",
+              fontFamily: "inherit",
+              color: "var(--aq-danger)",
+              background: "transparent",
+              border: "1px solid var(--aq-border)",
+              borderRadius: "6px",
+              cursor: "pointer",
+            }}
+          >
+            أعد ضبط إعدادات الذكاء
+          </button>
           <span style={{ fontSize: "0.75rem", color: "var(--aq-dim)", flex: "1 1 12rem", minInlineSize: 0 }}>
-            إن بقي المحرر على نسخة قديمة رغم التحديث، اضغط هنا. قصتك محفوظة ولا يمسحها هذا الزر.
+            إن بقي المحرر على نسخة قديمة رغم التحديث اضغط ↻. وإن كان الذكاء يفشل في هذا
+            المتصفّح ويعمل في نافذة خاصة، فالسبب إعداد محفوظ هنا — أعد الضبط. قصتك محفوظة في
+            الحالتين.
           </span>
         </div>
 

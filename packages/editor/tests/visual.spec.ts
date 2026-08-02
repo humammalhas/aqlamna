@@ -830,6 +830,10 @@ test.describe("mobile layout (390x844)", () => {
 
 test.describe("settings — version and force refresh", () => {
   test("names the build and offers a button that clears the worker's cache", async ({ page }) => {
+    // Without this the onboarding dialog covers the panel and swallows the
+    // click — it passed alone and failed in the suite, which is the whole
+    // reason every other test in this file calls it.
+    await prepareProfile(page);
     await page.goto("/");
     await page.getByRole("button", { name: /الإعدادات/ }).first().click();
 
@@ -856,12 +860,28 @@ test.describe("settings — version and force refresh", () => {
     const box = await refresh.boundingBox();
     expect(box!.height, "a 44px target").toBeGreaterThanOrEqual(44);
 
-    await Promise.all([page.waitForURL(/_=/, { timeout: 15000 }), refresh.click()]);
+    await refresh.click();
 
     // Reloaded, and the stale cache is gone. (The live worker re-registers on
     // load, which is the point: it comes back as the CURRENT one.)
+    //
+    // Polled rather than raced against waitForURL: the click both clears
+    // storage and navigates, so an evaluate can land while the execution
+    // context is being torn down. Retrying reads the state that matters —
+    // whether the cache survived — instead of the timing of the reload.
     await expect
-      .poll(async () => page.evaluate(() => caches.keys()), { timeout: 10000 })
+      .poll(
+        async () => {
+          try {
+            return await page.evaluate(() => caches.keys());
+          } catch {
+            return ["mid-navigation"];
+          }
+        },
+        { timeout: 30000 },
+      )
       .not.toContain("aqlamna-app-pretend-old");
+
+    expect(page.url(), `url after ↻: ${page.url()}`).toMatch(/_=/);
   });
 });

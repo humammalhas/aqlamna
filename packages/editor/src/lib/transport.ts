@@ -255,6 +255,15 @@ export async function listServerModels(
  * "Failed to fetch" — no status, no response body. We surface a specific
  * Arabic message instead of the raw browser string.
  */
+/** `https://api.deepseek.com/…` → `api.deepseek.com`. Never throws. */
+function hostOf(url: string): string {
+  try {
+    return new URL(url).host;
+  } catch {
+    return url;
+  }
+}
+
 async function fetchWithCorsDetection(
   url: string,
   init: RequestInit,
@@ -263,8 +272,28 @@ async function fetchWithCorsDetection(
     return await fetch(url, init);
   } catch (err: unknown) {
     if (err instanceof TypeError && err.message === "Failed to fetch") {
+      // Name the address. "Failed to fetch" is also what a browser says when
+      // an https page reaches for an http:// one — it blocks that before the
+      // request is sent, and a message about CORS sends the reader looking in
+      // the wrong place entirely. A stale local base URL saved for Ollama and
+      // then applied to every provider is exactly how that happened here.
+      const insecure =
+        typeof location !== "undefined" &&
+        location.protocol === "https:" &&
+        url.startsWith("http://");
+
+      if (insecure) {
+        throw new TransportError(
+          `المتصفّح منع الاتصال بـ ${hostOf(url)} لأنه عنوان غير مشفّر (http) وهذه الصفحة https. ` +
+            "هذا عنوان خادم محلي: افتح ⚙️ الإعدادات وصحّح رابط الخادم، أو اضغط \"أعد ضبط إعدادات الذكاء\"، " +
+            "أو شغّل المحرر على جهازك.",
+          "cors",
+        );
+      }
+
       throw new TransportError(
-        "فشل الاتصال: على الأرجح أن المزوّد يمنع الطلبات المباشرة من المتصفح (CORS). جرّب استخدام أوبن راوتر (openrouter.ai) أو شغّل نموذجاً محلياً عبر أولاما (ollama) — كلاهما يعمل من المتصفح دون مشاكل.",
+        `فشل الاتصال بـ ${hostOf(url)}: على الأرجح أن المزوّد يمنع الطلبات المباشرة من المتصفح (CORS). ` +
+          "جرّب استخدام أوبن راوتر (openrouter.ai) أو شغّل نموذجاً محلياً عبر أولاما (ollama) — كلاهما يعمل من المتصفح دون مشاكل.",
         "cors",
       );
     }

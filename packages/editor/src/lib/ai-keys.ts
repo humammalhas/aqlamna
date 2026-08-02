@@ -25,7 +25,9 @@ const KEY_PROVIDER = "aqlamna-provider";
 const KEY_MODEL_PREFIX = "aqlamna-model-";
 /** Retired: the one global slot. Kept only so `clearAllKeys` can remove it. */
 const KEY_MODEL_LEGACY = "aqlamna-model";
+/** Retired: one global slot shared by every provider. See getCustomBaseUrl. */
 const KEY_BASEURL = "aqlamna-baseurl";
+const KEY_BASEURL_PREFIX = "aqlamna-baseurl-";
 const KEY_PREFIX = "aqlamna-key-";
 
 /**
@@ -129,20 +131,79 @@ export function getEffectiveModel(): string {
 
 // ---- Custom base URL -------------------------------------------------------
 
-export function getCustomBaseUrl(): string {
-  const url = localStorage.getItem(KEY_BASEURL);
-  if (url && url.trim().length > 0) return url.trim();
-  return "";
+/**
+ * The custom base URL for ONE provider.
+ *
+ * This used to be a single global slot shared by all eleven providers — the
+ * identical defect to the retired global `aqlamna-model`, and it survived that
+ * fix by three days. Only `ollama` and `lmstudio` offer the field, and both
+ * default to an `http://localhost` address, so the failure it caused is
+ * specific and total: set up Ollama once on a LAN address, switch back to
+ * DeepSeek, and EVERY request goes to `http://192.168.1.169:11434/` — which an
+ * https page blocks as mixed content before it is even sent. The AI then fails
+ * forever in that browser profile, in every browser where the setting was
+ * saved, while a private window works perfectly because its localStorage is
+ * empty. Reported exactly that way, twice, from Chrome and Firefox.
+ *
+ * A stored URL is now only ever read for the provider it was saved under, and
+ * only for a provider that has the field at all.
+ */
+export function getCustomBaseUrl(providerId: string = getSelectedProviderId()): string {
+  const provider = providerById(providerId);
+  if (!provider?.supportsCustomBaseUrl) return "";
+
+  const own = localStorage.getItem(`${KEY_BASEURL_PREFIX}${providerId}`)?.trim() ?? "";
+  if (own) return own;
+
+  // The retired global slot, honoured once for a provider that could legally
+  // have written it. For every other provider it is now unreachable.
+  const legacy = localStorage.getItem(KEY_BASEURL)?.trim() ?? "";
+  return legacy;
 }
 
-export function setCustomBaseUrl(url: string): void {
-  localStorage.setItem(KEY_BASEURL, url.trim());
+export function setCustomBaseUrl(providerId: string, url: string): void {
+  const provider = providerById(providerId);
+  if (!provider?.supportsCustomBaseUrl) return;
+  localStorage.setItem(`${KEY_BASEURL_PREFIX}${providerId}`, url.trim());
+  // Retire the global one as soon as anything writes a scoped value, so a
+  // profile carrying it stops being able to poison another provider.
+  localStorage.removeItem(KEY_BASEURL);
+}
+
+/**
+ * Forget every AI setting: provider, models, base URLs and keys.
+ *
+ * The escape hatch for a profile whose saved settings are the problem — which
+ * is not something a page reload, a cache purge or a new service worker can
+ * ever fix, and is why "it works in incognito" is a diagnosis rather than a
+ * workaround.
+ */
+export function resetAISettings(): void {
+  const doomed: string[] = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (!k) continue;
+    if (
+      k === KEY_PROVIDER ||
+      k === KEY_BASEURL ||
+      k === KEY_MODEL_LEGACY ||
+      k.startsWith(KEY_MODEL_PREFIX) ||
+      k.startsWith(KEY_BASEURL_PREFIX) ||
+      k.startsWith(KEY_PREFIX)
+    ) {
+      doomed.push(k);
+    }
+  }
+  for (const k of doomed) localStorage.removeItem(k);
 }
 
 export function getEffectiveBaseUrl(): string {
-  const custom = getCustomBaseUrl();
-  if (custom) return custom;
-  return getSelectedProvider().baseUrl;
+  const provider = getSelectedProvider();
+  // The guard is here as well as in the getter: this is the value that becomes
+  // a URL a request is actually sent to, and it must be impossible for another
+  // provider's address to reach it.
+  if (!provider.supportsCustomBaseUrl) return provider.baseUrl;
+  return getCustomBaseUrl(provider.id) || provider.baseUrl;
 }
 
 // ---- Transport config ------------------------------------------------------
