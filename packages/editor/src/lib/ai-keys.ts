@@ -4,9 +4,17 @@
 //
 // Storage keys:
 //   aqlamna-provider    — selected provider ID (default: "deepseek")
-//   aqlamna-model       — selected model ID ("" means use provider default)
+//   aqlamna-model-{id}  — selected model for provider {id} ("" = provider default)
 //   aqlamna-baseurl     — custom base URL ("" means use provider default)
 //   aqlamna-key-{id}    — API key for provider {id}
+//
+// The model used to live in ONE global slot, `aqlamna-model`, shared by all
+// eleven providers. Picking a Gemini model and then switching to Anthropic
+// therefore sent `gemini-3-flash` to api.anthropic.com, which answered 404 —
+// on the live site, to real authors. The key is per-provider now, and a stored
+// model that is not one of the selected provider's own models is discarded
+// rather than sent. That second half is what makes the legacy global slot safe
+// to leave behind in existing browsers: it can no longer resolve for anyone.
 //
 // In dev, DEEPSEEK_API_KEY is read for the deepseek provider only.
 // ---------------------------------------------------------------------------
@@ -14,9 +22,21 @@
 import { ALL_PROVIDERS, providerById, type ProviderConfig } from "./providers.js";
 
 const KEY_PROVIDER = "aqlamna-provider";
-const KEY_MODEL = "aqlamna-model";
+const KEY_MODEL_PREFIX = "aqlamna-model-";
+/** Retired: the one global slot. Kept only so `clearAllKeys` can remove it. */
+const KEY_MODEL_LEGACY = "aqlamna-model";
 const KEY_BASEURL = "aqlamna-baseurl";
 const KEY_PREFIX = "aqlamna-key-";
+
+/**
+ * Providers whose model field is free text. OpenRouter proxies 100+ models,
+ * and the two local servers run whatever the author pulled onto their own
+ * machine, so for these three the `models` array is a starting point rather
+ * than a closed set — anything the author types is kept as written. The
+ * settings panel asks a local server for its real list; validating against the
+ * static one would throw away a model the server actually has.
+ */
+const FREE_TEXT_MODEL_PROVIDERS = new Set(["openrouter", "lmstudio", "ollama"]);
 
 // ---- Per-provider key ------------------------------------------------------
 
@@ -72,20 +92,39 @@ export function getSelectedProvider(): ProviderConfig {
 
 // ---- Selected model --------------------------------------------------------
 
-export function getSelectedModel(): string {
-  const model = localStorage.getItem(KEY_MODEL);
-  if (model && model.trim().length > 0) return model.trim();
-  return "";
+function modelKeyFor(providerId: string): string {
+  return `${KEY_MODEL_PREFIX}${providerId}`;
 }
 
-export function setSelectedModel(model: string): void {
-  localStorage.setItem(KEY_MODEL, model.trim());
+/**
+ * The model the author chose for one provider, or "" when there is none the
+ * provider can actually serve. Defaults to the currently selected provider.
+ *
+ * A stored model that is not in the provider's own `models` is treated as
+ * absent — that is the guard against every way a wrong ID can reach an API:
+ * the retired global slot, a model list that shrank under a saved choice, and
+ * a hand-edited localStorage entry alike.
+ */
+export function getSelectedModel(providerId: string = getSelectedProviderId()): string {
+  const provider = providerById(providerId);
+  if (!provider) return "";
+
+  const stored = localStorage.getItem(modelKeyFor(providerId))?.trim() ?? "";
+  if (!stored) return "";
+
+  if (FREE_TEXT_MODEL_PROVIDERS.has(providerId)) return stored;
+  return provider.models.includes(stored) ? stored : "";
 }
 
+export function setSelectedModel(providerId: string, model: string): void {
+  if (!providerById(providerId)) return;
+  localStorage.setItem(modelKeyFor(providerId), model.trim());
+}
+
+/** Always a model the selected provider can serve. */
 export function getEffectiveModel(): string {
-  const explicit = getSelectedModel();
-  if (explicit) return explicit;
-  return getSelectedProvider().defaultModel;
+  const provider = getSelectedProvider();
+  return getSelectedModel(provider.id) || provider.defaultModel;
 }
 
 // ---- Custom base URL -------------------------------------------------------
@@ -106,6 +145,33 @@ export function getEffectiveBaseUrl(): string {
   return getSelectedProvider().baseUrl;
 }
 
+// ---- Transport config ------------------------------------------------------
+
+/**
+ * Everything the transport needs about the selected provider, in one place.
+ *
+ * Four call sites used to hand-build `{ baseUrl, model, apiKey }`, which was
+ * fine right up until a provider needed a fifth field — then adding one meant
+ * remembering four edits, and forgetting one meant a 400 on a code path nobody
+ * exercises often. Build it here; the quirks travel with it.
+ */
+export function getTransportConfig(): {
+  baseUrl: string;
+  model: string;
+  apiKey?: string;
+  maxTokensParam?: "max_tokens" | "max_completion_tokens";
+  supportsTemperature?: boolean;
+} {
+  const provider = getSelectedProvider();
+  return {
+    baseUrl: getEffectiveBaseUrl(),
+    model: getEffectiveModel(),
+    apiKey: provider.requiresKey ? (getApiKey(provider.id) ?? undefined) : undefined,
+    maxTokensParam: provider.maxTokensParam,
+    supportsTemperature: provider.supportsTemperature,
+  };
+}
+
 // ---- Convenience -----------------------------------------------------------
 
 export function hasApiKey(): boolean {
@@ -118,9 +184,10 @@ export function hasApiKey(): boolean {
 export function clearAllKeys(): void {
   for (const p of ALL_PROVIDERS) {
     localStorage.removeItem(keyForProvider(p.id));
+    localStorage.removeItem(modelKeyFor(p.id));
   }
   localStorage.removeItem(KEY_PROVIDER);
-  localStorage.removeItem(KEY_MODEL);
+  localStorage.removeItem(KEY_MODEL_LEGACY);
   localStorage.removeItem(KEY_BASEURL);
   localStorage.removeItem(KEY_IMAGE_PROVIDER);
 }

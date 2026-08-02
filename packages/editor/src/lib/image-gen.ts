@@ -9,8 +9,7 @@
 import { callTransport, TransportError, type ChatMessage } from "./transport.js";
 import {
   getSelectedProvider,
-  getEffectiveBaseUrl,
-  getEffectiveModel,
+  getTransportConfig,
   getApiKey,
 } from "./ai-keys.js";
 import {
@@ -69,7 +68,7 @@ async function arabicStyleToEnglish(arabicStyle: string): Promise<string> {
 
   const text = await callTransport(
     provider.kind,
-    { baseUrl: getEffectiveBaseUrl(), model: getEffectiveModel(), apiKey: apiKey ?? undefined },
+    getTransportConfig(),
     [
       { role: "system", content: STYLE_SYSTEM_PROMPT },
       { role: "user", content: key },
@@ -88,8 +87,6 @@ async function arabicStyleToEnglish(arabicStyle: string): Promise<string> {
  */
 async function arabicToEnglishPrompt(arabicDescription: string): Promise<string> {
   const provider = getSelectedProvider();
-  const baseUrl = getEffectiveBaseUrl();
-  const model = getEffectiveModel();
   const apiKey = getApiKey(provider.id);
 
   if (provider.requiresKey && (!apiKey || apiKey.length === 0)) {
@@ -101,7 +98,7 @@ async function arabicToEnglishPrompt(arabicDescription: string): Promise<string>
     { role: "user", content: arabicDescription },
   ];
 
-  const text = await callTransport(provider.kind, { baseUrl, model, apiKey: apiKey ?? undefined }, messages, {
+  const text = await callTransport(provider.kind, getTransportConfig(), messages, {
     temperature: 0.7,
     max_tokens: 200,
   });
@@ -152,7 +149,7 @@ export async function suggestImageDescription(
 
   const suggestion = await callTransport(
     provider.kind,
-    { baseUrl: getEffectiveBaseUrl(), model: getEffectiveModel(), apiKey: apiKey ?? undefined },
+    getTransportConfig(),
     [
       { role: "system", content: SUGGEST_SYSTEM_PROMPT },
       {
@@ -218,21 +215,34 @@ async function togetherGenerateImage(
 }
 
 /**
- * Generate an image via OpenAI (DALL-E / gpt-image-1).
+ * Generate an image via OpenAI (gpt-image-2).
+ *
+ * NO `response_format` HERE. The gpt-image family always returns base64 and
+ * rejects the parameter outright — `400 Unknown parameter:
+ * 'response_format'` — so sending it was not a redundant field, it was the
+ * whole call failing. Measured both ways on 2 Aug 2026: with it, 400; without
+ * it, 200 and `b64_json` present. It shipped because nobody had ever run this
+ * path against a live key.
  */
+export function openaiImageRequestBody(
+  model: string,
+  englishPrompt: string,
+): Record<string, unknown> {
+  return {
+    model,
+    prompt: englishPrompt,
+    n: 1,
+    size: "1024x1024",
+  };
+}
+
 async function openaiGenerateImage(
   apiKey: string,
   model: string,
   englishPrompt: string,
 ): Promise<string> {
   const url = "https://api.openai.com/v1/images/generations";
-  const body = {
-    model,
-    prompt: englishPrompt,
-    n: 1,
-    size: "1024x1024",
-    response_format: "b64_json",
-  };
+  const body = openaiImageRequestBody(model, englishPrompt);
 
   const res = await fetch(url, {
     method: "POST",

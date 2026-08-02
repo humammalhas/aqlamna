@@ -28,11 +28,14 @@ import {
   ALL_LOCAL,
   type ProviderConfig,
 } from "../lib/providers.js";
+import { listServerModels } from "../lib/transport.js";
 import { getRulesMeta } from "@aqlamna/linter";
 import { useStore } from "../store.js";
 
-// Providers where the model field accepts any free-text ID.
-const ANY_MODEL_IDS = new Set(["openrouter", "lmstudio"]);
+// Providers where the model field accepts any free-text ID. The two local
+// servers belong here: their model list is whatever the author pulled onto
+// their own machine, not anything this file can know.
+const ANY_MODEL_IDS = new Set(["openrouter", "lmstudio", "ollama"]);
 
 // Cloud providers: everything that is NOT local.
 const CLOUD_PROVIDERS = ALL_PROVIDERS.filter((p) => !ALL_LOCAL.includes(p));
@@ -53,6 +56,9 @@ export default function SettingsPanel({ open, onClose }: SettingsPanelProps) {
   const [model, setModel] = useState("");
   const [baseUrl, setBaseUrl] = useState("");
   const [saved, setSaved] = useState(false);
+  // Models the running local server reports. Empty until it answers, and
+  // empty forever if it never does — the static list is the fallback.
+  const [serverModels, setServerModels] = useState<string[]>([]);
 
   // Image provider state (independent from text provider)
   const [imageProvId, setImageProvId] = useState(getImageProviderId());
@@ -84,13 +90,36 @@ export default function SettingsPanel({ open, onClose }: SettingsPanelProps) {
 
   useEffect(() => {
     setKey(getApiKey(selectedId) ?? "");
-    setModel(getSelectedModel() || currentProvider.defaultModel);
+    // Per-provider, and the provider's own default when nothing valid is
+    // stored for it. Reading a global slot here is what sent a Google model
+    // ID to Anthropic.
+    setModel(getSelectedModel(selectedId) || currentProvider.defaultModel);
     setBaseUrl(
       getCustomBaseUrl() ||
         (currentProvider.supportsCustomBaseUrl ? currentProvider.baseUrl : ""),
     );
     setSaved(false);
+    setServerModels([]);
   }, [selectedId, currentProvider]);
+
+  // Ask a local server what it actually has. Fire-and-forget: a server that is
+  // not running must not stall or break the panel, so a failure just leaves
+  // the static list in place.
+  useEffect(() => {
+    if (!open || !currentProvider.isLocal) return;
+    let cancelled = false;
+    const url = getCustomBaseUrl() || currentProvider.baseUrl;
+    listServerModels(url, getApiKey(selectedId) ?? undefined).then((models) => {
+      if (cancelled || models.length === 0) return;
+      setServerModels(models);
+      // A model the server does not have is a 404 the author has no way to
+      // predict. If what is selected isn't there, move to something that is.
+      setModel((current) => (models.includes(current) ? current : models[0]!));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [open, selectedId, currentProvider]);
 
   const handleProviderChange = useCallback(
     (id: string) => {
@@ -105,7 +134,7 @@ export default function SettingsPanel({ open, onClose }: SettingsPanelProps) {
     if (p.requiresKey) {
       setApiKey(selectedId, key);
     }
-    setSelectedModel(model);
+    setSelectedModel(selectedId, model);
     if (p.supportsCustomBaseUrl) {
       setCustomBaseUrl(baseUrl);
     }
@@ -126,6 +155,9 @@ export default function SettingsPanel({ open, onClose }: SettingsPanelProps) {
   const showBaseUrl = !!currentProvider.supportsCustomBaseUrl;
   const isAnyModel = ANY_MODEL_IDS.has(currentProvider.id);
   const showCorsWarning = currentProvider.browserCors !== "ok";
+  // What the server said, when it said anything; the registry's guess otherwise.
+  const modelOptions =
+    serverModels.length > 0 ? serverModels : currentProvider.models;
 
   return (
     <div
@@ -225,7 +257,7 @@ export default function SettingsPanel({ open, onClose }: SettingsPanelProps) {
             onChange={(e) => setModel(e.target.value)}
             style={selectStyle}
           >
-            {currentProvider.models.map((m) => (
+            {modelOptions.map((m) => (
               <option key={m} value={m}>
                 {m}
               </option>

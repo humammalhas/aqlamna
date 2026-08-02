@@ -7,8 +7,7 @@
 import { compile } from "@aqlamna/core";
 import {
   getSelectedProvider,
-  getEffectiveBaseUrl,
-  getEffectiveModel,
+  getTransportConfig,
   getApiKey,
 } from "./ai-keys.js";
 import { callTransport, TransportError, type ChatMessage } from "./transport.js";
@@ -88,8 +87,6 @@ ${contextText}
 
 export async function callAI(req: AIRequest): Promise<AIResponse> {
   const provider = getSelectedProvider();
-  const baseUrl = getEffectiveBaseUrl();
-  const model = getEffectiveModel();
   const apiKey = provider.requiresKey ? (getApiKey(provider.id) ?? undefined) : undefined;
 
   if (provider.requiresKey && (!apiKey || apiKey.length === 0)) {
@@ -116,7 +113,7 @@ export async function callAI(req: AIRequest): Promise<AIResponse> {
   ];
 
   // First attempt
-  const firstRaw = await sendToProvider(provider.kind, baseUrl, model, apiKey, messages);
+  const firstRaw = await sendToProvider(provider.kind, messages);
   if (firstRaw.error) {
     return { raw: "", valid: null, error: firstRaw.error };
   }
@@ -138,7 +135,7 @@ ${validation.error}
     },
   ];
 
-  const secondRaw = await sendToProvider(provider.kind, baseUrl, model, apiKey, retryMessages);
+  const secondRaw = await sendToProvider(provider.kind, retryMessages);
   if (secondRaw.error) {
     // Both attempts failed — return raw text + original error
     return { raw: firstRaw.text, valid: null, error: validation.error };
@@ -157,13 +154,10 @@ ${validation.error}
 
 async function sendToProvider(
   kind: "openai-compatible" | "anthropic" | "gemini",
-  baseUrl: string,
-  model: string,
-  apiKey: string | undefined,
   messages: ChatMessage[],
 ): Promise<{ text: string; error: string | null }> {
   try {
-    const text = await callTransport(kind, { baseUrl, model, apiKey }, messages, {
+    const text = await callTransport(kind, getTransportConfig(), messages, {
       temperature: 0.7,
       max_tokens: 2048,
     });

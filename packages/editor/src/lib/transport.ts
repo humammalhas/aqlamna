@@ -17,6 +17,10 @@ export interface TransportConfig {
   baseUrl: string;
   model: string;
   apiKey?: string;
+  /** See `ProviderConfig.maxTokensParam`. Defaults to `max_tokens`. */
+  maxTokensParam?: "max_tokens" | "max_completion_tokens";
+  /** See `ProviderConfig.supportsTemperature`. Defaults to true. */
+  supportsTemperature?: boolean;
 }
 
 export interface TransportOptions {
@@ -74,12 +78,18 @@ async function openaiCompatibleChat(
     headers["Authorization"] = `Bearer ${config.apiKey}`;
   }
 
-  const body = {
+  // Two providers' worth of divergence inside one "OpenAI-compatible" kind.
+  // Both were measured against the live APIs on 2 Aug 2026; both are 400s, not
+  // degraded answers, so a wrong body here means the feature simply does not
+  // work for that provider.
+  const body: Record<string, unknown> = {
     model: config.model,
     messages,
-    temperature: options?.temperature ?? 0.7,
-    max_tokens: options?.max_tokens ?? 2048,
   };
+  body[config.maxTokensParam ?? "max_tokens"] = options?.max_tokens ?? 2048;
+  if (config.supportsTemperature !== false) {
+    body["temperature"] = options?.temperature ?? 0.7;
+  }
 
   const res = await fetchWithCorsDetection(url, {
     method: "POST",
@@ -199,6 +209,42 @@ async function geminiGenerateContent(
     throw new TransportError("لم يُرجع النموذج أي نص.", "empty");
   }
   return text.trim();
+}
+
+// ---- Local model discovery -------------------------------------------------
+
+/**
+ * Ask a local server which models it actually has.
+ *
+ * A hardcoded list of model names is a guess about someone else's computer.
+ * The registry shipped six Ollama tags — `llama3.2`, `gemma2`, `phi3` and
+ * friends — and a real Beelink server on 2 Aug 2026 had none of them; it had
+ * `qwen2.5:7b`, `qwen3:14b`, `dolphin-mistral:latest`. Every entry in that
+ * dropdown was a 404 waiting to happen. Both Ollama and LM Studio expose the
+ * OpenAI-compatible `/v1/models`, so ask instead of guessing.
+ *
+ * Returns [] on any failure — the caller falls back to the static list rather
+ * than blocking the settings panel on a server that may not be running.
+ */
+export async function listServerModels(
+  baseUrl: string,
+  apiKey?: string,
+): Promise<string[]> {
+  try {
+    const headers: Record<string, string> = {};
+    if (apiKey) headers["Authorization"] = `Bearer ${apiKey}`;
+    const res = await fetch(`${baseUrl}v1/models`, {
+      headers,
+      signal: AbortSignal.timeout(4000),
+    });
+    if (!res.ok) return [];
+    const json = (await res.json()) as { data?: Array<{ id?: string }> };
+    return (json.data ?? [])
+      .map((m) => m.id)
+      .filter((id): id is string => typeof id === "string" && id.length > 0);
+  } catch {
+    return [];
+  }
 }
 
 // ---- Helpers ---------------------------------------------------------------
