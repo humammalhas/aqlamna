@@ -21,6 +21,8 @@
 // prints it. Non-fatal by design: a failed purge must not fail a deploy that
 // already succeeded, so it warns and exits 0 with instructions.
 
+import { existsSync, readFileSync, statSync } from "node:fs";
+
 const ZONE_NAME = "aqlamna.org";
 const token = process.env.CLOUDFLARE_API_TOKEN;
 
@@ -97,51 +99,106 @@ const BROWSER_HEADERS = {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-/** The hashed asset URLs the deployed editor document actually asks for. */
-async function assetUrlsFromDocument() {
-  const res = await fetch(`https://${ZONE_NAME}/editor/`, {
+const ASSET_RE = /(?:src|href)="(\/editor\/assets\/[^"]+\.(?:js|css))"/g;
+
+/**
+ * The assets THIS deploy just uploaded, read off the local build.
+ *
+ * Not off the deployed document, which is what this script used to do and why
+ * it passed while the editor was blank: during propagation the edge still
+ * serves the PREVIOUS build's `/editor/`, whose assets are long since cached
+ * and perfectly healthy. The verifier checked those, found nothing wrong, and
+ * reported success for a build whose own bundle was answering with HTML.
+ *
+ * `site/editor/index.html` is the file wrangler uploaded moments ago. It names
+ * the hashes that have to work.
+ */
+function expectedAssets() {
+  const doc = new URL("../site/editor/index.html", import.meta.url);
+  if (!existsSync(doc)) return { assets: [], sizes: new Map() };
+
+  const html = readFileSync(doc, "utf-8");
+  const assets = [...html.matchAll(ASSET_RE)].map((m) => m[1]);
+
+  // The local byte count, so "served with the right content-type" cannot be
+  // satisfied by a 37KB landing page wearing a JavaScript label.
+  const sizes = new Map();
+  for (const path of assets) {
+    const file = new URL(`../site${path}`, import.meta.url);
+    if (existsSync(file)) sizes.set(path, statSync(file).size);
+  }
+  return { assets, sizes };
+}
+
+/** The hashed asset URLs the DEPLOYED editor document currently asks for. */
+async function deployedAssets() {
+  const res = await fetch(`https://${ZONE_NAME}/editor/?purgecheck=${process.pid}`, {
     headers: { "User-Agent": BROWSER_HEADERS["User-Agent"], "Cache-Control": "no-cache" },
   });
   const html = await res.text();
-  return [...html.matchAll(/(?:src|href)="(\/editor\/assets\/[^"]+\.(?:js|css))"/g)].map(
-    (m) => m[1],
-  );
+  return [...html.matchAll(ASSET_RE)].map((m) => m[1]);
 }
 
 async function verifyAssets(zoneId) {
-  let urls;
-  try {
-    urls = await assetUrlsFromDocument();
-  } catch (err) {
-    console.warn(`[purge] could not read the editor document: ${err.message}`);
-    return;
-  }
+  const { assets: urls, sizes } = expectedAssets();
   if (urls.length === 0) {
-    console.warn("[purge] no hashed assets found in /editor/ — skipping verification.");
+    console.warn(
+      "[purge] site/editor/index.html names no hashed assets — skipping verification.\n" +
+        "  Run `npm run build:site` before deploying, or this check is blind.",
+    );
     return;
   }
 
+  const build = (urls.find((u) => u.endsWith(".js")) ?? "").replace(/.*index-|\.js$/g, "");
+  console.log(`[purge] verifying build ${build || "?"} — ${urls.length} asset(s) from the local build.`);
+
   for (let attempt = 1; attempt <= 4; attempt++) {
     const bad = [];
+
+    // 1. The document must name THIS build. A stale document is the failure
+    //    that hid the other one, and it is the thing a browser reads first.
+    try {
+      const live = await deployedAssets();
+      for (const url of urls) {
+        if (!live.includes(url)) {
+          bad.push(`/editor/ does not name ${url} yet (it names ${live.join(", ") || "nothing"})`);
+        }
+      }
+    } catch (err) {
+      bad.push(`/editor/ could not be read: ${err.message}`);
+    }
+
+    // 2. Each expected asset must come back as itself: right type, right size.
     for (const url of urls) {
       try {
         const res = await fetch(`https://${ZONE_NAME}${url}`, { headers: BROWSER_HEADERS });
         const type = res.headers.get("content-type") ?? "";
         const wantJs = url.endsWith(".js");
-        const ok = wantJs ? type.includes("javascript") : type.includes("css");
-        if (!ok) bad.push(`${url} → ${res.status} ${type}`);
+        const typeOk = wantJs ? type.includes("javascript") : type.includes("css");
+        if (!typeOk) {
+          bad.push(`${url} → ${res.status} ${type}`);
+          continue;
+        }
+        const bytes = (await res.arrayBuffer()).byteLength;
+        const expected = sizes.get(url);
+        if (expected && bytes < expected * 0.5) {
+          bad.push(`${url} → ${bytes} bytes, expected about ${expected}`);
+        }
       } catch (err) {
         bad.push(`${url} → ${err.message}`);
       }
     }
 
     if (bad.length === 0) {
-      console.log(`[purge] verified ${urls.length} asset(s) served with the right type.`);
+      console.log(
+        `[purge] verified ${urls.length} asset(s): the document names build ${build || "?"} ` +
+          "and every file comes back with the right type and size.",
+      );
       return;
     }
 
     console.warn(
-      `[purge] attempt ${attempt}: the zone is serving the wrong type for:\n` +
+      `[purge] attempt ${attempt} — the zone is not serving this build yet:\n` +
         bad.map((b) => `    ${b}`).join("\n"),
     );
     if (attempt === 4) break;
@@ -151,10 +208,11 @@ async function verifyAssets(zoneId) {
   }
 
   console.warn(
-    "[purge] ⚠️  THE DEPLOYED EDITOR WILL BE BLANK.\n" +
-      "  The zone is returning HTML for a JavaScript module, which the browser\n" +
-      "  refuses silently. Re-run `npm run purge:zone` in a minute; if it does not\n" +
-      "  clear, purge the zone from the Cloudflare dashboard.\n" +
+    "[purge] ⚠️  THE DEPLOYED EDITOR IS BLANK OR ON THE PREVIOUS BUILD.\n" +
+      "  Either the zone is returning HTML for a JavaScript module — which the\n" +
+      "  browser refuses silently — or /editor/ still names the build before this\n" +
+      "  one. Re-run `npm run purge:zone` in a minute; if it does not clear, purge\n" +
+      "  the zone from the Cloudflare dashboard.\n" +
       "  Anyone who loaded the editor meanwhile has it pinned for a year and needs\n" +
       "  a hard reload (Ctrl+Shift+R).",
   );
