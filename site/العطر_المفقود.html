@@ -1601,7 +1601,19 @@ function mount(storyJson, element, options = {}) {
   if (!storyEl) return;
   var root = document.getElementById("qalam-player");
   if (!root) return;
-  mount(JSON.parse(storyEl.textContent), root);
+
+  // An exported story carries all three themes and the switcher that cycles
+  // them — and until now no button called it. The reader got whichever theme
+  // was chosen at export and no way to change it, while the editor's own
+  // preview had the 🎨 the same renderer draws. The button exists only when
+  // there is something for it to do: an export assembled without the theme
+  // blocks has no switcher, and a dead button is worse than none.
+  var options = {};
+  if (typeof window !== "undefined" && typeof window.__aqlamnaCycleTheme === "function") {
+    options.onThemeToggle = function () { window.__aqlamnaCycleTheme(); };
+  }
+
+  mount(JSON.parse(storyEl.textContent), root, options);
 })();
 
 })();

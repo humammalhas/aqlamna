@@ -54,14 +54,20 @@ async function toolbarLabels(page: Page): Promise<string[]> {
   );
 }
 
-test.describe("exported story — the toolbar has two buttons", () => {
-  test("two buttons, and neither is a floppy disk or a folder", async ({ page }) => {
+test.describe("exported story — the toolbar", () => {
+  // It was two buttons when the 💾/📂 pair became one bookmark, and three since
+  // 🎨 was wired up: the export had carried all three themes and the switcher
+  // for weeks with nothing to call it, so a reader was stuck on whichever theme
+  // the story was exported with. The count is asserted exactly, because a
+  // fourth button appearing unnoticed is how a toolbar stops being a toolbar.
+  test("bookmark, theme and restart — and no floppy disk or folder", async ({ page }) => {
     await page.goto(STORY_URL);
 
     const labels = await toolbarLabels(page);
-    expect(labels, `toolbar labels: ${JSON.stringify(labels)}`).toHaveLength(2);
+    expect(labels, `toolbar labels: ${JSON.stringify(labels)}`).toHaveLength(3);
     expect(labels.some((l) => l.includes(MARK_SET))).toBe(true);
     expect(labels.some((l) => l.includes("أعد"))).toBe(true);
+    expect(labels).toContain("🎨");
 
     // The pair this replaced, and the icons that came with them.
     const joined = labels.join(" ");
@@ -69,6 +75,29 @@ test.describe("exported story — the toolbar has two buttons", () => {
     expect(joined).not.toContain("استعادة");
     expect(joined).not.toContain("💾");
     expect(joined).not.toContain("📂");
+  });
+
+  test("🎨 actually switches the theme, and the choice survives a reload", async ({ page }) => {
+    await page.goto(STORY_URL);
+
+    const enabled = () =>
+      page.$$eval("style[id^='aq-theme-']", (els) =>
+        els.filter((e) => !(e as HTMLStyleElement).disabled).map((e) => e.id),
+      );
+
+    expect(await enabled()).toEqual(["aq-theme-light"]);
+
+    await page.locator(".aq-theme-btn").click();
+    const after = await enabled();
+    expect(after, `enabled after one press: ${after.join(", ")}`).toEqual(["aq-theme-dark"]);
+
+    // The background really changed — a disabled <style> that still paints is
+    // exactly the kind of thing this project has shipped before.
+    const bg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+    expect(bg).toBe("rgb(26, 24, 20)");
+
+    await page.reload();
+    expect(await enabled()).toEqual(["aq-theme-dark"]);
   });
 
   test("the ribbon renders as a glyph, not as tofu", async ({ page }) => {
