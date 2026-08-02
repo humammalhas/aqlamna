@@ -27,6 +27,7 @@ import {
   type Choice,
   type ConditionalText,
   type Scene,
+  characterLines,
   type WriterCondition,
   type WriterState,
 } from "./writer-model.js";
@@ -45,6 +46,7 @@ const RESERVED = new Set([
   "عنوان", "TITLE", "مؤلف", "AUTHOR", "لغة", "LANGUAGE",
   "متغير", "VAR", "قائمة", "LIST",
   "صورة", "image", "أسلوب_الصور", "image_style",
+  "أوصاف_الشخصيات", "characters",
   "صح", "true", "خطأ", "false",
   "نهاية", "END", "تابع", "DONE",
   "لا", "not", "و", "and", "أو", "or", "غير_ذلك", "else",
@@ -128,6 +130,7 @@ const LINE_START_KEYWORDS = new Set([
   "عنوان", "TITLE", "مؤلف", "AUTHOR", "لغة", "LANGUAGE",
   "متغير", "VAR", "قائمة", "LIST",
   "صورة", "image", "أسلوب_الصور", "image_style",
+  "أوصاف_الشخصيات", "characters",
 ]);
 
 function startsLikeCode(line: string): boolean {
@@ -316,6 +319,11 @@ export function generateQalam(state: WriterState): string {
   if (state.author.trim()) lines.push(`مؤلف: ${quote(state.author.trim())}`);
   if ((state.imageStyle ?? "").trim()) {
     lines.push(`أسلوب_الصور: ${quote(state.imageStyle.trim())}`);
+  }
+  // One line per character. Blank lines are dropped rather than emitted as
+  // empty strings, so pressing Enter twice in the box does not change the file.
+  for (const line of characterLines(state.characters)) {
+    lines.push(`أوصاف_الشخصيات: ${quote(line)}`);
   }
   if (lines.length > 0) lines.push("");
 

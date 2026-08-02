@@ -12,6 +12,7 @@ export const TokenKind = {
   KEYWORD_LIST: "KEYWORD_LIST",
   KEYWORD_IMAGE: "KEYWORD_IMAGE",
   KEYWORD_IMAGE_STYLE: "KEYWORD_IMAGE_STYLE",
+  KEYWORD_CHARACTERS: "KEYWORD_CHARACTERS",
   KEYWORD_TRUE: "KEYWORD_TRUE",
   KEYWORD_FALSE: "KEYWORD_FALSE",
   KEYWORD_NOT: "KEYWORD_NOT",
@@ -131,6 +132,10 @@ const DECL_KEYWORDS: Record<string, TokenKind> = {
 const IMAGE_KEYWORDS: Record<string, TokenKind> = {
   "صورة": TokenKind.KEYWORD_IMAGE, "image": TokenKind.KEYWORD_IMAGE,
   "أسلوب_الصور": TokenKind.KEYWORD_IMAGE_STYLE, "image_style": TokenKind.KEYWORD_IMAGE_STYLE,
+  // Repeats — one line per character. A string cannot hold a newline (scanString
+  // returns at one), so many characters means many lines, the way many images
+  // means many `صورة` declarations.
+  "أوصاف_الشخصيات": TokenKind.KEYWORD_CHARACTERS, "characters": TokenKind.KEYWORD_CHARACTERS,
 };
 
 const BOOL_KEYWORDS: Record<string, TokenKind> = {

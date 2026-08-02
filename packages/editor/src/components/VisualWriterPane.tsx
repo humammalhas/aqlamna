@@ -28,6 +28,7 @@ import {
 import { validateWriterState, type WriterIssue } from "../lib/generate-qalam.js";
 import { newStory } from "../lib/story-actions.js";
 import SceneCard from "./writer/SceneCard.js";
+import AutoTextarea from "./writer/AutoTextarea.js";
 import { askName } from "./writer/WriterControls.js";
 import {
   accentButton,
@@ -319,6 +320,7 @@ export default function VisualWriterPane() {
           counters={state.counters}
           images={state.images}
           imageStyle={state.imageStyle}
+          characters={state.characters}
           onCreateImage={createImage}
           onImageDescription={setImageDescription}
           issues={issuesFor(scene.id)}
@@ -422,6 +424,21 @@ export default function VisualWriterPane() {
             value={state.imageStyle}
             onChange={(e) => update((s) => ({ ...s, imageStyle: e.target.value }))}
             style={{ ...input, fontFamily: PROSE_FONT, marginBlockStart: "0.375rem" }}
+          />
+
+          <h3 style={{ ...labelStyle, marginBlockStart: "1rem", fontSize: "0.8125rem", fontWeight: 700 }}>أوصاف الشخصيات</h3>
+          <p style={noteText}>
+            سطر لكلّ شخصية: الاسم ثمّ وصفه. يصل الوصف إلى كلّ صورة تظهر فيها الشخصية،
+            فيبقى الوجه نفسه في المقاطع كلّها. دونه يرسم النموذج الشخصية من نصّ المقطع
+            وحده، فيخرج الصبيّ شيخًا في الصورة التالية.
+          </p>
+          <AutoTextarea
+            ariaLabel="أوصاف الشخصيات"
+            placeholder="مثال: سليم: صبيّ في العاشرة، شعر أسود قصير، قميص أزرق"
+            value={state.characters}
+            onChange={(characters) => update((s) => ({ ...s, characters }))}
+            minRows={2}
+            style={{ fontFamily: PROSE_FONT, marginBlockStart: "0.375rem" }}
           />
         </div>
       </details>

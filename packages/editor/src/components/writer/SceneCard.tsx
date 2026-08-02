@@ -38,6 +38,7 @@ interface Props {
   counters: Counter[];
   images: StoryImage[];
   imageStyle: string;
+  characters: string;
   onCreateImage: () => string | null;
   onImageDescription: (name: string, description: string) => void;
   issues: WriterIssue[];
@@ -65,6 +66,7 @@ export default function SceneCard({
   counters,
   images,
   imageStyle,
+  characters,
   onCreateImage,
   onImageDescription,
   issues,
@@ -143,6 +145,7 @@ export default function SceneCard({
         value={scene.image}
         images={images}
         imageStyle={imageStyle}
+        characters={characters}
         sceneTitle={scene.title}
         sceneProse={scene.prose}
         onChange={(image) => set({ image })}

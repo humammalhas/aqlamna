@@ -204,5 +204,11 @@ export function compileStory(
     result.imageStyle = ast.imageStyle;
   }
 
+  // Omitted entirely when there are none, so a story without characters
+  // compiles to the same bytes it always did.
+  if (ast.characters.length > 0) {
+    result.characters = ast.characters;
+  }
+
   return result;
 }

@@ -44,6 +44,7 @@ class ParserState {
   images: Record<string, ImageDecl> = {};
   imageNames: Set<string> = new Set();
   imageStyle: string | null = null;
+  characters: string[] = [];
   passages: PassageNode[] = [];
   passageNames: Set<string> = new Set();
   inPassage: boolean = false;
@@ -90,6 +91,8 @@ class ParserState {
         this.parseImageDeclaration();
       } else if (t.kind === K.KEYWORD_IMAGE_STYLE) {
         this.parseImageStyle();
+      } else if (t.kind === K.KEYWORD_CHARACTERS) {
+        this.parseCharacter();
       } else if (t.kind === K.CHOICE_STAR || t.kind === K.CHOICE_PLUS) {
         throw qalamError("E104", t.line, t.column, {});
       } else {
@@ -122,6 +125,7 @@ class ParserState {
       variables: this.variables,
       lists: this.lists,
       imageStyle: this.imageStyle,
+      characters: this.characters,
       images: this.images,
       passages: this.passages,
     };
@@ -209,6 +213,18 @@ class ParserState {
     this.expect(K.COLON);
     const val = this.expect(K.STRING);
     this.imageStyle = val.value;
+  }
+
+  /**
+   * One character per line; the keyword repeats. Order is preserved because it
+   * is the author's order, and the round trip back into the visual writer
+   * rebuilds one textarea out of these lines.
+   */
+  parseCharacter(): void {
+    this.advance(); // consume KEYWORD_CHARACTERS
+    this.expect(K.COLON);
+    const val = this.expect(K.STRING);
+    this.characters.push(val.value);
   }
 
   // ---- passage ------------------------------------------------------------

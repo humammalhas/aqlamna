@@ -17,8 +17,33 @@ import {
   getImageModel,
   getImageApiKey,
 } from "./ai-keys.js";
+import { characterLines } from "./writer-model.js";
 
 // ---- Bridge: Arabic → English prompt ---------------------------------------
+
+/**
+ * The output cap for every call on this page, and it is deliberately far above
+ * what the answers need.
+ *
+ * `max_tokens` bounds REASONING plus text, and the default provider reasons.
+ * Measured against `deepseek-v4-flash` on 2 Aug 2026, at the budgets this file
+ * used to ship:
+ *
+ *   subject bridge  200 → finish_reason "length", 200 tokens spent, content ""
+ *   ✨ suggestion   160 → cut mid-word: "…صبيّ في العاشرة من عمره، بشعرٍ"
+ *   style           100 → content "" — the style silently reached no picture
+ *   character       120 → content ""
+ *
+ * Every one of them was reasoning-starved, and only the subject one was loud
+ * about it. The style has been dropped in silence on the default provider since
+ * the day it was made to cross the bridge; `if (englishStyle)` treats "" as
+ * "no style" and asks for the picture anyway.
+ *
+ * The same calls complete in 139–392 tokens once the reasoning has room. This
+ * ceiling is not a target — a short answer costs what it costs, and only a
+ * runaway pays for the headroom.
+ */
+const TRANSLATE_MAX_TOKENS = 1200;
 
 const BRIDGE_SYSTEM_PROMPT =
   "Translate this Arabic description faithfully into English. " +
@@ -51,16 +76,43 @@ const STYLE_SYSTEM_PROMPT =
   "lighting or mood the input does not state. " +
   "Output ONLY the English, no explanation, no quotation marks.";
 
+/**
+ * Character descriptions cross the bridge for exactly the same reason the style
+ * does, and fail the same silent way if they do not: an Arabic clause appended
+ * to an English prompt is not a weaker instruction, it is no instruction. The
+ * prompt below keeps the same "add nothing the author did not write" guard —
+ * translating someone's own words is not inventing a look for them.
+ */
+const CHARACTER_SYSTEM_PROMPT =
+  "Translate this Arabic character description into English image-generation " +
+  "keywords describing the person's appearance: age, build, hair, clothing. " +
+  "Keep exactly the same meaning — do not add any trait, colour, expression " +
+  "or clothing the input does not state. Drop the character's name; describe " +
+  "only how they look. " +
+  "Output ONLY the English, no explanation, no quotation marks.";
+
 /** Styles change rarely; a story of ten images should not pay for ten calls. */
 const styleCache = new Map<string, string>();
+/** Same reasoning for characters — the same cast recurs in every scene. */
+const characterCache = new Map<string, string>();
 
-async function arabicStyleToEnglish(arabicStyle: string): Promise<string> {
-  const key = arabicStyle.trim();
-  const cached = styleCache.get(key);
+/**
+ * One short Arabic fragment → English, cached. Shared by the style and the
+ * character descriptions: both are the author's own words being carried across
+ * the bridge, and both recur across every image in a story.
+ */
+async function arabicFragmentToEnglish(
+  arabic: string,
+  systemPrompt: string,
+  cache: Map<string, string>,
+  maxTokens: number,
+): Promise<string> {
+  const key = arabic.trim();
+  const cached = cache.get(key);
   if (cached !== undefined) return cached;
 
   // Already Latin (the author typed English): nothing to translate.
-  if (!/[؀-ۿ]/.test(key)) { styleCache.set(key, key); return key; }
+  if (!/[؀-ۿ]/.test(key)) { cache.set(key, key); return key; }
 
   const provider = getSelectedProvider();
   const apiKey = getApiKey(provider.id);
@@ -70,14 +122,58 @@ async function arabicStyleToEnglish(arabicStyle: string): Promise<string> {
     provider.kind,
     getTransportConfig(),
     [
-      { role: "system", content: STYLE_SYSTEM_PROMPT },
+      { role: "system", content: systemPrompt },
       { role: "user", content: key },
     ],
-    { temperature: 0.2, max_tokens: 100 },
+    { temperature: 0.2, max_tokens: maxTokens },
   );
   const english = text.replace(/^["']|["']$/g, "").trim();
-  styleCache.set(key, english);
+  // An empty answer is a failure, not a translation — caching it would make one
+  // starved call drop this style from every picture for the rest of the session.
+  if (english.length > 0) cache.set(key, english);
   return english;
+}
+
+function arabicStyleToEnglish(arabicStyle: string): Promise<string> {
+  return arabicFragmentToEnglish(
+    arabicStyle,
+    STYLE_SYSTEM_PROMPT,
+    styleCache,
+    TRANSLATE_MAX_TOKENS,
+  );
+}
+
+function arabicCharacterToEnglish(arabicCharacter: string): Promise<string> {
+  return arabicFragmentToEnglish(
+    arabicCharacter,
+    CHARACTER_SYSTEM_PROMPT,
+    characterCache,
+    TRANSLATE_MAX_TOKENS,
+  );
+}
+
+/**
+ * The character lines this description is actually about.
+ *
+ * Every character in the story would bloat the prompt and, worse, draw people
+ * into scenes they are not in. A line is `الاسم: الوصف`, so the name before the
+ * first colon is matched against the description text. A bare substring test is
+ * deliberate: it catches `سليمًا` and `لسليم` — the same boy inflected — which a
+ * word-boundary match would miss, because `\b` is an ASCII word boundary and
+ * there is no boundary between an Arabic letter and a space.
+ */
+export function relevantCharacterLines(
+  characters: string | null | undefined,
+  arabicDescription: string,
+): string[] {
+  const haystack = (arabicDescription ?? "").trim();
+  if (haystack.length === 0) return [];
+
+  return characterLines(characters).filter((line) => {
+    const colon = line.indexOf(":");
+    const name = (colon === -1 ? line : line.slice(0, colon)).trim();
+    return name.length > 0 && haystack.includes(name);
+  });
 }
 
 /**
@@ -100,7 +196,7 @@ async function arabicToEnglishPrompt(arabicDescription: string): Promise<string>
 
   const text = await callTransport(provider.kind, getTransportConfig(), messages, {
     temperature: 0.7,
-    max_tokens: 200,
+    max_tokens: TRANSLATE_MAX_TOKENS,
   });
 
   // Clean up — strip quotes and stray prefixes
@@ -128,11 +224,20 @@ const SUGGEST_SYSTEM_PROMPT =
   "اقرأ نصّ المقطع، ثمّ اكتب وصفًا عربيًّا قصيرًا لما يظهر في الصورة: من فيها، وأين، ومتى.\n" +
   "الموضوع وحده. لا إضاءة ولا مزاج ولا ألوان ولا تكوين ولا زاوية تصوير — كلّ ذلك يأتي من مكان آخر.\n" +
   "لا تطلب لافتة ولا كتابًا مفتوحًا ولا أيّ كلام مكتوب داخل الصورة.\n" +
+  "إذا رافقت الطلبَ أوصافُ شخصيات، فاذكر الشخصية باسمها وانقل عمرها وهيئتها ولباسها إلى الوصف، ولو سكت عنها نصّ المقطع.\n" +
   "جملة واحدة. دون علامات اقتباس، ودون مقدّمة، ودون شرح.";
 
+/**
+ * @param characters The story's `أوصاف_الشخصيات`, whole. Not filtered by
+ * relevance here: the prose is what decides who is in the scene, and this call
+ * is reading the prose. The reported failure was the opposite of over-supply —
+ * prose saying only "وقف سليمٌ" produced a description with no age, and the
+ * image model drew a man of seventy.
+ */
 export async function suggestImageDescription(
   sceneTitle: string,
   prose: string,
+  characters?: string | null,
 ): Promise<string> {
   const text = prose.trim();
   if (text.length === 0) {
@@ -154,10 +259,14 @@ export async function suggestImageDescription(
       { role: "system", content: SUGGEST_SYSTEM_PROMPT },
       {
         role: "user",
-        content: `اسم المقطع: ${sceneTitle || "دون اسم"}\n\nنصّ المقطع:\n${text}`,
+        content:
+          `اسم المقطع: ${sceneTitle || "دون اسم"}\n\nنصّ المقطع:\n${text}` +
+          (characterLines(characters).length > 0
+            ? `\n\nأوصاف الشخصيات:\n${characterLines(characters).join("\n")}`
+            : ""),
       },
     ],
-    { temperature: 0.6, max_tokens: 160 },
+    { temperature: 0.6, max_tokens: TRANSLATE_MAX_TOKENS },
   );
 
   return suggestion.replace(/^["'«»]|["'«»]$/g, "").trim();
@@ -356,6 +465,7 @@ export type GenStep = "translate" | "draw";
 export async function generateImage(
   arabicDescription: string,
   imageStyle: string | null | undefined,
+  characters?: string | null,
   onProgress?: (step: GenStep) => void,
 ): Promise<ImageGenResult> {
   // Call 1 — text model: Arabic → English (description only, no style)
@@ -370,16 +480,44 @@ export async function generateImage(
   }
   const translateMs = Date.now() - t0;
 
-  // Append the story style — translated, because the image model reads English.
-  // A failure here must not lose the picture: fall back to the subject alone,
-  // which is what the author got before the style crossed the bridge at all.
+  // Append the characters this scene is about, then the story style — both
+  // translated, because the image model reads English. Characters go next to
+  // the subject they describe and before the style, which is about the picture
+  // rather than the people in it.
+  //
+  // A failure in either must not lose the picture: fall back to what we already
+  // have, which is what the author got before that clause crossed the bridge.
+  // The subject comes back as a sentence ("Salim is standing in the
+  // courtyard."), and the clauses after it are keywords. Without this the
+  // prompt reads "…courtyard., a boy of ten".
+  const append = (prompt: string, clause: string) =>
+    `${prompt.replace(/[.\s]+$/, "")}, ${clause}`;
+
   let englishPrompt = translated;
+
+  const relevant = relevantCharacterLines(characters, arabicDescription);
+  if (relevant.length > 0) {
+    try {
+      const englishCharacters = (
+        await Promise.all(relevant.map((line) => arabicCharacterToEnglish(line)))
+      )
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0);
+      if (englishCharacters.length > 0) {
+        englishPrompt = append(englishPrompt, englishCharacters.join(", "));
+      }
+    } catch {
+      // Keep the subject; a character we could not translate is a detail lost,
+      // not a picture lost.
+    }
+  }
+
   if (imageStyle && imageStyle.trim()) {
     try {
       const englishStyle = await arabicStyleToEnglish(imageStyle);
-      if (englishStyle) englishPrompt = `${translated}, ${englishStyle}`;
+      if (englishStyle) englishPrompt = append(englishPrompt, englishStyle);
     } catch {
-      englishPrompt = translated;
+      // Same reasoning — the style is a detail, the picture is the point.
     }
   }
 

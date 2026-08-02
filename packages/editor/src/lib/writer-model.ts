@@ -123,6 +123,31 @@ export interface WriterState {
    * images come back looking like ten illustrators. See `IMAGES_SPEC.md`.
    */
   imageStyle: string;
+  /**
+   * One line per character, `الاسم: الوصف`, for the whole story.
+   *
+   * Held as a single newline-separated string because the author edits it in
+   * one box; `generateQalam` splits it into one `أوصاف_الشخصيات` line each,
+   * since a `.qalam` string cannot contain a newline.
+   *
+   * Without this, every scene's picture is drawn from that scene's description
+   * alone. A scene whose prose says only "وقف سليمٌ" gives the image model no
+   * age, so it guesses — and it guessed an old man for a boy of ten.
+   */
+  characters: string;
+}
+
+/**
+ * The character box split into one entry per character.
+ *
+ * Shared so the serialiser and the image bridge agree on what "one character"
+ * is: blank lines are the author pressing Enter, not a nameless character.
+ */
+export function characterLines(field: string | null | undefined): string[] {
+  return (field ?? "")
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
 }
 
 // ---- Ids -------------------------------------------------------------------
@@ -180,7 +205,7 @@ export function emptyConditionalText(tag: string | null): ConditionalText {
 }
 
 export function emptyWriterState(): WriterState {
-  return { title: "", author: "", scenes: [], tags: [], counters: [], images: [], imageStyle: "" };
+  return { title: "", author: "", scenes: [], tags: [], counters: [], images: [], imageStyle: "", characters: "" };
 }
 
 /**
@@ -188,7 +213,7 @@ export function emptyWriterState(): WriterState {
  * The title is the same word the docs use for a first scene.
  */
 export function starterWriterState(): WriterState {
-  return { title: "", author: "", scenes: [emptyScene("البداية")], tags: [], counters: [], images: [], imageStyle: "" };
+  return { title: "", author: "", scenes: [emptyScene("البداية")], tags: [], counters: [], images: [], imageStyle: "", characters: "" };
 }
 
 // ---- Arabic-Indic digits ---------------------------------------------------

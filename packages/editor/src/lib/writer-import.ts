@@ -362,6 +362,16 @@ export function importWriterState(story: StoryJSON): ImportResult {
         typeof (story as unknown as { imageStyle?: unknown }).imageStyle === "string"
           ? (story as unknown as { imageStyle: string }).imageStyle
           : "",
+      // Many `أوصاف_الشخصيات` lines become one box again. Joining with "\n" is
+      // what makes the round trip byte-identical: the box is re-split on the
+      // way back out.
+      characters: Array.isArray(
+        (story as unknown as { characters?: unknown }).characters,
+      )
+        ? (story as unknown as { characters: unknown[] })
+            .characters.filter((c): c is string => typeof c === "string")
+            .join("\n")
+        : "",
     };
     return { ok: true, state };
   } catch (err) {

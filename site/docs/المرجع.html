@@ -279,6 +279,7 @@
 <h2 id="الصور">الصور</h2>
 <p>الصورة تُعلَن مرّة في أعلى الملف، ثم تُستعمل في أي مقطع — أو في عدّة مقاطع. تُخزَّن مرّة واحدة مهما تكرّر استعمالها.</p>
 <pre class="lang-qalam"><code>أسلوب<span dir="ltr">_</span>الصور<span dir="ltr">:</span> <span dir="ltr">&quot;</span>رسم كتب أطفال، ألوان ترابية<span dir="ltr">&quot;</span>
+أوصاف<span dir="ltr">_</span>الشخصيات<span dir="ltr">:</span> <span dir="ltr">&quot;</span>سليم<span dir="ltr">:</span> صبيّ في العاشرة، شعر أسود قصير، قميص أزرق<span dir="ltr">&quot;</span>
 صورة بوابة<span dir="ltr">_</span>المدينة <span dir="ltr">=</span> <span dir="ltr">&quot;</span>بوابة حجرية عند غروب الشمس<span dir="ltr">&quot;</span>
 
 <span dir="ltr">===</span> البداية <span dir="ltr">===</span>
@@ -289,10 +290,11 @@
 <p><strong>علامات الترقيم مختلفة بين الثلاثة، وهذا أكثر ما يُخطئ فيه الكاتب:</strong></p>
 <table><thead><tr><th>السطر</th><th>العلامة</th><th>المكان</th></tr></thead><tbody>
 <tr><td><code>أسلوب<span dir="ltr">_</span>الصور<span dir="ltr">:</span> <span dir="ltr">&quot;</span>…<span dir="ltr">&quot;</span></code></td><td><strong>نقطتان</strong> <code><span dir="ltr">:</span></code> مثل <code>عنوان<span dir="ltr">:</span></code> و <code>مؤلف<span dir="ltr">:</span></code></td><td>أعلى الملف، قبل أول <code><span dir="ltr">===</span></code></td></tr>
+<tr><td><code>أوصاف<span dir="ltr">_</span>الشخصيات<span dir="ltr">:</span> <span dir="ltr">&quot;</span>…<span dir="ltr">&quot;</span></code></td><td><strong>نقطتان</strong> <code><span dir="ltr">:</span></code></td><td>أعلى الملف، سطر لكلّ شخصية</td></tr>
 <tr><td><code>صورة الاسم <span dir="ltr">=</span> <span dir="ltr">&quot;</span>…<span dir="ltr">&quot;</span></code></td><td><strong>علامة يساوي</strong> <code><span dir="ltr">=</span></code></td><td>أعلى الملف، مع <code>متغير</code> و <code>قائمة</code></td></tr>
 <tr><td><code>صورة<span dir="ltr">:</span> الاسم</code></td><td><strong>نقطتان</strong> <code><span dir="ltr">:</span></code></td><td>داخل المقطع، على سطر مستقل</td></tr>
 </tbody></table>
-<p><strong>الأسماء الإنجليزية:</strong> <code><span dir="ltr">image</span></code> للتصريح والاستعمال، <code><span dir="ltr">image_style</span></code> للأسلوب.</p>
+<p><strong>الأسماء الإنجليزية:</strong> <code><span dir="ltr">image</span></code> للتصريح والاستعمال، <code><span dir="ltr">image_style</span></code> للأسلوب، <code><span dir="ltr">characters</span></code> لأوصاف الشخصيات.</p>
 <h3 id="التصريح">التصريح</h3>
 <p>اسم الصورة يتبع قواعد أسماء المتغيرات (يُنزع التشكيل). النصّ بين علامتَي الاقتباس هو <strong>الوصف العربي</strong>: هو ما يُرسَل ليُرسَم، وهو نصّ <code><span dir="ltr">alt</span></code> للقارئ الذي يستعمل قارئ شاشة، وهو ما يظهر داخل إطار مكان الصورة إن لم تُولَّد بعد.</p>
 <p>التصريح وحده لا يرسم شيئًا. التوليد فعل صريح تضغطه في المحرر: في المحرّر المرئي سطر <strong>صورة المقطع</strong> في أعلى كلّ بطاقة، وفيه زرّ <strong>ارسم الصورة</strong>، وبجانب حقل الوصف زرّ <strong>✨ اقترح من النصّ</strong> يقرأ نصّ المقطع ويكتب لك الوصف.</p>
@@ -304,6 +306,14 @@
 <p><strong>لماذا يوجد أصلًا:</strong> قبل أن يصل الوصف إلى نموذج الرسم، يترجمه المحرّر إلى الإنجليزية، <strong>ويترجم أسلوبك معه</strong>، ثمّ يُلحقه به. لولا هذا السطر لاخترع النموذج أسلوبًا مختلفًا لكلّ صورة، فتخرج عشر صور كأنّ عشرة رسّامين رسموها.</p>
 <p>والترجمة هنا ليست تزيّدًا: نموذج الرسم لا يقرأ العربية، فأسلوب مكتوب بالعربية يصل إليه ولا يفهمه، فيتجاهله في صمت. قيس هذا على النموذج نفسه بالموضوع نفسه: مع الأسلوب بالعربية خرجت <strong>صورة فوتوغرافية</strong>، ومع الأسلوب نفسه بالإنجليزية خرج <strong>رسم كتب أطفال</strong>.</p>
 <p>ولهذا: <strong>اكتب في الوصف الموضوع فقط</strong> — من في الصورة، وأين، ومتى. اترك الإضاءة والمزاج والألوان والتكوين لسطر <code>أسلوب<span dir="ltr">_</span>الصور</code>.</p>
+<h3 id="أوصاف-الشخصيات">أوصاف الشخصيات</h3>
+<p><code>أوصاف<span dir="ltr">_</span>الشخصيات</code> سطر لكلّ شخصية: الاسم، ثمّ نقطتان، ثمّ وصف هيئته. يتكرّر السطر بعدد الشخصيات.</p>
+<pre class="lang-qalam"><code>أوصاف<span dir="ltr">_</span>الشخصيات<span dir="ltr">:</span> <span dir="ltr">&quot;</span>سليم<span dir="ltr">:</span> صبيّ في العاشرة، شعر أسود قصير، قميص أزرق<span dir="ltr">&quot;</span>
+أوصاف<span dir="ltr">_</span>الشخصيات<span dir="ltr">:</span> <span dir="ltr">&quot;</span>جدّته<span dir="ltr">:</span> امرأة في السبعين، ثوب مطرّز أخضر<span dir="ltr">&quot;</span></code></pre>
+<p><strong>لماذا يوجد:</strong> كلّ صورة تُرسم من وصفها وحده، والمحرّر لا يعرف من سليم. فإن قال المقطع &quot;وقف سليمٌ في الفناء&quot; ولم يذكر عمره، اختار النموذج عمرًا من عنده — وقد اختار شيخًا في السبعين لصبيّ في العاشرة. هذه السطور تصف الشخصية مرّة واحدة، فتصل إلى كلّ صورة تظهر فيها.</p>
+<p><strong>الاسم قبل النقطتين هو المفتاح.</strong> المحرّر يقرأ الاسم، ثمّ يُلحق وصف الشخصية بالصورة إن ورد اسمها في وصفها. فلا تدخل الجدّة مشهدًا ليست فيه.</p>
+<p>ووصف الشخصية يعبر الجسر مترجمًا مثل الأسلوب، للسبب نفسه: نموذج الرسم لا يقرأ العربية.</p>
+<p><strong>اكتب الهيئة وحدها</strong> — العمر والبنية والشعر واللباس. أمّا الطبع والمشاعر فلا يرسمهما النموذج.</p>
 <h3 id="نموذج-الرسم-لا-يكتب-العربية">نموذج الرسم لا يكتب العربية</h3>
 <p>نماذج توليد الصور لا تُحسن رسم الحرف العربي؛ ما تكتبه يخرج خربشة تشبه الحروف ولا تُقرأ. <strong>صِف المشهد، ولا تطلب لافتة ولا كتابًا مفتوحًا ولا نقشًا فيه كلام.</strong> إن احتجت كلامًا مكتوبًا في المشهد، فاكتبه نصًّا في المقطع لا داخل الصورة.</p>
 <h3 id="أخطاء-الصور">أخطاء الصور</h3>
@@ -323,6 +333,7 @@
 <tr><td><code>غير<span dir="ltr">_</span>ذلك</code></td><td><code><span dir="ltr">ELSE</span></code></td></tr>
 <tr><td><code>صورة</code></td><td><code><span dir="ltr">image</span></code></td></tr>
 <tr><td><code>أسلوب<span dir="ltr">_</span>الصور</code></td><td><code><span dir="ltr">image_style</span></code></td></tr>
+<tr><td><code>أوصاف<span dir="ltr">_</span>الشخصيات</code></td><td><code><span dir="ltr">characters</span></code></td></tr>
 <tr><td><code>عنوان</code></td><td><code><span dir="ltr">TITLE</span></code></td></tr>
 <tr><td><code>مؤلف</code></td><td><code><span dir="ltr">AUTHOR</span></code></td></tr>
 <tr><td><code>لغة</code></td><td><code><span dir="ltr">LANGUAGE</span></code></td></tr>

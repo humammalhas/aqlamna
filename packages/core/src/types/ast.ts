@@ -14,6 +14,15 @@ export interface StoryAST {
   lists: Record<string, ListDecl>;
   /** Optional story-level image style — appended to each English prompt. */
   imageStyle: string | null;
+  /**
+   * Story-level character descriptions, one entry per character, in the order
+   * written. Each is free text the author chose, conventionally `الاسم: الوصف`.
+   *
+   * They exist so a character looks the same in every scene's picture. Without
+   * them each image is drawn from that scene's description alone, and a boy in
+   * one scene is an old man in the next.
+   */
+  characters: string[];
   images: Record<string, ImageDecl>;
   passages: PassageNode[];
 }

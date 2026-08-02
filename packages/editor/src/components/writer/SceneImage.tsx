@@ -41,6 +41,8 @@ interface Props {
   value: string | null;
   images: StoryImage[];
   imageStyle: string;
+  /** The story's `أوصاف_الشخصيات` — keeps one character one person across scenes. */
+  characters: string;
   /** The scene's own prose — what the suggestion is derived from. */
   sceneTitle: string;
   sceneProse: string;
@@ -54,6 +56,7 @@ export default function SceneImage({
   value,
   images,
   imageStyle,
+  characters,
   sceneTitle,
   sceneProse,
   onChange,
@@ -92,7 +95,12 @@ export default function SceneImage({
     setError(null);
     setStep("translate");
     try {
-      const result = await generateImage(description, imageStyle.trim() || null, (s) => setStep(s));
+      const result = await generateImage(
+        description,
+        imageStyle.trim() || null,
+        characters,
+        (s) => setStep(s),
+      );
       const stored = await saveImage(DEFAULT_PROJECT_ID, declared.name, result.dataUrl);
       setPreview(stored.dataUrl);
       setBytes(stored.bytes);
@@ -101,7 +109,7 @@ export default function SceneImage({
     } finally {
       setStep(null);
     }
-  }, [declared, imageStyle]);
+  }, [declared, imageStyle, characters]);
 
   const keyReady = hasImageApiKey();
   const textKeyReady = hasApiKey();
@@ -119,14 +127,14 @@ export default function SceneImage({
     setError(null);
     setSuggesting(true);
     try {
-      const text = await suggestImageDescription(sceneTitle, sceneProse);
+      const text = await suggestImageDescription(sceneTitle, sceneProse, characters);
       if (text) onDescription(declared.name, text);
     } catch (err) {
       setError(err instanceof Error ? err.message : "تعذّر اقتراح وصف.");
     } finally {
       setSuggesting(false);
     }
-  }, [declared, sceneTitle, sceneProse, onDescription]);
+  }, [declared, sceneTitle, sceneProse, characters, onDescription]);
 
   return (
     <div style={{ ...subCard, borderStyle: "dashed" }} data-writer-image={value ?? ""}>
