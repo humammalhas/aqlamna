@@ -18,6 +18,38 @@ html, body, #root {
   overflow-x: hidden;
 }
 
+/* ---------------------------------------------------------------------------
+   The AI is working.
+
+   It used to say so with a static ⏳ on a greyed-out button, which is what a
+   BROKEN button looks like. A local model on the Beelink takes 59s to answer
+   and a reasoning model several seconds; with nothing moving on screen, the
+   only reasonable conclusion is that it hung. Something must move, and the
+   wait must be counted.
+   --------------------------------------------------------------------------- */
+@keyframes aq-spin { to { transform: rotate(360deg); } }
+
+.aq-spinner {
+  display: inline-block;
+  inline-size: 0.75em;
+  block-size: 0.75em;
+  border: 2px solid currentColor;
+  border-block-start-color: transparent;
+  border-radius: 50%;
+  animation: aq-spin 0.7s linear infinite;
+  vertical-align: -0.05em;
+}
+
+@keyframes aq-pulse { 50% { opacity: 0.45; } }
+.aq-working { animation: aq-pulse 1.4s ease-in-out infinite; }
+
+/* Someone who asked for no motion still needs to know it is alive: keep the
+   text and the counter, drop the spin. */
+@media (prefers-reduced-motion: reduce) {
+  .aq-spinner { animation: none; border-block-start-color: currentColor; opacity: 0.5; }
+  .aq-working { animation: none; }
+}
+
 /* Every interactive element shows where the keyboard is. */
 :focus-visible {
   outline: 2px solid var(--aq-accent);

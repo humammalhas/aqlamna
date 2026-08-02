@@ -33,7 +33,7 @@
 // Bump CACHE_VERSION on every deploy to replace the old cache.
 // ---------------------------------------------------------------------------
 
-const CACHE_VERSION = "aqlamna-v8";
+const CACHE_VERSION = "aqlamna-v9";
 const CACHE_NAME = `aqlamna-app-${CACHE_VERSION}`;
 
 // ---- Resources to precache on install --------------------------------------
@@ -128,9 +128,16 @@ self.addEventListener("fetch", (event) => {
   if (url.origin !== self.location.origin) return;
 
   // ---- Documents: network first, cache as the offline fallback -------------
+  //
+  // `cache: "no-store"` is not belt-and-braces. A plain fetch() inside a worker
+  // still reads the browser's HTTP cache, and the zone's own Browser Cache TTL
+  // was overriding this site's `_headers` — so "network-first" could hand back
+  // a document hours old, pointing at the PREVIOUS build's hashed bundle. The
+  // assets below are cache-first and would then hit on that old name forever.
+  // The document is the one URL that decides which build a visitor is running.
   if (isAppDocument(url)) {
     event.respondWith(
-      fetch(request)
+      fetch(request, { cache: "no-store" })
         .then((response) => {
           if (response && response.status === 200) {
             const clone = response.clone();

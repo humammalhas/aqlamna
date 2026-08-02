@@ -140,6 +140,16 @@ export interface EditorStore {
   /** Compile current source. Updates storyJson or error. */
   compileSource: () => void;
 
+  /**
+   * Throw away the compiled story, so ▶ شغّل shows nothing until it is asked to
+   * run again.
+   *
+   * `compileSource` returns early on an empty source, so clearing the text left
+   * the player mounted on the PREVIOUS story: "قصة جديدة" gave the author a
+   * blank set of cards beside somebody else's story, still playable.
+   */
+  clearCompiled: () => void;
+
   /** Clear the error (dismissed by the user). */
   clearError: () => void;
 
@@ -231,6 +241,17 @@ export interface EditorStore {
   writerFocusScene: string | null;
   setWriterFocusScene: (id: string | null) => void;
 
+  /**
+   * A scene the pane should bring into view, with a nonce so the same scene can
+   * be requested twice.
+   *
+   * An accepted AI suggestion lands in a card that is usually off-screen — and
+   * "اكتب هذا المقطع" appends a NEW card at the bottom of eleven. The apply
+   * looked like it had done nothing until the author scrolled to find it.
+   */
+  writerScrollTo: { sceneId: string; nonce: number } | null;
+  requestWriterScroll: (sceneId: string) => void;
+
   /** Replace the writer model, regenerate `.qalam`, and persist it. */
   setWriterState: (next: WriterState) => void;
 
@@ -265,9 +286,15 @@ export const useStore = create<EditorStore>((set, get) => ({
     saveSource(source).catch(() => {});
   },
 
+  clearCompiled: () => set({ storyJson: null, error: null, playerKey: get().playerKey + 1 }),
+
   compileSource: () => {
     const { source } = get();
-    if (source.trim().length === 0) return;
+    if (source.trim().length === 0) {
+      // Nothing to play. Say so, rather than leaving the last story running.
+      get().clearCompiled();
+      return;
+    }
 
     // Playing a story is a real action — it is only ever reached from ▶ شغّل,
     // export, or an AI action, never from a page load.
@@ -402,6 +429,10 @@ export const useStore = create<EditorStore>((set, get) => ({
 
   setWriterFocusScene: (id: string | null) => set({ writerFocusScene: id }),
 
+  writerScrollTo: null,
+  requestWriterScroll: (sceneId: string) =>
+    set({ writerScrollTo: { sceneId, nonce: get().writerScrollTo ? get().writerScrollTo!.nonce + 1 : 1 } }),
+
   setWriterMode: (mode: WriterMode) => {
     set({ writerMode: mode });
     saveWriterMode(mode);
@@ -420,6 +451,11 @@ export const useStore = create<EditorStore>((set, get) => ({
 
   syncWriterFromSource: () => {
     const { source } = get();
+
+    // Every scene here is about to get a NEW id, so a remembered focus points at
+    // a scene that no longer exists. Left set, it sent the next AI suggestion to
+    // an id nothing matched — which used to mean the suggestion vanished.
+    set({ writerFocusScene: null });
 
     // Nothing saved yet: open on one empty scene rather than a blank page, and
     // leave `source` alone so an untouched visit writes nothing to IndexedDB.

@@ -28,8 +28,26 @@ import {
 export type AIApplyAction = "suggest_choices" | "continue_scene" | "write_passage";
 
 export type ApplyResult =
-  | { ok: true; state: WriterState }
+  | { ok: true; state: WriterState; sceneId: string }
   | { ok: false; reason: string };
+
+/**
+ * The scene an accepted suggestion will land in.
+ *
+ * `writerFocusScene` is the last scene card the author touched, and it can be
+ * STALE: scene ids are regenerated every time the story is re-imported — a
+ * reload, switching to متقدّم and back, opening the example. A stale id used to
+ * match no scene at all, and `scenes.map` then returned the story unchanged:
+ * the apply reported success and nothing appeared anywhere. Falling back to the
+ * last scene is a guess; silently doing nothing is a bug.
+ *
+ * Exported so the panel can NAME the target before the author presses أضف,
+ * rather than leaving them to find out afterwards by scrolling.
+ */
+export function aiTargetScene(state: WriterState, focusSceneId: string | null): Scene | null {
+  const focused = focusSceneId ? state.scenes.find((s) => s.id === focusSceneId) : undefined;
+  return focused ?? state.scenes[state.scenes.length - 1] ?? null;
+}
 
 /**
  * The `.qalam` body of one scene, for the AI prompt's "المقطع الحالي".
@@ -112,22 +130,23 @@ export function applyAIFragment(
 
   if (action === "write_passage") {
     const scene = { ...parsed, id: parsed.id, title: nextSceneTitle(state.scenes) };
-    return { ok: true, state: { ...state, scenes: [...state.scenes, scene] } };
+    return { ok: true, state: { ...state, scenes: [...state.scenes, scene] }, sceneId: scene.id };
   }
 
-  const targetId = focusSceneId ?? state.scenes[state.scenes.length - 1]?.id ?? null;
-  if (!targetId) {
+  const target = aiTargetScene(state, focusSceneId);
+  if (!target) {
     // No scene to add to: make one rather than dropping the author's request.
     const scene = { ...emptyScene(nextSceneTitle(state.scenes)), prose: parsed.prose, choices: parsed.choices };
-    return { ok: true, state: { ...state, scenes: [...state.scenes, scene] } };
+    return { ok: true, state: { ...state, scenes: [...state.scenes, scene] }, sceneId: scene.id };
   }
 
   return {
     ok: true,
+    sceneId: target.id,
     state: {
       ...state,
       scenes: state.scenes.map((sc) => {
-        if (sc.id !== targetId) return sc;
+        if (sc.id !== target.id) return sc;
         if (action === "continue_scene") {
           const joined = sc.prose.trim().length > 0 ? `${sc.prose.trimEnd()}\n\n${parsed.prose}` : parsed.prose;
           return { ...sc, prose: joined };

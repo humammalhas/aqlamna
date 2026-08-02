@@ -16,7 +16,7 @@ import {
   type AIAction,
   type AIResponse,
 } from "../lib/ai.js";
-import { applyAIFragment, sceneContextText } from "../lib/writer-ai.js";
+import { applyAIFragment, aiTargetScene, sceneContextText } from "../lib/writer-ai.js";
 
 const COLLAPSED_KEY = "aqlamna-ai-collapsed";
 
@@ -43,6 +43,43 @@ export default function AIActions() {
   const [applyError, setApplyError] = useState<string | null>(null);
 
   const keyAvailable = hasApiKey();
+
+  /**
+   * Seconds since the request went out, shown while it is in flight.
+   *
+   * Measured on the models this editor actually talks to: Groq 0.7s, DeepSeek
+   * 1.5s, Together 3.2s, Gemini 3.2s — and `qwen3:14b` on a local box **59.5s**.
+   * A minute with nothing moving reads as a hang, and the author's next move is
+   * to press the button again.
+   */
+  const [elapsed, setElapsed] = useState(0);
+  useEffect(() => {
+    if (!loading) { setElapsed(0); return; }
+    const started = performance.now();
+    const id = window.setInterval(() => {
+      setElapsed(Math.floor((performance.now() - started) / 1000));
+    }, 1000);
+    return () => window.clearInterval(id);
+  }, [loading]);
+
+  /**
+   * The card أضف will change, named on screen.
+   *
+   * Read from the store at render time rather than remembered from the request:
+   * the author may focus another card while the answer is on screen, and the
+   * apply reads the focus at the moment it runs, not at the moment it asked.
+   */
+  const writerState = useStore((s) => s.writerState);
+  const writerFocusScene = useStore((s) => s.writerFocusScene);
+  const targetLabel =
+    writerMode !== "visual" || !writerState
+      ? ""
+      : action === "write_passage"
+        ? "مقطع جديد في آخر القصة"
+        : (() => {
+            const target = aiTargetScene(writerState, writerFocusScene);
+            return target ? `إلى المقطع: ${target.title || "دون اسم"}` : "";
+          })();
 
   // Hydrate collapsed state from localStorage (default: collapsed)
   useEffect(() => {
@@ -71,10 +108,12 @@ export default function AIActions() {
       // Ask about the scene the answer will land in. In code mode that is the
       // last passage, where the cursor is; in the form it is the card the
       // author last touched, which is rarely the last one.
+      // Resolved the same way the apply resolves it, so the question and the
+      // answer are about the same card even when the remembered focus is stale.
       const { writerMode: mode, writerState, writerFocusScene } = useStore.getState();
       const focused =
         mode === "visual" && writerState
-          ? sceneContextText(writerState, writerFocusScene)
+          ? sceneContextText(writerState, aiTargetScene(writerState, writerFocusScene)?.id ?? null)
           : "";
       const contextText = focused || getContextText(source);
 
@@ -130,6 +169,10 @@ export default function AIActions() {
       return;
     }
     setWriterState(result.state);
+    // Take the author to what just happened. A new scene card is appended at the
+    // bottom of the list and an accepted suggestion usually lands off-screen, so
+    // أضف looked like it had done nothing until they went looking for it.
+    useStore.getState().requestWriterScroll(result.sceneId);
     setResponse(null);
     setApplyError(null);
   };
@@ -243,6 +286,29 @@ export default function AIActions() {
         />
       </div>
 
+      {/* Alive, and counting. The spinner says "working"; the seconds say how
+          long, so a slow model is slow rather than broken. */}
+      {loading && (
+        <p
+          data-ai-status={elapsed}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "0.4rem",
+            marginBlockStart: "0.5rem",
+            marginBlockEnd: 0,
+            fontSize: "0.75rem",
+            color: "var(--aq-muted)",
+          }}
+        >
+          <span className="aq-spinner" aria-hidden="true" />
+          <span role="status">
+            {actionLabel ? `${actionLabel}…` : "يعمل…"} منذ {elapsed} ث
+            {elapsed >= 12 && " — بعض النماذج تحتاج نصف دقيقة أو أكثر. لا تضغط مرّة أخرى."}
+          </span>
+        </p>
+      )}
+
       {/* Preview panel */}
       {response && (
         <div
@@ -267,6 +333,11 @@ export default function AIActions() {
           >
             <span style={{ fontSize: "0.8125rem", fontWeight: 600, color: "var(--aq-accent)" }}>
               {actionLabel}
+              {/* Where أضف will put it, said BEFORE it is pressed. The author
+                  used to press it and then go looking for what had changed. */}
+              {response.valid && targetLabel && (
+                <span style={{ fontWeight: 400, color: "var(--aq-muted)" }}> — {targetLabel}</span>
+              )}
             </span>
             <div style={{ display: "flex", gap: "0.375rem" }}>
               {response.valid && (
@@ -422,16 +493,21 @@ function AIButton({
         paddingInline: "0.75rem",
         fontSize: "0.8125rem",
         fontFamily: "inherit",
-        color: disabled ? "var(--aq-dim)" : "var(--aq-accent)",
-        background: disabled ? "var(--aq-bg-deep)" : "var(--aq-surface-hi)",
-        border: `1px solid ${disabled ? "var(--aq-surface-hi)" : "var(--aq-border-hi)"}`,
+        // A button that is busy must not look like a button that is dead.
+        // Both were drawn in --aq-dim at 0.6 opacity, so "thinking" and
+        // "unavailable" were the same picture — and thinking can last a minute
+        // on a local model.
+        color: disabled && !loading ? "var(--aq-dim)" : "var(--aq-accent)",
+        background: disabled && !loading ? "var(--aq-bg-deep)" : "var(--aq-surface-hi)",
+        border: `1px solid ${disabled && !loading ? "var(--aq-surface-hi)" : "var(--aq-border-hi)"}`,
         borderRadius: "6px",
         cursor: disabled ? "default" : "pointer",
-        opacity: disabled ? 0.6 : 1,
+        opacity: disabled && !loading ? 0.6 : 1,
         whiteSpace: "nowrap",
       }}
+      className={loading ? "aq-working" : undefined}
     >
-      {loading ? "⏳" : "🤖"} {label}
+      {loading ? <span className="aq-spinner" aria-hidden="true" /> : "🤖"} {label}
     </button>
   );
 }

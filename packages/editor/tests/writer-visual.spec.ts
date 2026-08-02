@@ -353,3 +353,96 @@ test("no horizontal overflow at 390px, and every control is thumb-sized", async 
   );
   expect(small, JSON.stringify(small)).toHaveLength(0);
 });
+
+// ---- 8. Three things reported from the live editor, 2 Aug 2026 -------------
+
+/** A 1×1 WebP, so a test never needs an API key to have "a drawn picture". */
+const PIXEL_WEBP =
+  "data:image/webp;base64,UklGRiwAAABXRUJQVlA4ICAAAABwAQCdASoBAAEADMDOJaACdAFAAAD+0uw2xVtQtAAAAA==";
+
+/** Put bytes straight into the editor's image store, under any key. */
+async function seedImageBytes(page: Page, imageName: string, dataUrl: string) {
+  await page.evaluate(
+    async ([name, url]) => {
+      await new Promise<void>((resolve, reject) => {
+        const open = indexedDB.open("aqlamna-editor", 3);
+        open.onerror = () => reject(open.error);
+        open.onsuccess = () => {
+          const db = open.result;
+          const tx = db.transaction("images", "readwrite");
+          tx.objectStore("images").put(
+            { dataUrl: url, width: 1, height: 1, bytes: 40, generatedAt: 1 },
+            `default:${name}`,
+          );
+          tx.oncomplete = () => { db.close(); resolve(); };
+          tx.onerror = () => reject(tx.error);
+        };
+      });
+    },
+    [imageName, dataUrl] as const,
+  );
+}
+
+/** Read the keys the image store holds right now. */
+async function imageKeys(page: Page): Promise<string[]> {
+  return page.evaluate(async () => {
+    return new Promise<string[]>((resolve) => {
+      const open = indexedDB.open("aqlamna-editor", 3);
+      open.onerror = () => resolve([]);
+      open.onsuccess = () => {
+        const db = open.result;
+        const req = db.transaction("images", "readonly").objectStore("images").getAllKeys();
+        req.onsuccess = () => { db.close(); resolve(req.result.map(String)); };
+        req.onerror = () => { db.close(); resolve([]); };
+      };
+    });
+  });
+}
+
+test("a picture whose name has a space reaches the player, not just the card", async ({ page }) => {
+  // `بوابة المدينة` — the example the "new image" prompt itself offers —
+  // compiles to `بوابة_المدينة`, because a space is not an identifier
+  // character. The card used to store the bytes under the display name while
+  // the player and the exporter looked them up under the compiled one, so the
+  // picture appeared on the card and NOWHERE else. Every image in this repo's
+  // own stories is a single word, which is why nothing caught it.
+  await prepareProfile(page);
+  await openWriter(page);
+  await writeTinyStory(page);
+
+  // Bytes as an older build would have left them: under the display name.
+  await seedImageBytes(page, "بوابة المدينة", PIXEL_WEBP);
+
+  page.once("dialog", (d) => d.accept("بوابة المدينة"));
+  const first = page.locator("[data-writer-scene]").first();
+  await first.getByLabel("صورة المقطع 1").selectOption({ label: "＋ صورة جديدة" });
+
+  // The card finds them and moves them to the compiled key.
+  await expect(first.locator("img")).toBeVisible({ timeout: 10000 });
+  await expect
+    .poll(async () => (await imageKeys(page)).sort().join(" | "), { timeout: 10000 })
+    .toContain("default:بوابة_المدينة");
+
+  // And the player, which only ever reads the compiled key, now has a picture.
+  await page.getByRole("button", { name: "شغّل القصة" }).click();
+  await page.waitForSelector(".player-pane .aq-text", { timeout: 20000 });
+  await expect(page.locator(".player-pane img").first()).toBeVisible({ timeout: 10000 });
+});
+
+test("قصة جديدة empties the player instead of leaving the last story running", async ({ page }) => {
+  await prepareProfile(page);
+  await openWriter(page);
+  await writeTinyStory(page);
+
+  await page.getByRole("button", { name: "شغّل القصة" }).click();
+  await expect(page.locator(".player-pane .aq-choice-btn").first()).toBeVisible({ timeout: 20000 });
+
+  page.once("dialog", (d) => d.accept());
+  await page.getByRole("button", { name: "قصة جديدة" }).first().click();
+
+  // `compileSource` returns early on an empty source, so nothing used to
+  // replace what was on screen: a blank first card beside somebody else's
+  // story, still playable.
+  await expect(page.locator(".player-pane .aq-choice-btn")).toHaveCount(0, { timeout: 10000 });
+  await expect(page.getByText("اضغط ▶ شغّل لتشغيل القصة")).toBeVisible();
+});

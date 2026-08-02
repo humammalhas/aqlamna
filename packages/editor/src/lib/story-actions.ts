@@ -23,13 +23,17 @@ import { SEED_STORY, SEED_IMAGES } from "../generated/seed-story.js";
  * it is the one that returns you to the default surface.
  */
 export function newStory(): void {
-  const { source, setSource, setWriterMode } = useStore.getState();
+  const { source, setSource, setWriterMode, clearCompiled } = useStore.getState();
   if (source.trim().length > 0) {
     if (!window.confirm("سيؤدي هذا إلى مسح النص الحالي. هل تريد الاستمرار؟")) {
       return;
     }
   }
   setSource("");
+  // …and stop the previous story. `compileSource` never ran again — there was
+  // nothing to compile — so ▶ شغّل went on showing the story the author had
+  // just cleared, playable, beside a blank first card.
+  clearCompiled();
   setWriterMode("visual");
 }
 
@@ -48,12 +52,15 @@ export function newStory(): void {
  * story itself: it now opens in either surface. `newStory` is the reset.
  */
 export function openExample(): void {
-  const { source, setSource } = useStore.getState();
+  const { source, setSource, clearCompiled } = useStore.getState();
   if (source.trim().length > 0) {
     if (!window.confirm("سيؤدي هذا إلى استبدال النص الحالي. هل تريد الاستمرار؟")) {
       return;
     }
   }
+  // The player is showing whatever was loaded before this click. Leaving it up
+  // beside a different story in the cards is the same lie as after قصة جديدة.
+  clearCompiled();
   // Seed the pictures BEFORE the source. The scene card reads IndexedDB when
   // its image name appears, and nothing re-reads it afterwards — seeding after
   // `setSource` raced the render and lost, so the card showed a placeholder

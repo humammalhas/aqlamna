@@ -52,6 +52,25 @@ export default function VisualWriterPane() {
   const syncWriterFromSource = useStore((s) => s.syncWriterFromSource);
   const setWriterMode = useStore((s) => s.setWriterMode);
   const setWriterFocusScene = useStore((s) => s.setWriterFocusScene);
+  const writerScrollTo = useStore((s) => s.writerScrollTo);
+
+  /**
+   * Bring a card the author did not scroll to into view — today, only after an
+   * accepted AI suggestion.
+   *
+   * The nonce is the dependency, not the id: applying twice to the same card
+   * must scroll twice. `requestAnimationFrame` waits for the render that the
+   * new state causes, because the card may not be in the DOM yet — "اكتب هذا
+   * المقطع" appends one.
+   */
+  useEffect(() => {
+    if (!writerScrollTo) return;
+    const id = requestAnimationFrame(() => {
+      const el = document.querySelector(`[data-writer-scene="${writerScrollTo.sceneId}"]`);
+      el?.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+    return () => cancelAnimationFrame(id);
+  }, [writerScrollTo?.nonce, writerScrollTo?.sceneId]);
 
   // Re-import whenever the source changed and it was not this pane that
   // changed it: a story loaded from IndexedDB, an example, an AI insertion, or

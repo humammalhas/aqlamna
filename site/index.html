@@ -608,9 +608,29 @@
       bar.removeAttribute("data-open");
     });
 
+    // A worker that cannot be replaced is a site that cannot be fixed.
+    //
+    // `updateViaCache: "none"` makes the browser fetch sw.js past its HTTP
+    // cache — the zone was serving it with a four-hour TTL, so a visitor stayed
+    // on the previous worker for hours after a deploy no matter how hard they
+    // refreshed. And when a NEW worker takes over from an old one, the page
+    // still running is the old build: reload it once, so the fix a deploy just
+    // shipped is the code the visitor is looking at.
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch(function (err) {
-        console.error("Service worker registration failed:", err);
+      var hadController = !!navigator.serviceWorker.controller;
+      navigator.serviceWorker
+        .register("/sw.js", { scope: "/", updateViaCache: "none" })
+        .then(function (reg) { reg.update().catch(function () {}); })
+        .catch(function (err) {
+          console.error("Service worker registration failed:", err);
+        });
+      var reloading = false;
+      navigator.serviceWorker.addEventListener("controllerchange", function () {
+        // Not on the FIRST install — there was nothing stale to replace, and a
+        // reload there is a flash for no reason.
+        if (!hadController || reloading) return;
+        reloading = true;
+        location.reload();
       });
     }
   })();

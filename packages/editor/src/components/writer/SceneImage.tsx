@@ -19,7 +19,8 @@
 import { useCallback, useEffect, useState } from "react";
 import type { StoryImage } from "../../lib/writer-model.js";
 import { generateImage, suggestImageDescription, type GenStep } from "../../lib/image-gen.js";
-import { loadImage, saveImage, deleteImage, formatBytes, DEFAULT_PROJECT_ID } from "../../lib/image-db.js";
+import { imageIdentifiers } from "../../lib/generate-qalam.js";
+import { loadImage, saveImage, putImage, deleteImage, formatBytes, DEFAULT_PROJECT_ID } from "../../lib/image-db.js";
 import { hasImageApiKey, hasApiKey } from "../../lib/ai-keys.js";
 import AutoTextarea from "./AutoTextarea.js";
 import {
@@ -71,22 +72,50 @@ export default function SceneImage({
 
   const declared = images.find((i) => i.name === value) ?? null;
 
+  /**
+   * The key the bytes live under — the image's identifier in the generated
+   * `.qalam`, NOT its display name.
+   *
+   * `بوابة المدينة` compiles to `بوابة_المدينة`, and the player and the exporter
+   * both look the bytes up by the compiled name. Saving them under the display
+   * name put the picture on this card and nowhere else. See `imageIdentifiers`.
+   */
+  const storageKey = value ? (imageIdentifiers(images).get(value) ?? value) : null;
+
   // Load whatever has already been drawn for this image.
   useEffect(() => {
     let alive = true;
-    if (!value) { setPreview(null); setBytes(null); return; }
-    loadImage(DEFAULT_PROJECT_ID, value)
-      .then((stored) => {
+    if (!value || !storageKey) { setPreview(null); setBytes(null); return; }
+
+    (async () => {
+      try {
+        let stored = await loadImage(DEFAULT_PROJECT_ID, storageKey);
+
+        // Heal a picture drawn before the key was the identifier: it is sitting
+        // under the display name, invisible to the player and to the export.
+        // Move it rather than reading it from both places forever — one key.
+        if (!stored && storageKey !== value) {
+          const legacy = await loadImage(DEFAULT_PROJECT_ID, value);
+          if (legacy) {
+            await putImage(DEFAULT_PROJECT_ID, storageKey, legacy.dataUrl);
+            await deleteImage(DEFAULT_PROJECT_ID, value).catch(() => {});
+            stored = await loadImage(DEFAULT_PROJECT_ID, storageKey);
+          }
+        }
+
         if (!alive) return;
         setPreview(stored?.dataUrl ?? null);
         setBytes(stored?.bytes ?? null);
-      })
-      .catch(() => { if (alive) { setPreview(null); setBytes(null); } });
+      } catch {
+        if (alive) { setPreview(null); setBytes(null); }
+      }
+    })();
+
     return () => { alive = false; };
-  }, [value]);
+  }, [value, storageKey]);
 
   const draw = useCallback(async () => {
-    if (!declared) return;
+    if (!declared || !storageKey) return;
     const description = declared.description.trim();
     if (description.length === 0) {
       setError("اكتب وصف الصورة أولًا.");
@@ -101,7 +130,7 @@ export default function SceneImage({
         characters,
         (s) => setStep(s),
       );
-      const stored = await saveImage(DEFAULT_PROJECT_ID, declared.name, result.dataUrl);
+      const stored = await saveImage(DEFAULT_PROJECT_ID, storageKey, result.dataUrl);
       setPreview(stored.dataUrl);
       setBytes(stored.bytes);
     } catch (err) {
@@ -109,7 +138,7 @@ export default function SceneImage({
     } finally {
       setStep(null);
     }
-  }, [declared, imageStyle, characters]);
+  }, [declared, storageKey, imageStyle, characters]);
 
   const keyReady = hasImageApiKey();
   const textKeyReady = hasApiKey();
@@ -212,7 +241,7 @@ export default function SceneImage({
               <button
                 type="button"
                 onClick={async () => {
-                  await deleteImage(DEFAULT_PROJECT_ID, declared.name).catch(() => {});
+                  await deleteImage(DEFAULT_PROJECT_ID, storageKey ?? declared.name).catch(() => {});
                   setPreview(null);
                   setBytes(null);
                 }}

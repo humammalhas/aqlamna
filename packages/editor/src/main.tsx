@@ -33,8 +33,30 @@ if (import.meta.env.PROD && "serviceWorker" in navigator) {
     }
   });
 
+  // The editor is the surface a stale worker hurts most: its bundle carries the
+  // provider registry, so an author stuck on an old worker pastes a valid API
+  // key into a build whose model IDs were retired, and the AI simply never
+  // works. Reported twice, from two browsers, "no matter how much I hard
+  // refresh" — a hard refresh does not reach past a service worker.
+  //
+  //   updateViaCache: "none"  fetch sw.js past the HTTP cache. The zone was
+  //                           serving it with a four-hour TTL.
+  //   reg.update()            ask on every load, not only on navigation.
+  //   controllerchange        a NEW worker just replaced an OLD one, so the
+  //                           JavaScript running right now is the previous
+  //                           build. Reload once and be the new one.
+  const hadController = !!navigator.serviceWorker.controller;
+  let reloading = false;
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    // Not on first install: nothing stale was replaced.
+    if (!hadController || reloading) return;
+    reloading = true;
+    window.location.reload();
+  });
+
   navigator.serviceWorker
-    .register("/sw.js", { scope: "/" })
+    .register("/sw.js", { scope: "/", updateViaCache: "none" })
+    .then((reg) => { void reg.update().catch(() => {}); })
     .catch((err) => {
       // console.error, not warn: a failed registration means no offline mode
       // AND no install prompt, because Chrome requires a live service worker

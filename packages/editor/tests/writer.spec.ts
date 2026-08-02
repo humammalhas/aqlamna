@@ -25,11 +25,12 @@ import {
   buildNameMap,
   generateQalam,
   sanitizeProse,
+  imageIdentifiers,
   toIdentifier,
   validateWriterState,
 } from "../src/lib/generate-qalam.js";
 import { importWriterState } from "../src/lib/writer-import.js";
-import { applyAIFragment, sceneContextText } from "../src/lib/writer-ai.js";
+import { applyAIFragment, aiTargetScene, sceneContextText } from "../src/lib/writer-ai.js";
 import { relevantCharacterLines } from "../src/lib/image-gen.js";
 
 // ---- Helpers ---------------------------------------------------------------
@@ -887,5 +888,99 @@ describe("applyAIFragment — where an accepted suggestion goes", () => {
     applyAIFragment(state, "continue_scene", "نصّ.", state.scenes[0]!.id);
     applyAIFragment(state, "suggest_choices", "* [أ]\n** [ب]\n   -> نهاية\n", state.scenes[0]!.id);
     expect(JSON.stringify(state)).toBe(before);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Bugs reported from the live editor, 2 Aug 2026
+// ---------------------------------------------------------------------------
+
+describe("an AI suggestion always lands somewhere, and says where first", () => {
+  function twoScenes(): WriterState {
+    return build((s) => {
+      s.scenes = [
+        scene("البداية", (sc) => { sc.prose = "أمامك باب."; }),
+        scene("الداخل", (sc) => { sc.prose = "غرفة."; sc.isEnding = true; }),
+      ];
+      s.scenes[0]!.autoDivert = s.scenes[1]!.id;
+    });
+  }
+
+  it("a stale focus id falls back to the last scene instead of vanishing", () => {
+    const state = twoScenes();
+    // Scene ids are regenerated on every re-import — a reload, switching to
+    // متقدّم and back, opening the example. The remembered focus then names a
+    // scene that no longer exists.
+    const result = applyAIFragment(state, "suggest_choices", "* [اذهب]\n  -> نهاية\n", "s-from-a-previous-life");
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    const last = result.state.scenes[result.state.scenes.length - 1]!;
+    expect(result.sceneId).toBe(last.id);
+    expect(last.choices.length).toBeGreaterThan(state.scenes[state.scenes.length - 1]!.choices.length);
+
+    // The whole story must not come back unchanged — that is what used to
+    // happen, reported as ok, with the suggestion nowhere on screen.
+    expect(JSON.stringify(result.state.scenes)).not.toBe(JSON.stringify(state.scenes));
+  });
+
+  it("names the scene it will change, and it is the focused one", () => {
+    const state = perfumeState();
+    const middle = state.scenes[3]!;
+    expect(aiTargetScene(state, middle.id)?.id).toBe(middle.id);
+    expect(aiTargetScene(state, "s-does-not-exist")?.id).toBe(state.scenes[state.scenes.length - 1]!.id);
+    expect(aiTargetScene(state, null)?.id).toBe(state.scenes[state.scenes.length - 1]!.id);
+    expect(aiTargetScene(emptyWriterState(), null)).toBeNull();
+  });
+
+  it("reports which scene it changed, so the pane can scroll to it", () => {
+    const state = twoScenes();
+    const first = state.scenes[0]!;
+
+    const cont = applyAIFragment(state, "continue_scene", "سطر آخر.", first.id);
+    expect(cont.ok && cont.sceneId).toBe(first.id);
+
+    const made = applyAIFragment(state, "write_passage", "مقطع جديد.\n", first.id);
+    expect(made.ok).toBe(true);
+    if (!made.ok) return;
+    // A new scene, not the focused one: أضف appended it at the bottom.
+    expect(made.sceneId).toBe(made.state.scenes[made.state.scenes.length - 1]!.id);
+    expect(made.sceneId).not.toBe(first.id);
+  });
+});
+
+describe("an image's bytes are keyed by the name the story compiles to", () => {
+  it("a display name with a space becomes an identifier, and one map answers for both", () => {
+    const ids = imageIdentifiers([{ name: "بوابة المدينة" }, { name: "الوادي" }]);
+    expect(ids.get("بوابة المدينة")).toBe("بوابة_المدينة");
+    expect(ids.get("الوادي")).toBe("الوادي");
+  });
+
+  it("the identifier is exactly the key the compiled story uses", () => {
+    // The card stores the drawn bytes under this key; the player and the
+    // exporter look them up by the compiled JSON's key. They were different
+    // for any name that is not already an identifier, so the picture appeared
+    // on the card and in neither the player nor the exported file.
+    const state = emptyWriterState();
+    const scene = emptyScene("البداية");
+    scene.prose = "وقفت أمام البوابة.";
+    scene.image = "بوابة المدينة";
+    state.scenes = [scene];
+    state.images = [{ name: "بوابة المدينة", description: "بوابة حجرية عند الغروب" }];
+
+    const story = compileState(state);
+    const keys = Object.keys(story.images ?? {});
+    expect(keys).toEqual(["بوابة_المدينة"]);
+    expect(imageIdentifiers(state.images).get("بوابة المدينة")).toBe(keys[0]);
+
+    // And the scene really points at it, so the player has something to draw.
+    const nodes = story.passages["البداية"]!.content;
+    expect(nodes[0]).toEqual({ type: "image", name: "بوابة_المدينة" });
+  });
+
+  it("two images that sanitise to the same identifier stay distinct", () => {
+    const ids = imageIdentifiers([{ name: "باب المدينة" }, { name: "باب_المدينة" }]);
+    expect(new Set(ids.values()).size).toBe(2);
   });
 });

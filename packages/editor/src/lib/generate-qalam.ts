@@ -102,11 +102,33 @@ export interface NameMap {
   image: Map<string, string>;
 }
 
+/**
+ * Display name → the identifier the image gets in the generated `.qalam`.
+ *
+ * **This is also the key its bytes must be stored under**, and that is not a
+ * detail. An author who names a picture `بوابة المدينة` — the very example the
+ * "new image" prompt offers — gets `بوابة_المدينة` in the source and therefore
+ * in the compiled JSON, because a space is not an identifier character. The
+ * card used to save the bytes under the display name while the player and the
+ * exporter looked them up under the compiled one, so the picture appeared on
+ * the card and nowhere else: not in ▶ شغّل, not in the exported file. Every
+ * image in the repo's own stories is a single word, which is why nothing here
+ * ever caught it.
+ *
+ * Exported so the card and the serialiser cannot answer this question
+ * differently.
+ */
+export function imageIdentifiers(images: { name: string }[]): Map<string, string> {
+  const ids = uniqueIdentifiers(images.map((i) => i.name), "صورة");
+  const map = new Map<string, string>();
+  images.forEach((im, i) => map.set(im.name, ids[i]!));
+  return map;
+}
+
 export function buildNameMap(state: WriterState): NameMap {
   const sceneNames = uniqueIdentifiers(state.scenes.map((s) => s.title), "مقطع");
   const tagNames = uniqueIdentifiers(state.tags, "أثر");
   const counterNames = uniqueIdentifiers(state.counters.map((c) => c.name), "عداد");
-  const imageNames = uniqueIdentifiers((state.images ?? []).map((i) => i.name), "صورة");
 
   const scene = new Map<string, string>();
   state.scenes.forEach((s, i) => scene.set(s.id, sceneNames[i]!));
@@ -114,8 +136,7 @@ export function buildNameMap(state: WriterState): NameMap {
   state.tags.forEach((t, i) => tag.set(t, tagNames[i]!));
   const counter = new Map<string, string>();
   state.counters.forEach((c, i) => counter.set(c.name, counterNames[i]!));
-  const image = new Map<string, string>();
-  (state.images ?? []).forEach((im, i) => image.set(im.name, imageNames[i]!));
+  const image = imageIdentifiers(state.images ?? []);
 
   return { scene, tag, counter, image };
 }
