@@ -131,9 +131,22 @@ export const BUILD_DIRS = [
         subdir: "editor",
       },
       {
+        // حرّاس_الخزنة.html is copied, not exported: it has no .qalam here, it
+        // is a finished standalone file with its pictures already inlined, and
+        // stories/حرّاس_الخزنة.html is the committed master.
         kind: "explicit",
         producer: "scripts/build-site.mjs",
-        paths: ["العطر_المفقود.html", "طائرة_الورق.html"],
+        paths: ["العطر_المفقود.html", "طائرة_الورق.html", "حرّاس_الخزنة.html"],
+      },
+      {
+        // The showcase covers, each derived from its own story's illustration.
+        kind: "explicit",
+        producer: "scripts/build-covers.mjs",
+        paths: [
+          "assets/cover-guardians.webp",
+          "assets/cover-perfume.webp",
+          "assets/cover-kite.webp",
+        ],
       },
       {
         // Derived from brand/ at the size they are actually displayed. The

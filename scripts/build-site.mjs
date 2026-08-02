@@ -2,6 +2,7 @@
 // Called from root `build:site` after the editor builds with base /editor/.
 
 import { cpSync, existsSync, mkdirSync, rmSync, readFileSync, writeFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { transform } from "esbuild";
@@ -62,6 +63,24 @@ if (!existsSync(story)) {
 }
 copyFile(story, resolve(site, "العطر_المفقود.html"));
 console.log("✓ site/العطر_المفقود.html");
+
+// 2b. حرّاس الخزنة → site/
+//
+// Unlike the other two this one has no .qalam in the repo: it is a finished
+// standalone export with its illustrations already inlined, committed as an
+// artifact in its own right. Copied, never rebuilt.
+const guardians = resolve(root, "stories", "حرّاس_الخزنة.html");
+if (!existsSync(guardians)) {
+  console.error("story file not found:", guardians);
+  process.exit(1);
+}
+copyFile(guardians, resolve(site, "حرّاس_الخزنة.html"));
+console.log("✓ site/حرّاس_الخزنة.html");
+
+// 2c. Showcase covers — one per playable story, derived from its own pictures.
+execFileSync(process.execPath, [resolve(root, "scripts", "build-covers.mjs")], {
+  stdio: "inherit",
+});
 
 // 3. Images
 //

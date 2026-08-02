@@ -44,6 +44,8 @@ site/editor/
 site/assets/*
 !site/assets/aqlamna.css
 site/العطر_المفقود.html
+# copied from stories/حرّاس_الخزنة.html by build-site.mjs — the master is committed
+site/حرّاس_الخزنة.html
 
 # playwright artifacts
 test-results/
