@@ -16,6 +16,7 @@
 import { compile } from "@aqlamna/core";
 import type { StoryJSON } from "@aqlamna/runtime";
 import { buildNameMap, generateQalam } from "./generate-qalam.js";
+import { normalizeChoiceSyntax } from "./ai-normalize.js";
 import { importSingleScene } from "./writer-import.js";
 import {
   emptyScene,
@@ -75,6 +76,48 @@ export function sceneContextText(state: WriterState, sceneId: string | null): st
   return (next === -1 ? after : after.slice(0, next)).trim();
 }
 
+/**
+ * Drop the part of a continuation that repeats what the scene already says.
+ *
+ * The prompt asks the model not to; measured against DeepSeek it does anyway —
+ * it re-states the scene's opening line and then continues, so pressing
+ * أكمل المقطع left the author with the same sentence twice, one paragraph
+ * apart. Compared paragraph by paragraph and then line by line, on exact text:
+ * a sentence the scene already contains is an echo, not a continuation. Nothing
+ * is rewritten — whole repeated blocks are removed from the front, and the
+ * moment something new appears the rest is kept verbatim.
+ */
+export function dropEcho(existing: string, addition: string): string {
+  const have = existing.trim();
+  if (have.length === 0) return addition.trim();
+
+  const paragraphs = addition.split(/\n{2,}/);
+  while (paragraphs.length > 0) {
+    const first = paragraphs[0]!.trim();
+    if (first.length === 0 || have.includes(first)) {
+      paragraphs.shift();
+      continue;
+    }
+    break;
+  }
+
+  // The echo can also be one line of a paragraph whose rest is new.
+  if (paragraphs.length > 0) {
+    const lines = paragraphs[0]!.split("\n");
+    while (lines.length > 1) {
+      const first = lines[0]!.trim();
+      if (first.length === 0 || have.includes(first)) {
+        lines.shift();
+        continue;
+      }
+      break;
+    }
+    paragraphs[0] = lines.join("\n");
+  }
+
+  return paragraphs.join("\n\n").trim();
+}
+
 /** A passage name the author's own scenes will not have taken. */
 function scratchName(taken: Set<string>): string {
   let name = "مقطع_مؤقت_للذكاء";
@@ -96,7 +139,10 @@ export function applyAIFragment(
   fragment: string,
   focusSceneId: string | null,
 ): ApplyResult {
-  const trimmed = fragment.trim();
+  // Belt and braces: `ai.ts` normalises on the way in, but this function is
+  // also the one a test — or a future caller — hands raw text to, and the whole
+  // point of the repair is that a choice must never arrive as prose.
+  const trimmed = normalizeChoiceSyntax(fragment).trim();
   if (trimmed.length === 0) return { ok: false, reason: "لم يعد الذكاء الاصطناعي بنصّ." };
 
   const names = buildNameMap(state);
@@ -148,7 +194,9 @@ export function applyAIFragment(
       scenes: state.scenes.map((sc) => {
         if (sc.id !== target.id) return sc;
         if (action === "continue_scene") {
-          const joined = sc.prose.trim().length > 0 ? `${sc.prose.trimEnd()}\n\n${parsed.prose}` : parsed.prose;
+          const fresh = dropEcho(sc.prose, parsed.prose);
+          if (fresh.length === 0) return sc; // the answer was nothing but an echo
+          const joined = sc.prose.trim().length > 0 ? `${sc.prose.trimEnd()}\n\n${fresh}` : fresh;
           return { ...sc, prose: joined };
         }
         return { ...sc, choices: [...sc.choices, ...parsed.choices] };

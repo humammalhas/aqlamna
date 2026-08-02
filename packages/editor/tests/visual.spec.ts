@@ -882,6 +882,9 @@ test.describe("settings — version and force refresh", () => {
       )
       .not.toContain("aqlamna-app-pretend-old");
 
-    expect(page.url(), `url after ↻: ${page.url()}`).toMatch(/_=/);
+    // The cache is cleared BEFORE the navigation, so the poll above can pass
+    // while the browser is still on the old URL. Wait for the reload rather
+    // than reading the address at whatever instant the poll happened to finish.
+    await page.waitForURL(/_=/, { timeout: 20000 });
   });
 });

@@ -984,3 +984,139 @@ describe("an image's bytes are keyed by the name the story compiles to", () => {
     expect(new Set(ids.values()).size).toBe(2);
   });
 });
+
+// ---------------------------------------------------------------------------
+// What the model actually returns — captured from DeepSeek (deepseek-v4-flash)
+// on 2 Aug 2026 with this project's own prompts. Every fragment below is a real
+// response, pasted verbatim.
+// ---------------------------------------------------------------------------
+
+describe("an AI scene arrives with its choices in the choice fields", () => {
+  function twoScenes(): WriterState {
+    return build((s) => {
+      s.scenes = [
+        scene("البداية", (sc) => { sc.prose = "تستيقظ في غرفة مظلمة."; }),
+        scene("الممر", (sc) => { sc.prose = "الممر طويل وجدرانه رطبة."; }),
+      ];
+      s.scenes[0]!.autoDivert = s.scenes[1]!.id;
+    });
+  }
+
+  // The report, in the author's words: "when you click apply and it adds a new
+  // scene the choices appear in story field. I want them to be placed in the
+  // choices." This is the response that did it.
+  const NUMBERED = `الممر طويل وجدرانه رطبة. أضع يدي على الجدار البارد، فأشعر بحصى صغيرة تحت أطراف أصابعي.
+
+ما الذي أفعل؟
+
+1. أمشي نحو الضوء الخافت.
+2. أتوقّف وأنادي: "من هناك؟"
+3. أعود أدراجي قبل أن أصل إلى نهايته.`;
+
+  const DASHED = `وصل إلى نهاية الممر حيث بابٌ خشبيّ نصفُه مفتوح.
+
+- ادفع الباب ببطء
+- عُد أدراجك نحو الصوت
+- اصغِ جيدًا قبل أن تتحرّك`;
+
+  it("اكتب هذا المقطع: a numbered list becomes choice cards, not prose", () => {
+    const result = applyAIFragment(twoScenes(), "write_passage", NUMBERED, null);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    const made = result.state.scenes[result.state.scenes.length - 1]!;
+    expect(made.choices.map((c) => c.label)).toEqual([
+      "أمشي نحو الضوء الخافت",
+      'أتوقّف وأنادي: "من هناك؟"',
+      "أعود أدراجي قبل أن أصل إلى نهايته",
+    ]);
+
+    // …and not a word of them is left in the story box.
+    expect(made.prose).toContain("أضع يدي على الجدار البارد");
+    expect(made.prose).not.toContain("أمشي نحو الضوء");
+    expect(made.prose).not.toMatch(/^\s*[0-9١-٩]\./m);
+
+    // The scene the author gets still compiles.
+    expect(() => compileState(result.state)).not.toThrow();
+  });
+
+  it("اكتب هذا المقطع: a dashed list too", () => {
+    const result = applyAIFragment(twoScenes(), "write_passage", DASHED, null);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const made = result.state.scenes[result.state.scenes.length - 1]!;
+    expect(made.choices).toHaveLength(3);
+    expect(made.prose).not.toContain("ادفع الباب");
+  });
+
+  // The other half of the same defect: three good choices were REFUSED
+  // outright because the model left the brackets off, and the author was told
+  // their suggestion "did not fit the story".
+  it("اقترح خيارات: a choice with no brackets is repaired, not refused", () => {
+    const state = twoScenes();
+    const raw = `* أتقدّم بحذر
+  -> الممر
+
+* أتوقّف للحظة
+  -> البداية`;
+    const result = applyAIFragment(state, "suggest_choices", raw, state.scenes[1]!.id);
+    expect(result.ok, result.ok ? "" : (result as { reason: string }).reason).toBe(true);
+    if (!result.ok) return;
+
+    const target = result.state.scenes[1]!;
+    expect(target.choices.map((c) => c.label)).toEqual(["أتقدّم بحذر", "أتوقّف للحظة"]);
+    expect(target.prose).toBe("الممر طويل وجدرانه رطبة.");
+  });
+
+  it("اقترح خيارات: a properly bracketed answer is untouched", () => {
+    const state = twoScenes();
+    const raw = `* [ألمس الجدار] أصابعي تبتلّ.
+  -> الممر`;
+    const result = applyAIFragment(state, "suggest_choices", raw, state.scenes[1]!.id);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.state.scenes[1]!.choices[0]!.label).toBe("ألمس الجدار");
+    expect(result.state.scenes[1]!.choices[0]!.proseAfter).toContain("أصابعي تبتلّ");
+  });
+
+  it("أكمل المقطع: the model re-stating the scene's own line does not duplicate it", () => {
+    const state = twoScenes();
+    const echo = `الممر طويل وجدرانه رطبة.
+
+تقطر المياهُ من سقفه فتنساب في شقوقٍ عتيقة.`;
+    const result = applyAIFragment(state, "continue_scene", echo, state.scenes[1]!.id);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    const prose = result.state.scenes[1]!.prose;
+    expect(prose.match(/الممر طويل وجدرانه رطبة/g)).toHaveLength(1);
+    expect(prose).toContain("تقطر المياهُ من سقفه");
+  });
+
+  it("أكمل المقطع: a continuation that is nothing but an echo changes nothing", () => {
+    const state = twoScenes();
+    const before = JSON.stringify(state.scenes[1]);
+    const result = applyAIFragment(state, "continue_scene", "الممر طويل وجدرانه رطبة.", state.scenes[1]!.id);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(JSON.stringify(result.state.scenes[1])).toBe(before);
+  });
+
+  it("a list inside the prose, with the scene continuing after it, is left alone", () => {
+    // Only a list at the END becomes choices. A model that writes one mid-scene
+    // is writing prose, and turning that into buttons would be an invention.
+    const state = twoScenes();
+    const midway = `فتح الدفتر فقرأ:
+
+- خبز
+- ملح
+
+ثمّ أغلقه وخرج.`;
+    const result = applyAIFragment(state, "write_passage", midway, null);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const made = result.state.scenes[result.state.scenes.length - 1]!;
+    expect(made.choices).toHaveLength(0);
+    expect(made.prose).toContain("خبز");
+  });
+});

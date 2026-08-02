@@ -5,6 +5,7 @@
 // ---------------------------------------------------------------------------
 
 import { compile } from "@aqlamna/core";
+import { normalizeChoiceSyntax } from "./ai-normalize.js";
 import {
   getSelectedProvider,
   getTransportConfig,
@@ -50,10 +51,15 @@ const ACTION_PROMPTS: Record<AIAction, (ctx: { contextText: string; passageNames
     return `المقطع الحالي:
 ${contextText}
 
-اقترح 3 خيارات بصيغة .qalam لهذا المقطع. اكتب الخيارات فقط (بدون شرح). استخدم الصياغة التالية لكل خيار:
+اقترح 3 خيارات بصيغة .qalam لهذا المقطع. اكتب الخيارات فقط (بدون شرح).
 
-* [نص الخيار] نص النتيجة
+كل خيار سطران بهذا الشكل حرفيًّا — القوسان المعقوفان [ ] واجبان حول نصّ الزرّ:
+
+* [نص الزرّ]
   -> اسم_المقطع
+
+لا تكتب قائمة مرقّمة ولا شرطات. لا تحذف القوسين.
+نصّ الزرّ قصير: من كلمتين إلى خمس. ما بعد القوسين — إن كتبته — سطر واحد يصف ما يحدث بعد الضغط.
 
 أسماء المقاطع الموجودة: ${names}
 أسماء المتغيرات الموجودة: ${vars}
@@ -66,7 +72,7 @@ ${contextText}
 
 ${contextText}
 
-أكمل بـ 3-5 جمل مناسبة. لا تكرر ما كُتب بالفعل.`;
+أكمل بـ 3-5 جمل مناسبة. ابدأ من حيث انتهى النصّ ولا تُعِد كتابة أيّ جملة منه — لا الأولى ولا غيرها. لا تكتب خيارات.`;
   },
 
   write_passage: ({ contextText, passageNames, variableNames }) => {
@@ -76,6 +82,12 @@ ${contextText}
 ${contextText}
 
 اكتب مشهدًا كاملاً من 4-6 جمل، ثم أضف 2-3 خيارات في النهاية.
+
+الخيارات تُكتب بهذه الصيغة حرفيًّا، سطرًا لكل خيار، والقوسان المعقوفان واجبان:
+
+* [نص الزرّ]
+
+لا تكتب قائمة مرقّمة (١. ٢. ٣.) ولا شرطات ولا عنوانًا مثل "الخيارات:".
 
 المتغيرات الموجودة (يمكنك استخدامها): ${vars}
 
@@ -174,9 +186,16 @@ async function sendToProvider(
 // ---- Validation ------------------------------------------------------------
 
 function validateAIResponse(
-  aiText: string,
+  rawText: string,
   req: AIRequest,
 ): { valid: string | null; error: string | null } {
+  // Repair the shape BEFORE compiling, and hand the repaired text on as the
+  // valid one — so the preview shows exactly what أضف will insert. Measured
+  // against DeepSeek: a whole scene's choices came back as a numbered list, and
+  // three good choices came back with no brackets and were refused outright.
+  // See ai-normalize.ts; nothing is invented, only re-shaped.
+  const aiText = normalizeChoiceSyntax(rawText);
+
   // Build a synthetic .qalam source that wraps the AI output so it can be compiled
   let trialSource: string;
 
