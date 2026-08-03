@@ -3,11 +3,11 @@
 // Machine-readable. Verified by scripts/check-artifacts.mjs. Do not hand-edit.
 // {
 //   "generator": "packages/linter/scripts/build-rules.mjs",
-//   "generatedAt": "2026-08-01T08:05:51.190Z",
+//   "generatedAt": "2026-08-03T02:56:07.177Z",
 //   "artifact": "packages/linter/src/generated/rules.ts",
 //   "source": "ARABIC_MASTERY.md",
-//   "sourceModified": "2026-07-31T10:29:38.484Z",
-//   "sourceMd5": "1d5c20ade3ef208371bbd2f1423b336e"
+//   "sourceModified": "2026-08-03T02:53:40.598Z",
+//   "sourceMd5": "0621daf0f89a8bf5cbe97cb5e07bf87b"
 // }
 // ── END AQLAMNA-PROVENANCE ──────────────────────────────────────────────
 
@@ -16,13 +16,13 @@ import type { RulesFile } from "../types.js";
 const rules: RulesFile = {
   "_meta": {
     "source": "ARABIC_MASTERY.md",
-    "lastModified": "2026-07-31T10:29:38.484Z",
-    "generatedAt": "2026-08-01T08:05:51.189Z",
+    "lastModified": "2026-08-03T02:53:40.598Z",
+    "generatedAt": "2026-08-03T02:56:07.176Z",
     "counts": {
-      "pair": 88,
+      "pair": 93,
       "pattern": 5,
       "advisory": 8,
-      "total": 101
+      "total": 106
     }
   },
   "rules": [
@@ -583,6 +583,51 @@ const rules: RulesFile = {
       "severity": "warning",
       "messageAr": "ملاحظة بسيطة لا حكمة كونية",
       "section": "1b.16"
+    },
+    {
+      "id": "1b.18.1",
+      "kind": "pair",
+      "bad": "صدّقه التمساح الغبيّ",
+      "good": "صدّق التمساح الحيلة",
+      "severity": "warning",
+      "messageAr": "دع أفعال الشخصيّة تكشف طبيعتها. لا تخبر القارئ أنّ الشخصيّة طيّبة أو غبيّة أو فقيرة — أظهِر ذلك بالأحداث. صِف ما فعلت الشخصيّة، لا ما هي.",
+      "section": "1b.18"
+    },
+    {
+      "id": "1b.18.2",
+      "kind": "pair",
+      "bad": "كان يحبّ مساعدة كلّ مخلوق، ولا ينتظر شكرًا ولا جزاء",
+      "good": "كان يحبّ أن يساعد كلّ مخلوقٍ يقع في ضيق",
+      "severity": "warning",
+      "messageAr": "دع أفعال الشخصيّة تكشف طبيعتها. لا تخبر القارئ أنّ الشخصيّة طيّبة أو غبيّة أو فقيرة — أظهِر ذلك بالأحداث. صِف ما فعلت الشخصيّة، لا ما هي.",
+      "section": "1b.18"
+    },
+    {
+      "id": "1b.18.3",
+      "kind": "pair",
+      "bad": "وكان بسيطًا صادقًا",
+      "good": "(حُذف — سلوكه يوضح صدقه)",
+      "severity": "warning",
+      "messageAr": "دع أفعال الشخصيّة تكشف طبيعتها. لا تخبر القارئ أنّ الشخصيّة طيّبة أو غبيّة أو فقيرة — أظهِر ذلك بالأحداث. صِف ما فعلت الشخصيّة، لا ما هي.",
+      "section": "1b.18"
+    },
+    {
+      "id": "1b.18.4",
+      "kind": "pair",
+      "bad": "كان أحيانًا ينفّذ ما يُطلب منه حرفيًّا فتقع أمورٌ مضحكة",
+      "good": "كان يتعلّم من كلّ تجربةٍ يمرّ بها",
+      "severity": "warning",
+      "messageAr": "دع أفعال الشخصيّة تكشف طبيعتها. لا تخبر القارئ أنّ الشخصيّة طيّبة أو غبيّة أو فقيرة — أظهِر ذلك بالأحداث. صِف ما فعلت الشخصيّة، لا ما هي.",
+      "section": "1b.18"
+    },
+    {
+      "id": "1b.18.5",
+      "kind": "pair",
+      "bad": "وكانوا فقراء لكنّهم سعداء ومتحابّون",
+      "good": "كانوا يعيشون حياةً بسيطة",
+      "severity": "warning",
+      "messageAr": "دع أفعال الشخصيّة تكشف طبيعتها. لا تخبر القارئ أنّ الشخصيّة طيّبة أو غبيّة أو فقيرة — أظهِر ذلك بالأحداث. صِف ما فعلت الشخصيّة، لا ما هي.",
+      "section": "1b.18"
     },
     {
       "id": "2.1.1",
